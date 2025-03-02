@@ -1,24 +1,76 @@
 @import "tailwindcss";
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Brand Foundation Colors */
+  --color-surface-base: oklch(
+    0.98 0.003 240
+  ); /* Softest white, main background */
+  --color-surface-sunken: var(--color-slate-50); /* Slightly darker than base */
+  --color-surface-raised: oklch(
+    0.99 0.002 240
+  ); /* Slightly lighter than base */
+
+  /* Primary Brand Colors */
+  --color-brand-pure: var(--color-cyan-600); /* Main brand color */
+  --color-brand-emphasis: var(--color-cyan-700); /* Stronger brand presence */
+  --color-brand-muted: var(--color-cyan-400); /* Subtle brand presence */
+  --color-brand-subtle: var(--color-cyan-100); /* Very subtle brand hints */
+
+  /* Neutral Scale */
+  --color-neutral-stronger: var(--color-slate-900); /* Strongest contrast */
+  --color-neutral-strong: var(--color-slate-800); /* High contrast */
+  --color-neutral-base: var(--color-slate-600); /* Base neutral */
+  --color-neutral-weak: var(--color-slate-300); /* Low contrast */
+  --color-neutral-weaker: var(--color-slate-100); /* Lowest contrast */
+
+  /* Interactive States */
+  --color-action-primary: var(--color-cyan-600); /* Primary actions */
+  --color-action-secondary: var(--color-slate-600); /* Secondary actions */
+  --color-action-hover: var(--color-cyan-700); /* Hover state */
+  --color-action-pressed: var(--color-cyan-800); /* Pressed state */
+  --color-action-disabled: var(--color-slate-300); /* Disabled state */
+
+  /* Feedback Colors */
+  --color-feedback-error: var(--color-red-500); /* Error states */
+  --color-feedback-success: var(--color-emerald-500); /* Success states */
+  --color-feedback-warning: var(--color-amber-500); /* Warning states */
+  --color-feedback-info: var(--color-blue-500); /* Information states */
+
+  /* Focus States */
+  --color-focus-ring: var(--color-cyan-500); /* Focus indicators */
+  --color-focus-base: var(--color-cyan-100); /* Focus base color */
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+&[data-theme="dark"] {
+  /* Dark theme overrides */
+  --color-surface-base: var(--color-slate-900);
+  --color-surface-sunken: var(--color-slate-800);
+  --color-surface-raised: var(--color-slate-700);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-brand-pure: var(--color-cyan-500);
+  --color-brand-emphasis: var(--color-cyan-400);
+  --color-brand-muted: var(--color-cyan-600);
+  --color-brand-subtle: var(--color-cyan-800);
+
+  --color-neutral-stronger: var(--color-slate-50);
+  --color-neutral-strong: var(--color-slate-100);
+  --color-neutral-base: var(--color-slate-400);
+  --color-neutral-weak: var(--color-slate-700);
+  --color-neutral-weaker: var(--color-slate-900);
+
+  --color-action-primary: var(--color-cyan-500);
+  --color-action-secondary: var(--color-slate-400);
+  --color-action-hover: var(--color-cyan-400);
+  --color-action-pressed: var(--color-cyan-300);
+  --color-action-disabled: var(--color-slate-600);
+
+  --color-focus-ring: var(--color-cyan-400);
+  --color-focus-base: var(--color-cyan-900);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  color: var(--color-neutral-stronger);
+  background-color: var(--color-surface-base);
 }
