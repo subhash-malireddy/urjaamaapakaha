@@ -1,0 +1,87 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# This workflow runs tests for pull requests and pushes to main
+# Note: Linting is intentionally excluded as it's handled by pre-commit hooks locally
+# using Husky and lint-staged before each commit
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install pnpm first without caching
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+          run_install: false
+
+      # Then set up Node.js with pnpm caching
+      # Note: The cache parameter here works with the pnpm action above
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+          cache: "pnpm"
+          cache-dependency-path: "**/pnpm-lock.yaml"
+
+      # Now we can use pnpm to install dependencies
+      - name: Install dependencies
+        run: pnpm install
+
+      # Linting step is intentionally omitted
+      # Local development enforces linting via pre-commit hooks
+      # This ensures all committed code is already properly linted
+
+      # Determine Jest cache directory
+      - name: Get Jest cache directory
+        id: jest-cache-dir
+        run: |
+          JEST_CONFIG=$(pnpm jest --showConfig 2>/dev/null)
+          CACHE_DIR=$(echo "$JEST_CONFIG" | jq -r '.configs.[0].cacheDirectory' 2>/dev/null)
+
+          if [[ -z "$CACHE_DIR" ]]; then
+            echo "Error: Could not determine Jest cache directory." >&2
+            exit 1
+          fi
+
+          echo "dir=$CACHE_DIR" >> "$GITHUB_OUTPUT"
+
+      # Restore Jest cache to speed up tests
+      - name: Restore Jest cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.jest-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-${{ hashFiles('**/*.{js,jsx,ts,tsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-
+            ${{ runner.os }}-jest-
+
+      # Run tests with coverage (no need to run tests twice)
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+
+      # # Save Jest cache after tests run
+      # # Saves automatically when the workflow completes but if the above fails, this will save the cache
+      # - name: Save Jest cache
+      #   if: always() # Try to save cache even if tests fail
+      #   uses: actions/cache/save@v4
+      #   with:
+      #     path: ${{ steps.jest-cache-dir.outputs.dir }}
+      #     key: ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-${{ hashFiles('**/*.{js,jsx,ts,tsx}') }}
+
+      # Upload coverage reports as artifacts
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
