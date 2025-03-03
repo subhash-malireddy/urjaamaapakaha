@@ -47,18 +47,8 @@ jobs:
         run: |
           JEST_CONFIG=$(pnpm jest --showConfig 2>/dev/null)
           echo "JEST_CONFIG: $JEST_CONFIG"
-          CACHE_DIR=$(echo "$JEST_CONFIG" | jq -r '.cacheDirectory' 2>/dev/null)
+          CACHE_DIR=$(echo "$JEST_CONFIG" | jq -r '.configs.[0].cacheDirectory' 2>/dev/null)
           echo "CACHE_DIR: $CACHE_DIR"
-
-          echo "--------------------------------"
-          echo "$JEST_CONFIG" | jq '.'
-          echo "--------------------------------"
-          echo "$JEST_CONFIG" | jq '.cacheDirectory'
-          echo "--------------------------------"
-          echo pnpm jest --showConfig | jq '.'
-          echo "--------------------------------"
-          echo pnpm jest --showConfig | jq '.cacheDirectory'
-          echo "--------------------------------"
 
           if [[ -z "$CACHE_DIR" ]]; then
             echo "Error: Could not determine Jest cache directory." >&2
