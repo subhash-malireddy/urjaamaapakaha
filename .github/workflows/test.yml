@@ -1,0 +1,61 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# This workflow runs tests for pull requests and pushes to main
+# Note: Linting is intentionally excluded as it's handled by pre-commit hooks locally
+# using Husky and lint-staged before each commit
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install
+
+      # Linting step is intentionally omitted
+      # Local development enforces linting via pre-commit hooks
+      # This ensures all committed code is already properly linted
+
+      # Restore Jest cache to speed up tests
+      - name: Restore Jest cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .jest-cache
+            node_modules/.cache/jest
+          key: ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-${{ hashFiles('**/*.{js,jsx,ts,tsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-
+            ${{ runner.os }}-jest-
+
+      # Run tests with coverage (no need to run tests twice)
+      - name: Run tests with coverage
+        run: pnpm test:coverage -- --cache-directory=.jest-cache
+
+      # Upload coverage reports as artifacts
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
