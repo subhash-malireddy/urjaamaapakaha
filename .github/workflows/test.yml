@@ -44,15 +44,16 @@ jobs:
       # Determine Jest cache directory
       - name: Get Jest cache directory
         id: jest-cache-dir
-        run: echo "dir=$(pnpm jest --showConfig | grep -o '\"cacheDirectory\":[^,]*' | cut -d '\"' -f 4)" >> $GITHUB_OUTPUT
+        run: |
+          CACHE_DIR=$(pnpm jest --showConfig | grep -o '"cacheDirectory":"[^"]*"' | sed 's/"cacheDirectory":"//;s/"$//')
+          echo "dir=$CACHE_DIR" >> $GITHUB_OUTPUT
+          echo "Jest cache directory: $CACHE_DIR"
 
       # Restore Jest cache to speed up tests
       - name: Restore Jest cache
         uses: actions/cache@v4
         with:
-          path: |
-            ${{ steps.jest-cache-dir.outputs.dir }}
-            node_modules/.cache/jest
+          path: ${{ steps.jest-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-${{ hashFiles('**/*.{js,jsx,ts,tsx}') }}
           restore-keys: |
             ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-
