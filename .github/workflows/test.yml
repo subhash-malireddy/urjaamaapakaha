@@ -41,12 +41,17 @@ jobs:
       # Local development enforces linting via pre-commit hooks
       # This ensures all committed code is already properly linted
 
+      # Determine Jest cache directory
+      - name: Get Jest cache directory
+        id: jest-cache-dir
+        run: echo "dir=$(pnpm jest --showConfig | grep -o '\"cacheDirectory\":[^,]*' | cut -d '\"' -f 4)" >> $GITHUB_OUTPUT
+
       # Restore Jest cache to speed up tests
       - name: Restore Jest cache
         uses: actions/cache@v4
         with:
           path: |
-            .jest-cache
+            ${{ steps.jest-cache-dir.outputs.dir }}
             node_modules/.cache/jest
           key: ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-${{ hashFiles('**/*.{js,jsx,ts,tsx}') }}
           restore-keys: |
@@ -55,7 +60,7 @@ jobs:
 
       # Run tests with coverage (no need to run tests twice)
       - name: Run tests with coverage
-        run: pnpm test:coverage -- --cache-directory=.jest-cache
+        run: pnpm test:coverage
 
       # Upload coverage reports as artifacts
       - name: Upload coverage reports
