@@ -72,6 +72,14 @@ jobs:
       - name: Run tests with coverage
         run: pnpm test:coverage
 
+      # # Save Jest cache after tests run
+      # - name: Save Jest cache
+      #   if: always() # Try to save cache even if tests fail
+      #   uses: actions/cache/save@v4
+      #   with:
+      #     path: ${{ steps.jest-cache-dir.outputs.dir }}
+      #     key: ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-${{ hashFiles('**/*.{js,jsx,ts,tsx}') }}
+
       # Upload coverage reports as artifacts
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4

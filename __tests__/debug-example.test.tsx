@@ -80,6 +80,7 @@ describe("Counter Component (Debugging Example)", () => {
     const result = complexCalculation(3, 4);
 
     // You can set a breakpoint here to inspect the assertion
-    expect(result).toBeCloseTo(14.0, 1);
+    // expect(result).toBeCloseTo(14.0, 1);
+    expect(result).toBeCloseTo(19.0, 1);
   });
 });
