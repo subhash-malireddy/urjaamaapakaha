@@ -45,8 +45,14 @@ jobs:
       - name: Get Jest cache directory
         id: jest-cache-dir
         run: |
-          CACHE_DIR=$(pnpm jest --showConfig | grep -o '"cacheDirectory":"[^"]*"' | sed 's/"cacheDirectory":"//;s/"$//')
-          echo "dir=$CACHE_DIR" >> $GITHUB_OUTPUT
+          CACHE_DIR=$(pnpm jest --showConfig 2>/dev/null | jq -r '.cacheDirectory' 2>/dev/null)
+
+          if [[ -z "$CACHE_DIR" ]]; then
+            echo "Error: Could not determine Jest cache directory." >&2
+            exit 1
+          fi
+
+          echo "dir=$CACHE_DIR" >> "$GITHUB_OUTPUT"
           echo "Jest cache directory: $CACHE_DIR"
 
       # Restore Jest cache to speed up tests
