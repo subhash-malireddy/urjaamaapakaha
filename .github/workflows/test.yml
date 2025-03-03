@@ -17,18 +17,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "23"
-          cache: "pnpm"
-
+      # Install pnpm first without caching
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
           version: 10
           run_install: false
 
+      # Then set up Node.js with pnpm caching
+      # Note: The cache parameter here works with the pnpm action above
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+          cache: "pnpm"
+          cache-dependency-path: "**/pnpm-lock.yaml"
+
+      # Now we can use pnpm to install dependencies
       - name: Install dependencies
         run: pnpm install
 
