@@ -46,17 +46,12 @@ jobs:
         id: jest-cache-dir
         run: |
           JEST_CONFIG=$(pnpm jest --showConfig 2>/dev/null)
-          echo "JEST_CONFIG: $JEST_CONFIG"
           CACHE_DIR=$(echo "$JEST_CONFIG" | jq -r '.configs.[0].cacheDirectory' 2>/dev/null)
-          echo "CACHE_DIR: $CACHE_DIR"
 
           if [[ -z "$CACHE_DIR" ]]; then
             echo "Error: Could not determine Jest cache directory." >&2
             exit 1
           fi
-
-          echo "dir=$CACHE_DIR" >> "$GITHUB_OUTPUT"
-          echo "Jest cache directory: $CACHE_DIR"
 
       # Restore Jest cache to speed up tests
       - name: Restore Jest cache
@@ -73,6 +68,7 @@ jobs:
         run: pnpm test:coverage
 
       # # Save Jest cache after tests run
+      # # Saves automatically when the workflow completes but if the above fails, this will save the cache
       # - name: Save Jest cache
       #   if: always() # Try to save cache even if tests fail
       #   uses: actions/cache/save@v4
