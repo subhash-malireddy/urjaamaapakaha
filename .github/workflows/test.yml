@@ -53,6 +53,8 @@ jobs:
           echo "--------------------------------"
           echo "$JEST_CONFIG" | jq '.'
           echo "--------------------------------"
+          echo "$JEST_CONFIG" | jq '.cacheDirectory'
+          echo "--------------------------------"
           echo pnpm jest --showConfig | jq '.'
           echo "--------------------------------"
           echo pnpm jest --showConfig | jq '.cacheDirectory'
