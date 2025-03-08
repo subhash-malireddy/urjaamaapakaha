@@ -1,0 +1,1 @@
+Append to a file using the bash echo command
