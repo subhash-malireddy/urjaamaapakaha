@@ -6,15 +6,11 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceRoot}/jest-path-helper-windows.js",
-      "args": [
-        "${relativeFile}"
-      ],
+      "args": ["${relativeFile}"],
       "cwd": "${workspaceRoot}",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "name": "Debug Jest Current File (Full Path)",
@@ -33,9 +29,7 @@
       "windows": {
         "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/jest.cmd"
       },
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "name": "Debug Jest by FileName (Without Extension)",
@@ -53,24 +47,22 @@
       "internalConsoleOptions": "neverOpen",
       "windows": {
         "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/jest.cmd"
-      }
+      },
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "name": "Debug All Tests",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/jest",
-      "args": [
-        "--runInBand",
-        "--watchAll=false",
-        "--testTimeout=10000"
-      ],
+      "args": ["--runInBand", "--watchAll=false", "--testTimeout=10000"],
       "cwd": "${workspaceRoot}",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "windows": {
         "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/jest.cmd"
-      }
+      },
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
-} 
+}
