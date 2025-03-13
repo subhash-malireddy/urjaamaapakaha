@@ -1,0 +1,7 @@
+---
+description: Using Shadcn Components
+globs: *.tsx
+alwaysApply: false
+---
+- Always use a shadcn component if available, for example, button, nav, line-chart etc. 
+- make sure you follow theme colors when applying colors to the UI, this way it's easy to switch between dark and light modes or other themes in the future.
