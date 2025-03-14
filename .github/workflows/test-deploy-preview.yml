@@ -106,20 +106,12 @@ jobs:
         run: |
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
-          # Create temporary files for environment variables
-          echo "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
-          echo "${{ secrets.GOOGLE_CLIENT_SECRET }}" > google_client_secret.txt
-          echo "https://preview-subhash-malireddy-urjaamaapakaha.vercel.app" > nextauth_url.txt
-          echo "${{ secrets.NEXTAUTH_SECRET }}" > nextauth_secret.txt
-
-          # Add environment variables using the --file option
-          vercel env add GOOGLE_CLIENT_ID preview --token=${{ secrets.VERCEL_TOKEN }} < google_client_id.txt
-          vercel env add GOOGLE_CLIENT_SECRET preview --token=${{ secrets.VERCEL_TOKEN }} < google_client_secret.txt
-          vercel env add NEXTAUTH_URL preview --token=${{ secrets.VERCEL_TOKEN }} < nextauth_url.txt
-          vercel env add NEXTAUTH_SECRET preview --token=${{ secrets.VERCEL_TOKEN }} < nextauth_secret.txt
-
-          # Clean up temporary files
-          rm google_client_id.txt google_client_secret.txt nextauth_url.txt nextauth_secret.txt
+          # Instead of trying to add variables that might already exist,
+          # let's update the .env file directly which will be used during build
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .vercel/.env.preview.local
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .vercel/.env.preview.local
+          echo "NEXTAUTH_URL=https://preview-subhash-malireddy-urjaamaapakaha.vercel.app" >> .vercel/.env.preview.local
+          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> .vercel/.env.preview.local
 
       - name: Build Project Artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
