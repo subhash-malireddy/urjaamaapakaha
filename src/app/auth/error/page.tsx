@@ -1,11 +1,12 @@
 import Link from "next/link";
 
-export default function AuthErrorPage({
+export default async function AuthErrorPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: Promise<{ error?: string }>;
 }) {
-  const error = searchParams.error || "An unknown error occurred";
+  const resolvedSearchParams = await searchParams;
+  const error = resolvedSearchParams.error || "An unknown error occurred";
 
   let errorMessage = "An unknown error occurred during authentication.";
 
