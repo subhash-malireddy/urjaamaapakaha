@@ -106,12 +106,23 @@ jobs:
         run: |
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
-          # Use printf to create the .env file with proper formatting
-          printf "GOOGLE_CLIENT_ID=%s\nGOOGLE_CLIENT_SECRET=%s\nNEXTAUTH_URL=%s\nNEXTAUTH_SECRET=%s" \
-            "${{ secrets.GOOGLE_CLIENT_ID }}" \
-            "${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-            "https://preview-subhash-malireddy-urjaamaapakaha.vercel.app" \
-            "${{ secrets.NEXTAUTH_SECRET }}" > .vercel/.env.preview.local
+          # Add environment variables using Vercel CLI without newlines
+          # Use printf to avoid trailing newlines
+          printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
+          vercel env add GOOGLE_CLIENT_ID preview < google_client_id.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm google_client_id.txt
+
+          printf "%s" "${{ secrets.GOOGLE_CLIENT_SECRET }}" > google_client_secret.txt
+          vercel env add GOOGLE_CLIENT_SECRET preview < google_client_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm google_client_secret.txt
+
+          printf "%s" "https://preview-subhash-malireddy-urjaamaapakaha.vercel.app" > nextauth_url.txt
+          vercel env add NEXTAUTH_URL preview < nextauth_url.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm nextauth_url.txt
+
+          printf "%s" "${{ secrets.NEXTAUTH_SECRET }}" > nextauth_secret.txt
+          vercel env add NEXTAUTH_SECRET preview < nextauth_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm nextauth_secret.txt
 
       - name: Build Project Artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
