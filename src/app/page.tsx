@@ -1,10 +1,32 @@
 import Image from "next/image";
 import Link from "next/link";
 import { auth } from "./auth";
+import { Role } from "@/lib/roles";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function Home() {
   const session = await auth();
   const isAuthenticated = !!session?.user;
+  const userRole = session?.user?.role || null;
+
+  // Helper function to get a human-readable role name with appropriate styling
+  const getRoleBadge = (role: Role | null) => {
+    if (!role) return null;
+
+    const badgeClasses = {
+      [Role.ADMIN]: "bg-purple-100 text-purple-800 border-purple-200",
+      [Role.MEMBER]: "bg-blue-100 text-blue-800 border-blue-200",
+      [Role.GUEST]: "bg-gray-100 text-gray-800 border-gray-200",
+    };
+
+    return (
+      <span
+        className={`ml-2 rounded-full border px-2 py-1 text-xs font-medium ${badgeClasses[role]}`}
+      >
+        {role.toUpperCase()}
+      </span>
+    );
+  };
 
   return (
     <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20">
@@ -23,9 +45,15 @@ export default async function Home() {
           <h2 className="mb-4 text-xl font-bold">Authentication Status</h2>
           {isAuthenticated ? (
             <div>
-              <p className="mb-2 font-medium text-green-600">
+              <p className="mb-2 flex items-center font-medium text-green-600">
                 ✓ Authenticated as {session?.user?.name}
+                {getRoleBadge(userRole)}
               </p>
+              <div className="mt-2">
+                <p className="text-sm text-gray-600">
+                  Email: {session?.user?.email}
+                </p>
+              </div>
               <div className="mt-4 flex gap-4">
                 <Link
                   href="/protected"
@@ -55,6 +83,47 @@ export default async function Home() {
             </div>
           )}
         </div>
+
+        {/* Role Information */}
+        {isAuthenticated && (
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Role Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p className="text-sm">
+                  <span className="font-medium">Role:</span>{" "}
+                  {userRole?.toUpperCase()}
+                </p>
+                <p className="text-sm">
+                  <span className="font-medium">Permissions:</span>
+                </p>
+                <ul className="list-inside list-disc text-sm">
+                  {userRole === Role.ADMIN && (
+                    <>
+                      <li>View devices and usage data</li>
+                      <li>Control devices (turn on/off)</li>
+                      <li>Add/delete devices</li>
+                      <li>Manage users</li>
+                    </>
+                  )}
+                  {userRole === Role.MEMBER && (
+                    <>
+                      <li>View devices and usage data</li>
+                      <li>Control devices (turn on/off)</li>
+                    </>
+                  )}
+                  {userRole === Role.GUEST && (
+                    <>
+                      <li>View devices and usage data (read-only)</li>
+                    </>
+                  )}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <ol className="list-inside list-decimal text-center font-[family-name:var(--font-geist-mono)] text-sm sm:text-left">
           <li className="mb-2">
