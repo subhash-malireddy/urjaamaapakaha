@@ -106,8 +106,13 @@ jobs:
         run: |
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
+          # Remove existing environment variables first
+          vercel env rm GOOGLE_CLIENT_ID preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm GOOGLE_CLIENT_SECRET preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm NEXTAUTH_URL preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm NEXTAUTH_SECRET preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+
           # Add environment variables using Vercel CLI without newlines
-          # Use printf to avoid trailing newlines
           printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
           vercel env add GOOGLE_CLIENT_ID preview < google_client_id.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm google_client_id.txt
