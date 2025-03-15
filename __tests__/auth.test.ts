@@ -3,6 +3,7 @@ import NextAuth, { NextAuthConfig, NextAuthResult, Session } from "next-auth";
 import { OAuthUserConfig } from "next-auth/providers";
 import Google, { GoogleProfile } from "next-auth/providers/google";
 import { NextRequest } from "next/server";
+import { Role } from "@/lib/roles";
 
 // Mock the NextAuth module
 jest.mock("next-auth", () => {
@@ -35,13 +36,17 @@ describe("Auth Module", () => {
   // Get references to the mocked functions
   const mockNextAuthFn = NextAuth as jest.MockedFunction<typeof NextAuth>;
   const mockGoogleProviderFn = Google as jest.MockedFunction<typeof Google>;
+  const originalEnv = process.env;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     // Reset environment variables before each test
+    process.env = { ...originalEnv };
     process.env.GOOGLE_CLIENT_ID = "test-client-id";
     process.env.GOOGLE_CLIENT_SECRET = "test-client-secret";
+    process.env.ADMIN_EMAILS = "admin@example.com";
+    process.env.MEMBER_EMAILS = "member@example.com";
 
     // Call NextAuth with a modified config that explicitly calls Google provider
     // This simulates what happens when the auth.ts module is loaded
@@ -58,8 +63,7 @@ describe("Auth Module", () => {
 
   afterEach(() => {
     // Clean up environment variables after each test
-    delete process.env.GOOGLE_CLIENT_ID;
-    delete process.env.GOOGLE_CLIENT_SECRET;
+    process.env = originalEnv;
   });
 
   test("NextAuth is initialized with correct configuration", () => {
@@ -178,18 +182,64 @@ describe("Auth Module", () => {
     });
   });
 
-  test("session callback returns the session unchanged", () => {
-    // Get the session callback directly from the config
+  test("session callback adds role to session for admin user", () => {
     const sessionCallback = config.callbacks?.session;
 
-    const mockSession = { user: { name: "Test User" } };
-
-    if (sessionCallback) {
-      const result = sessionCallback({ session: mockSession } as any);
-      expect(result).toBe(mockSession);
-    } else {
+    if (!sessionCallback) {
       fail("sessionCallback is not defined in config");
+      return;
     }
+
+    const mockSession = {
+      user: {
+        name: "Admin User",
+        email: "admin@example.com",
+      },
+    } as any;
+
+    const result = sessionCallback({ session: mockSession, token: {} } as any);
+
+    expect((result as any).user.role).toBe(Role.ADMIN);
+  });
+
+  test("session callback adds role to session for member user", () => {
+    const sessionCallback = config.callbacks?.session;
+
+    if (!sessionCallback) {
+      fail("sessionCallback is not defined in config");
+      return;
+    }
+
+    const mockSession = {
+      user: {
+        name: "Member User",
+        email: "member@example.com",
+      },
+    } as any;
+
+    const result = sessionCallback({ session: mockSession, token: {} } as any);
+
+    expect((result as any).user.role).toBe(Role.MEMBER);
+  });
+
+  test("session callback adds guest role to session for other users", () => {
+    const sessionCallback = config.callbacks?.session;
+
+    if (!sessionCallback) {
+      fail("sessionCallback is not defined in config");
+      return;
+    }
+
+    const mockSession = {
+      user: {
+        name: "Guest User",
+        email: "guest@example.com",
+      },
+    } as any;
+
+    const result = sessionCallback({ session: mockSession, token: {} } as any);
+
+    expect((result as any).user.role).toBe(Role.GUEST);
   });
 
   test("jwt callback adds user id to token", () => {
@@ -219,6 +269,78 @@ describe("Auth Module", () => {
     } else {
       fail("jwtCallback is not defined in config");
     }
+  });
+
+  test("jwt callback adds role to token for admin user", () => {
+    const jwtCallback = config.callbacks?.jwt;
+
+    if (!jwtCallback) {
+      fail("jwtCallback is not defined in config");
+      return;
+    }
+
+    const mockToken = { name: "Admin Token" } as any;
+    const mockUser = {
+      id: "user-123",
+      name: "Admin User",
+      email: "admin@example.com",
+    };
+
+    const result = jwtCallback({
+      token: mockToken,
+      user: mockUser,
+      account: null,
+    } as any);
+
+    expect((result as any).role).toBe(Role.ADMIN);
+  });
+
+  test("jwt callback adds role to token for member user", () => {
+    const jwtCallback = config.callbacks?.jwt;
+
+    if (!jwtCallback) {
+      fail("jwtCallback is not defined in config");
+      return;
+    }
+
+    const mockToken = { name: "Member Token" } as any;
+    const mockUser = {
+      id: "user-456",
+      name: "Member User",
+      email: "member@example.com",
+    };
+
+    const result = jwtCallback({
+      token: mockToken,
+      user: mockUser,
+      account: null,
+    } as any);
+
+    expect((result as any).role).toBe(Role.MEMBER);
+  });
+
+  test("jwt callback adds guest role to token for other users", () => {
+    const jwtCallback = config.callbacks?.jwt;
+
+    if (!jwtCallback) {
+      fail("jwtCallback is not defined in config");
+      return;
+    }
+
+    const mockToken = { name: "Guest Token" } as any;
+    const mockUser = {
+      id: "user-789",
+      name: "Guest User",
+      email: "guest@example.com",
+    };
+
+    const result = jwtCallback({
+      token: mockToken,
+      user: mockUser,
+      account: null,
+    } as any);
+
+    expect((result as any).role).toBe(Role.GUEST);
   });
 
   test("exports the correct handlers and functions", () => {
