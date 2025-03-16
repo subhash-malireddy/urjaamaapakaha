@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { auth } from "./auth";
-import { Role } from "@/lib/roles";
+import { ROLES_OBJ, type Role } from "@/lib/roles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function Home() {
@@ -14,9 +14,9 @@ export default async function Home() {
     if (!role) return null;
 
     const badgeClasses = {
-      [Role.ADMIN]: "bg-purple-100 text-purple-800 border-purple-200",
-      [Role.MEMBER]: "bg-blue-100 text-blue-800 border-blue-200",
-      [Role.GUEST]: "bg-gray-100 text-gray-800 border-gray-200",
+      [ROLES_OBJ.ADMIN]: "bg-purple-100 text-purple-800 border-purple-200",
+      [ROLES_OBJ.MEMBER]: "bg-blue-100 text-blue-800 border-blue-200",
+      [ROLES_OBJ.GUEST]: "bg-gray-100 text-gray-800 border-gray-200",
     };
 
     return (
@@ -100,7 +100,7 @@ export default async function Home() {
                   <span className="font-medium">Permissions:</span>
                 </p>
                 <ul className="list-inside list-disc text-sm">
-                  {userRole === Role.ADMIN && (
+                  {userRole === ROLES_OBJ.ADMIN && (
                     <>
                       <li>View devices and usage data</li>
                       <li>Control devices (turn on/off)</li>
@@ -108,13 +108,13 @@ export default async function Home() {
                       <li>Manage users</li>
                     </>
                   )}
-                  {userRole === Role.MEMBER && (
+                  {userRole === ROLES_OBJ.MEMBER && (
                     <>
                       <li>View devices and usage data</li>
                       <li>Control devices (turn on/off)</li>
                     </>
                   )}
-                  {userRole === Role.GUEST && (
+                  {userRole === ROLES_OBJ.GUEST && (
                     <>
                       <li>View devices and usage data (read-only)</li>
                     </>

@@ -1,10 +1,27 @@
 /**
- * Role enumeration for the application
+ * Role object with constant values
  */
-export enum Role {
-  ADMIN = "admin",
-  MEMBER = "member",
-  GUEST = "guest",
+export const ROLES_OBJ = {
+  ADMIN: "admin",
+  MEMBER: "member",
+  GUEST: "guest",
+} as const;
+
+/**
+ * Role type derived from the Role object values
+ */
+export type Role = (typeof ROLES_OBJ)[keyof typeof ROLES_OBJ];
+
+/**
+ * Type guard to check if a value is a valid Role
+ * @param value The value to check
+ * @returns True if the value is a valid Role, false otherwise
+ */
+export function isValidRole(value: unknown): value is Role {
+  return (
+    typeof value === "string" &&
+    Object.values(ROLES_OBJ).includes(value as Role)
+  );
 }
 
 /**
@@ -13,7 +30,7 @@ export enum Role {
  * @returns The role of the user (ADMIN, MEMBER, or GUEST)
  */
 export function getUserRole(email: string): Role {
-  if (!email) return Role.GUEST;
+  if (!email) return ROLES_OBJ.GUEST;
 
   const normalizedEmail = email.toLowerCase().trim();
 
@@ -22,7 +39,7 @@ export function getUserRole(email: string): Role {
     process.env.ADMIN_EMAILS?.split(",").map((e) => e.trim().toLowerCase()) ||
     [];
   if (adminEmails.includes(normalizedEmail)) {
-    return Role.ADMIN;
+    return ROLES_OBJ.ADMIN;
   }
 
   // Check if the email is in the MEMBER_EMAILS environment variable
@@ -30,11 +47,11 @@ export function getUserRole(email: string): Role {
     process.env.MEMBER_EMAILS?.split(",").map((e) => e.trim().toLowerCase()) ||
     [];
   if (memberEmails.includes(normalizedEmail)) {
-    return Role.MEMBER;
+    return ROLES_OBJ.MEMBER;
   }
 
   // Default to GUEST role
-  return Role.GUEST;
+  return ROLES_OBJ.GUEST;
 }
 
 /**
@@ -43,7 +60,7 @@ export function getUserRole(email: string): Role {
  * @returns True if the role is ADMIN, false otherwise
  */
 export function isRoleAdmin(role: Role): boolean {
-  return role === Role.ADMIN;
+  return role === ROLES_OBJ.ADMIN;
 }
 
 /**
@@ -52,7 +69,7 @@ export function isRoleAdmin(role: Role): boolean {
  * @returns True if the role is MEMBER, false otherwise
  */
 export function isRoleMember(role: Role): boolean {
-  return role === Role.MEMBER;
+  return role === ROLES_OBJ.MEMBER;
 }
 
 /**
@@ -61,5 +78,5 @@ export function isRoleMember(role: Role): boolean {
  * @returns True if the role is GUEST, false otherwise
  */
 export function isRoleGuest(role: Role): boolean {
-  return role === Role.GUEST;
+  return role === ROLES_OBJ.GUEST;
 }

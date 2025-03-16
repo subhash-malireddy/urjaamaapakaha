@@ -3,7 +3,7 @@ import NextAuth, { NextAuthConfig, NextAuthResult, Session } from "next-auth";
 import { OAuthUserConfig } from "next-auth/providers";
 import Google, { GoogleProfile } from "next-auth/providers/google";
 import { NextRequest } from "next/server";
-import { Role } from "@/lib/roles";
+import { ROLES_OBJ } from "@/lib/roles";
 
 // Mock the NextAuth module
 jest.mock("next-auth", () => {
@@ -197,9 +197,12 @@ describe("Auth Module", () => {
       },
     } as any;
 
-    const result = sessionCallback({ session: mockSession, token: {} } as any);
+    const result = sessionCallback({
+      session: mockSession,
+      token: { role: ROLES_OBJ.ADMIN },
+    } as any);
 
-    expect((result as any).user.role).toBe(Role.ADMIN);
+    expect((result as any).user.role).toBe(ROLES_OBJ.ADMIN);
   });
 
   test("session callback adds role to session for member user", () => {
@@ -217,9 +220,12 @@ describe("Auth Module", () => {
       },
     } as any;
 
-    const result = sessionCallback({ session: mockSession, token: {} } as any);
+    const result = sessionCallback({
+      session: mockSession,
+      token: { role: ROLES_OBJ.MEMBER },
+    } as any);
 
-    expect((result as any).user.role).toBe(Role.MEMBER);
+    expect((result as any).user.role).toBe(ROLES_OBJ.MEMBER);
   });
 
   test("session callback adds guest role to session for other users", () => {
@@ -239,7 +245,7 @@ describe("Auth Module", () => {
 
     const result = sessionCallback({ session: mockSession, token: {} } as any);
 
-    expect((result as any).user.role).toBe(Role.GUEST);
+    expect((result as any).user.role).toBe(ROLES_OBJ.GUEST);
   });
 
   test("jwt callback adds user id to token", () => {
@@ -249,7 +255,11 @@ describe("Auth Module", () => {
     if (jwtCallback) {
       // Test with user present
       const mockToken = { name: "Test Token" };
-      const mockUser = { id: "user-123", name: "Test User" };
+      const mockUser = {
+        id: "user-123",
+        name: "Test User",
+        role: ROLES_OBJ.GUEST,
+      };
 
       const result1 = jwtCallback({
         token: mockToken,
@@ -257,7 +267,11 @@ describe("Auth Module", () => {
         account: null,
       } as any);
 
-      expect(result1).toEqual({ name: "Test Token", id: "user-123" });
+      expect(result1).toEqual({
+        name: "Test Token",
+        id: "user-123",
+        role: ROLES_OBJ.GUEST,
+      });
 
       // Test without user (token unchanged)
       const result2 = jwtCallback({
@@ -284,6 +298,7 @@ describe("Auth Module", () => {
       id: "user-123",
       name: "Admin User",
       email: "admin@example.com",
+      role: ROLES_OBJ.ADMIN,
     };
 
     const result = jwtCallback({
@@ -292,7 +307,7 @@ describe("Auth Module", () => {
       account: null,
     } as any);
 
-    expect((result as any).role).toBe(Role.ADMIN);
+    expect((result as any).role).toBe(ROLES_OBJ.ADMIN);
   });
 
   test("jwt callback adds role to token for member user", () => {
@@ -308,6 +323,7 @@ describe("Auth Module", () => {
       id: "user-456",
       name: "Member User",
       email: "member@example.com",
+      role: ROLES_OBJ.MEMBER,
     };
 
     const result = jwtCallback({
@@ -316,7 +332,7 @@ describe("Auth Module", () => {
       account: null,
     } as any);
 
-    expect((result as any).role).toBe(Role.MEMBER);
+    expect((result as any).role).toBe(ROLES_OBJ.MEMBER);
   });
 
   test("jwt callback adds guest role to token for other users", () => {
@@ -340,7 +356,7 @@ describe("Auth Module", () => {
       account: null,
     } as any);
 
-    expect((result as any).role).toBe(Role.GUEST);
+    expect((result as any).role).toBe(ROLES_OBJ.GUEST);
   });
 
   test("exports the correct handlers and functions", () => {

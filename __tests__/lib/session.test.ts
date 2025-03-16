@@ -1,5 +1,5 @@
 import { auth } from "@/app/auth";
-import { Role } from "@/lib/roles";
+import { ROLES_OBJ } from "@/lib/roles";
 import {
   getUserRoleFromSession,
   isCurrentUserAdmin,
@@ -24,12 +24,12 @@ describe("Session Utilities", () => {
         user: {
           name: "Test User",
           email: "test@example.com",
-          role: Role.ADMIN,
+          role: ROLES_OBJ.ADMIN,
         },
       });
 
       const result = await getUserRoleFromSession();
-      expect(result).toBe(Role.ADMIN);
+      expect(result).toBe(ROLES_OBJ.ADMIN);
     });
 
     test("returns null if no session", async () => {
@@ -65,7 +65,7 @@ describe("Session Utilities", () => {
         user: {
           name: "Admin User",
           email: "admin@example.com",
-          role: Role.ADMIN,
+          role: ROLES_OBJ.ADMIN,
         },
       });
 
@@ -78,7 +78,7 @@ describe("Session Utilities", () => {
         user: {
           name: "Member User",
           email: "member@example.com",
-          role: Role.MEMBER,
+          role: ROLES_OBJ.MEMBER,
         },
       });
 
@@ -91,7 +91,7 @@ describe("Session Utilities", () => {
         user: {
           name: "Guest User",
           email: "guest@example.com",
-          role: Role.GUEST,
+          role: ROLES_OBJ.GUEST,
         },
       });
 
@@ -113,7 +113,7 @@ describe("Session Utilities", () => {
         user: {
           name: "Admin User",
           email: "admin@example.com",
-          role: Role.ADMIN,
+          role: ROLES_OBJ.ADMIN,
         },
       });
 
@@ -126,7 +126,7 @@ describe("Session Utilities", () => {
         user: {
           name: "Member User",
           email: "member@example.com",
-          role: Role.MEMBER,
+          role: ROLES_OBJ.MEMBER,
         },
       });
 
@@ -139,7 +139,7 @@ describe("Session Utilities", () => {
         user: {
           name: "Guest User",
           email: "guest@example.com",
-          role: Role.GUEST,
+          role: ROLES_OBJ.GUEST,
         },
       });
 
@@ -161,7 +161,7 @@ describe("Session Utilities", () => {
         user: {
           name: "Admin User",
           email: "admin@example.com",
-          role: Role.ADMIN,
+          role: ROLES_OBJ.ADMIN,
         },
       });
 
@@ -174,7 +174,7 @@ describe("Session Utilities", () => {
         user: {
           name: "Member User",
           email: "member@example.com",
-          role: Role.MEMBER,
+          role: ROLES_OBJ.MEMBER,
         },
       });
 
@@ -187,7 +187,7 @@ describe("Session Utilities", () => {
         user: {
           name: "Guest User",
           email: "guest@example.com",
-          role: Role.GUEST,
+          role: ROLES_OBJ.GUEST,
         },
       });
 
