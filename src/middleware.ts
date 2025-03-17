@@ -47,7 +47,13 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public (public files)
+     * - api/auth/signin
+     * - api/auth/callback
+     * - api/auth/signout
+     * - api/auth/session
+     * - api/auth/csrf
+     * - api/auth/providers
      */
-    "/((?!_next/static|_next/image|favicon.ico|public).*)",
+    "/((?!_next/static|_next/image|favicon.ico|public|api/auth/signin|api/auth/callback|api/auth/signout|api/auth/session|api/auth/csrf|api/auth/providers).*)",
   ],
 };

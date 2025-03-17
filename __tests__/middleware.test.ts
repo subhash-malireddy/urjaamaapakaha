@@ -47,6 +47,12 @@ describe("Authentication Middleware", () => {
         "_next/image",
         "favicon.ico",
         "public",
+        "api/auth/signin",
+        "api/auth/callback",
+        "api/auth/signout",
+        "api/auth/session",
+        "api/auth/csrf",
+        "api/auth/providers",
       ];
 
       requiredExclusions.forEach((exclusion) => {
