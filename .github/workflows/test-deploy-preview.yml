@@ -111,6 +111,8 @@ jobs:
           vercel env rm GOOGLE_CLIENT_SECRET preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm NEXTAUTH_URL preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm NEXTAUTH_SECRET preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm ADMIN_EMAILS preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm MEMBER_EMAILS preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
 
           # Add environment variables using Vercel CLI without newlines
           printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
@@ -128,6 +130,14 @@ jobs:
           printf "%s" "${{ secrets.NEXTAUTH_SECRET }}" > nextauth_secret.txt
           vercel env add NEXTAUTH_SECRET preview < nextauth_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm nextauth_secret.txt
+
+          printf "%s" "${{ secrets.ADMIN_EMAILS }}" > admin_emails.txt
+          vercel env add ADMIN_EMAILS preview < admin_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm admin_emails.txt
+
+          printf "%s" "${{ secrets.MEMBER_EMAILS }}" > member_emails.txt
+          vercel env add MEMBER_EMAILS preview < member_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm member_emails.txt
 
       - name: Build Project Artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
