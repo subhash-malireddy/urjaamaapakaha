@@ -1,95 +1,62 @@
-# Authentication System
+# Authentication & Authorization System
 
-This directory contains the authentication system for the application, built using Auth.js (NextAuth.js) with Google OAuth provider.
+Built using Auth.js with Google OAuth provider and custom role-based permissions.
 
-## Setup Instructions
+## Setup
 
-1. Create a Google OAuth application in the [Google Cloud Console](https://console.cloud.google.com/).
-2. Configure the OAuth consent screen and create OAuth credentials (Client ID and Client Secret).
+1. Create Google OAuth app in [Google Cloud Console](https://console.cloud.google.com/)
+2. Configure the OAuth consent screen and create OAuth credentials
 3. Add the following redirect URIs to your Google OAuth application:
    - `http://localhost:3000/api/auth/callback/google` (for local development)
    - `https://your-production-domain.com/api/auth/callback/google` (for production)
-4. Update the `.env.local` file with your Google OAuth credentials:
+4. Set environment variables:
 
-   ```
-   # Auth.js / NextAuth.js
-   NEXTAUTH_URL=http://localhost:3000
-   NEXTAUTH_SECRET=your-nextauth-secret-key-here
+```env
+# Auth.js
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key  # Generate with: openssl rand -base64 32
 
-   # Google OAuth
-   GOOGLE_CLIENT_ID=your-google-client-id-here
-   GOOGLE_CLIENT_SECRET=your-google-client-secret-here
-   ```
+# Google OAuth
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
 
-   For production, make sure to set these environment variables in your hosting provider's dashboard.
-
-5. Generate a secure random string for `NEXTAUTH_SECRET` using a tool like:
-   ```
-   openssl rand -base64 32
-   ```
-
-## Usage
-
-### Authentication Status
-
-The authentication status is displayed on the home page. Users can sign in or sign out from there.
-
-### Protected Routes
-
-Routes under `/protected/*` are automatically protected and require authentication. If a user tries to access a protected route without being authenticated, they will be redirected to the sign-in page.
-
-### Authentication Hooks
-
-To check if a user is authenticated in a server component:
-
-```tsx
-import { auth } from "@/app/auth";
-
-export default async function MyServerComponent() {
-  const session = await auth();
-
-  if (session) {
-    // User is authenticated
-    return <div>Welcome, {session.user.name}!</div>;
-  } else {
-    // User is not authenticated
-    return <div>Please sign in</div>;
-  }
-}
+# Role Assignment
+ADMINS=admin1@example.com,admin2@example.com
+HOUSEMATES=member1@example.com,member2@example.com
 ```
 
-### Sign In and Sign Out
+## Roles & Permissions
 
-To sign in or sign out programmatically:
+Three roles with cascading permissions:
 
-```tsx
-import { signIn, signOut } from "@/app/auth";
+- `ADMIN`: Manage devices + member permissions
+- `MEMBER`: Control devices, view usage
+- `GUEST`: View-only access to index and usage pages
 
-// Sign in
-await signIn("google", { redirectTo: "/" });
+## Protected Routes
 
-// Sign out
-await signOut({ redirectTo: "/" });
-```
+Routes are protected based on role:
 
-## Authentication Pages
-
-The following authentication pages are available:
-
-- `/auth/signin` - Sign-in page
-- `/auth/signout` - Sign-out page
-- `/auth/error` - Error page for authentication errors
+- Public: `/auth/*`, static files
+- Admin, Guest Access (View Only): `/`, `/usage`
+- Member Access (Full Control): `/`, `/usage`
+- Admin Only: `/admin/*`
 
 ## Testing
 
-Tests for the authentication system are located in the `__tests__/auth` directory. Run the tests with:
+Run auth-related tests:
 
-```
-npm test
+```bash
+pnpm test __tests__/auth
+pnpm test __tests__/middleware
 ```
 
-or
+Mock auth in tests:
 
-```
-pnpm test
+```tsx
+jest.mock("@/app/auth", () => ({
+  auth: jest.fn().mockResolvedValue({
+    user: { role: ROLES_OBJ.MEMBER },
+  }),
+}));
 ```

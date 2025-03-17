@@ -1,11 +1,19 @@
 import NextAuth, { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
+import { getUserRole, ROLES_OBJ, isValidRole } from "@/lib/roles";
 
 export const config: NextAuthConfig = {
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          ...profile,
+          id: profile.sub,
+          role: getUserRole(profile.email),
+        };
+      },
     }),
   ],
   pages: {
@@ -28,14 +36,34 @@ export const config: NextAuthConfig = {
       // For all other routes, require authentication
       return isLoggedIn;
     },
-    session({ session }) {
+    /**
+     * //TODO::
+     * Verify with the nextjs docs to see what parameters are passed to this and jwtcallback.
+     * Check if some parameters are optional and can be undefined or null.
+     * If so list out the scenarios when they can be falsy.
+     * When a value is falsy, what is the fallback value? Or what other value could be used?
+     * ## We need email like value to get the role.##
+     */
+
+    session({ session, token }) {
+      if (session.user) {
+        session.user.role = isValidRole(token.role)
+          ? token.role
+          : ROLES_OBJ.GUEST;
+      }
       return session;
     },
 
     //TODO:: Investiage if we need this callback at all
     jwt({ token, user }) {
+      // If user exists, update token with user id and role
       if (user) {
         token.id = user.id;
+        token.role = isValidRole(user.role) ? user.role : ROLES_OBJ.GUEST;
+      }
+      // Ensure token always has a role
+      if (!token.role) {
+        token.role = ROLES_OBJ.GUEST;
       }
       return token;
     },
