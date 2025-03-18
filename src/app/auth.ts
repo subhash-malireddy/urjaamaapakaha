@@ -54,7 +54,6 @@ export const config: NextAuthConfig = {
       return session;
     },
 
-    //TODO:: Investiage if we need this callback at all
     jwt({ token, user }) {
       // If user exists, update token with user id and role
       if (user) {
