@@ -36,14 +36,6 @@ export const config: NextAuthConfig = {
       // For all other routes, require authentication
       return isLoggedIn;
     },
-    /**
-     * //TODO::
-     * Verify with the nextjs docs to see what parameters are passed to this and jwtcallback.
-     * Check if some parameters are optional and can be undefined or null.
-     * If so list out the scenarios when they can be falsy.
-     * When a value is falsy, what is the fallback value? Or what other value could be used?
-     * ## We need email like value to get the role.##
-     */
 
     session({ session, token }) {
       if (session.user) {
