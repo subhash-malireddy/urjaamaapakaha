@@ -25,10 +25,36 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} grid min-h-[100svh] grid-cols-1 grid-rows-[auto_1fr] antialiased`}
       >
-        {children}
+        <Nav />
+        <main className="flex items-center justify-center p-4 sm:p-2">
+          {children}
+        </main>
       </body>
     </html>
+  );
+}
+
+function Nav() {
+  return (
+    <nav className="bg-gray-100 p-4 dark:bg-gray-800">
+      <div className="flex items-center justify-between">
+        <div className="font-bold">Logo</div>
+        <div className="hidden md:block">
+          {/* Desktop navigation items will go here */}
+          <div className="flex space-x-4">
+            <span className="cursor-pointer">Home</span>
+            <span className="cursor-pointer">About</span>
+            <span className="cursor-pointer">Services</span>
+            <span className="cursor-pointer">Contact</span>
+          </div>
+        </div>
+        <div className="md:hidden">
+          {/* Mobile menu button will go here */}
+          <button className="p-2">Menu</button>
+        </div>
+      </div>
+    </nav>
   );
 }
