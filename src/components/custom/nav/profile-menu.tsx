@@ -1,3 +1,4 @@
+// "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,18 @@ import {
 
 export function ProfileMenu() {
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu
+      modal={false}
+      // onOpenChange={(open) => {
+      //     if(!open) return;
+      //   //fire a mousedown event to close the mobile menu if it is open
+      //   const event = new MouseEvent("mousedown", {
+      //     bubbles: true,
+      //     cancelable: true,
+      //   });
+      //   document.dispatchEvent(event);
+      // }}
+    >
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
