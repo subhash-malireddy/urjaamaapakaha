@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { MainNav } from "@/components/custom/nav/main-nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,38 +24,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ scrollbarGutter: "stable" }}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} grid min-h-[100svh] grid-cols-1 grid-rows-[auto_1fr] antialiased`}
+        style={{ scrollbarGutter: "stable" }}
       >
-        <Nav />
+        <MainNav />
         <main className="flex items-center justify-center p-4 sm:p-2">
           {children}
         </main>
       </body>
     </html>
-  );
-}
-
-function Nav() {
-  return (
-    <nav className="bg-gray-100 p-4 dark:bg-gray-800">
-      <div className="flex items-center justify-between">
-        <div className="font-bold">Logo</div>
-        <div className="hidden md:block">
-          {/* Desktop navigation items will go here */}
-          <div className="flex space-x-4">
-            <span className="cursor-pointer">Home</span>
-            <span className="cursor-pointer">About</span>
-            <span className="cursor-pointer">Services</span>
-            <span className="cursor-pointer">Contact</span>
-          </div>
-        </div>
-        <div className="md:hidden">
-          {/* Mobile menu button will go here */}
-          <button className="p-2">Menu</button>
-        </div>
-      </div>
-    </nav>
   );
 }
