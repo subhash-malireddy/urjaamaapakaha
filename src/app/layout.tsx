@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" style={{ scrollbarGutter: "stable" }}>
+    <html lang="en" style={{ scrollbarGutter: "stable both-edges" }}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} grid min-h-[100svh] grid-cols-1 grid-rows-[auto_1fr] antialiased`}
         style={{ scrollbarGutter: "stable" }}
