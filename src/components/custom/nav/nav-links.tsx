@@ -3,25 +3,26 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Home, LineChartIcon as ChartLine, ShieldCheck } from "lucide-react";
 
 interface NavLinksProps {
-  className?: string;
   itemClassName?: string;
-  isMobile?: boolean;
+  showIcons?: boolean;
   onClick?: () => void;
 }
 
 export function NavLinks({
   itemClassName = "",
-  isMobile = false,
+  showIcons = false,
   onClick,
 }: NavLinksProps) {
   const pathname = usePathname();
 
   const links = [
-    { href: "/about", label: "About" },
-    { href: "/usage", label: "Usage" },
-  ];
+    { href: "/", label: "Home", icon: Home },
+    { href: "/usage", label: "Usage", icon: ChartLine },
+    { href: "/admin", label: "Admin", icon: ShieldCheck },
+  ] as const;
 
   return (
     <>
@@ -33,16 +34,14 @@ export function NavLinks({
             key={link.href}
             href={link.href}
             className={cn(
-              "group relative inline-block text-sm font-medium transition-colors",
+              "group relative inline-flex items-center gap-2 text-sm font-medium transition-colors",
               "hover:text-primary text-muted-foreground",
               isActive && "text-primary",
-              // Mobile specific styles
-              isMobile && "hover:bg-accent/30 block w-full text-right",
-              isMobile && isActive && "bg-accent/80",
               itemClassName,
             )}
             onClick={onClick}
           >
+            {showIcons && <link.icon className="h-4 w-4" />}
             <span className="relative">
               {link.label}
               <span

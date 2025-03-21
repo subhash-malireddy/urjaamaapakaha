@@ -27,12 +27,14 @@ export default function RootLayout({
     <html lang="en" style={{ scrollbarGutter: "stable both-edges" }}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} grid min-h-[100svh] grid-cols-1 grid-rows-[auto_1fr] antialiased`}
-        style={{ scrollbarGutter: "stable" }}
+        style={{ scrollbarGutter: "stable both-edges" }}
       >
         <MainNav />
         <main className="flex items-center justify-center p-4 sm:p-2">
           {children}
         </main>
+        {/* Add padding at the bottom for the mobile nav */}
+        <div className="h-14 md:h-0"></div>
       </body>
     </html>
   );
