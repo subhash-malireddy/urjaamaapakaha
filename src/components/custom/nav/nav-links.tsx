@@ -20,7 +20,7 @@ type IconProps =
     };
 
 export function NavLinks({
-  isAdmin = false,
+  isAdmin,
   itemClassName = "",
   ...restProps
 }: NavLinksProps) {
