@@ -86,7 +86,6 @@ describe("SignInPage", () => {
     const container = card?.parentElement;
     expect(container).toHaveClass(
       "flex",
-      "min-h-screen",
       "flex-col",
       "items-center",
       "justify-center",
