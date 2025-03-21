@@ -1,34 +1,32 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogIn } from "lucide-react";
-import Link from "next/link";
+import { LogOut } from "lucide-react";
+import { type User } from "next-auth";
+import { signOut } from "@/app/auth";
 
-interface ProfileMenuProps {
-  isLoggedIn?: boolean;
-  user?: {
-    name: string;
-    email: string;
-    image?: string;
+export function UserProfile({ user }: { user: User | undefined }) {
+  if (!user) return null;
+
+  // Get first letter of name or email for avatar fallback
+  const getInitial = () => {
+    if (user?.name) return user.name.charAt(0).toUpperCase();
+    if (user?.email) return user.email.charAt(0).toUpperCase();
+    return "U";
   };
-}
 
-export function UserProfile({ isLoggedIn = false, user }: ProfileMenuProps) {
-  if (!isLoggedIn) {
-    return (
-      <Button variant="ghost" size="sm" className="gap-2" asChild>
-        <Link href="/signin">
-          <LogIn className="h-4 w-4" />
-          <span>Sign In</span>
-        </Link>
-      </Button>
-    );
-  }
+  const signOutAction = async () => {
+    "use server";
+    await signOut({ redirectTo: "/signin" });
+  };
 
   return (
     <DropdownMenu modal={false}>
@@ -39,21 +37,33 @@ export function UserProfile({ isLoggedIn = false, user }: ProfileMenuProps) {
               src={user?.image || "/placeholder.svg?height=32&width=32"}
               alt="Profile"
             />
-            <AvatarFallback>
-              {user?.name.charAt(0).toUpperCase() || "U"}
-            </AvatarFallback>
+            <AvatarFallback>{getInitial()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <div className="flex flex-col space-y-1 p-2">
-          <p className="text-sm leading-none font-medium">{user?.name}</p>
-          <p className="text-muted-foreground text-xs leading-none">
+      <DropdownMenuContent align="end" className="mr-1">
+        <DropdownMenuLabel className="flex flex-col gap-1">
+          <p className="text-sm font-medium">{user?.name}</p>
+          <p className="text-muted-foreground line-clamp-1 text-xs">
             {user?.email}
           </p>
-        </div>
-        <DropdownMenuItem className="mt-2 cursor-pointer">
-          Sign Out
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <form
+            action={signOutAction}
+            className="w-full"
+            style={{ padding: "unset" }}
+          >
+            <Button
+              variant="ghost"
+              type="submit"
+              className="hover:text-destructive hover:bg-destructive/10 w-full cursor-pointer justify-start p-0 text-inherit transition-colors duration-200"
+            >
+              <LogOut className="mr-2 h-4 w-4 text-inherit" />
+              <span>Sign out</span>
+            </Button>
+          </form>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

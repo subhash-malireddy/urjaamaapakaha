@@ -5,24 +5,38 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Home, LineChartIcon as ChartLine, ShieldCheck } from "lucide-react";
 
-interface NavLinksProps {
+type NavLinksProps = IconProps & {
   itemClassName?: string;
-  showIcons?: boolean;
-  onClick?: () => void;
-}
+  isAdmin: boolean;
+};
+
+type IconProps =
+  | {
+      showIcons?: false;
+    }
+  | {
+      showIcons: true;
+      iconClassName?: string;
+    };
 
 export function NavLinks({
+  isAdmin = false,
   itemClassName = "",
-  showIcons = false,
-  onClick,
+  ...restProps
 }: NavLinksProps) {
   const pathname = usePathname();
 
   const links = [
     { href: "/", label: "Home", icon: Home },
     { href: "/usage", label: "Usage", icon: ChartLine },
-    { href: "/admin", label: "Admin", icon: ShieldCheck },
+    ...(isAdmin
+      ? [{ href: "/admin", label: "Admin", icon: ShieldCheck } as const]
+      : []),
   ] as const;
+
+  const showIcons = restProps.showIcons;
+
+  const iconClassName = showIcons === true ? restProps.iconClassName : "";
 
   return (
     <>
@@ -34,18 +48,20 @@ export function NavLinks({
             key={link.href}
             href={link.href}
             className={cn(
-              "group relative inline-flex items-center gap-2 text-sm font-medium transition-colors",
+              "group relative inline-flex items-center transition-colors md:gap-2 md:text-sm md:font-medium",
               "hover:text-primary text-muted-foreground",
               isActive && "text-primary",
               itemClassName,
             )}
-            onClick={onClick}
           >
-            {showIcons && <link.icon className="h-4 w-4" />}
+            {showIcons && (
+              <link.icon className={cn("h-4 w-4", iconClassName)} />
+            )}
             <span className="relative">
               {link.label}
               <span
                 className={cn(
+                  "hidden md:block",
                   "bg-primary absolute bottom-0 left-1/2 h-[2px] transition-all duration-300",
                   "-translate-x-1/2 transform",
                   isActive ? "w-full" : "w-0 group-hover:w-full",
