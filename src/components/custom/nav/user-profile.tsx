@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
 import {
   DropdownMenu,
@@ -16,13 +16,6 @@ import { signOut } from "@/app/auth";
 export function UserProfile({ user }: { user: User | undefined }) {
   if (!user) return null;
 
-  // Get first letter of name or email for avatar fallback
-  const getInitial = () => {
-    if (user?.name) return user.name.charAt(0).toUpperCase();
-    if (user?.email) return user.email.charAt(0).toUpperCase();
-    return "U";
-  };
-
   const signOutAction = async () => {
     "use server";
     await signOut({ redirectTo: "/signin" });
@@ -32,12 +25,13 @@ export function UserProfile({ user }: { user: User | undefined }) {
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-6 w-6">
             <AvatarImage
-              src={user?.image || "/placeholder.svg?height=32&width=32"}
-              alt="Profile"
+              src={user?.image || FALLBACK_USER_PROFILE_IMG}
+              alt="user-profile-image"
+              height={24}
+              width={24}
             />
-            <AvatarFallback>{getInitial()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -69,3 +63,5 @@ export function UserProfile({ user }: { user: User | undefined }) {
     </DropdownMenu>
   );
 }
+
+export const FALLBACK_USER_PROFILE_IMG = "/user.svg";
