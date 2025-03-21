@@ -116,7 +116,8 @@ describe("UserProfile", () => {
       await userEvent.click(signOutButton);
       expect(mockSubmit).toHaveBeenCalled();
     } else {
-      fail("Sign out form not found");
+      console.error("Sign out form not found");
+      expect(false).toBeTruthy();
     }
   });
 });
