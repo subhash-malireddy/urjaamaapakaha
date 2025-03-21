@@ -4,6 +4,7 @@ import {
   isRoleAdmin,
   isRoleMember,
   isRoleGuest,
+  isValidRole,
 } from "@/lib/roles";
 
 // Mock environment variables
@@ -61,6 +62,10 @@ describe("Role System", () => {
       expect(getUserRole("admin@example.com")).toBe(ROLES_OBJ.GUEST);
       expect(getUserRole("member@example.com")).toBe(ROLES_OBJ.GUEST);
     });
+
+    test("returns GUEST role for empty string", () => {
+      expect(getUserRole("")).toBe(ROLES_OBJ.GUEST);
+    });
   });
 
   describe("Role check utilities", () => {
@@ -80,6 +85,21 @@ describe("Role System", () => {
       expect(isRoleGuest(ROLES_OBJ.ADMIN)).toBe(false);
       expect(isRoleGuest(ROLES_OBJ.MEMBER)).toBe(false);
       expect(isRoleGuest(ROLES_OBJ.GUEST)).toBe(true);
+    });
+  });
+
+  describe("isValidRole", () => {
+    test("returns true for valid roles", () => {
+      expect(isValidRole(ROLES_OBJ.ADMIN)).toBe(true);
+      expect(isValidRole(ROLES_OBJ.MEMBER)).toBe(true);
+      expect(isValidRole(ROLES_OBJ.GUEST)).toBe(true);
+    });
+
+    test("returns false for invalid roles", () => {
+      expect(isValidRole("invalid-role")).toBe(false);
+      expect(isValidRole(123)).toBe(false);
+      expect(isValidRole(null)).toBe(false);
+      expect(isValidRole(undefined)).toBe(false);
     });
   });
 });

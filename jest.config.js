@@ -24,6 +24,9 @@ const customJestConfig = {
     "!src/**/*.d.ts",
     "!src/**/*.stories.{js,jsx,ts,tsx}",
     "!src/components/ui/**/*.{js,jsx,ts,tsx}",
+    "!src/app/**/{page,layout}.{js,jsx,ts,tsx}",
+    "!src/app/**/layout.{js,jsx,ts,tsx}",
+    "!src/app/**/page.{js,jsx,ts,tsx}",
     "!**/node_modules/**",
   ],
   // Debugging settings
