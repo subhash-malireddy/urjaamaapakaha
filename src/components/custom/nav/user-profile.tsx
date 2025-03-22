@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import {
   DropdownMenu,
@@ -21,17 +21,19 @@ export function UserProfile({ user }: { user: User | undefined }) {
     await signOut({ redirectTo: "/signin" });
   };
 
+  const getUserInitials = () => {
+    return (user.name || user.email)?.slice(0, 2).toUpperCase();
+  };
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-6 w-6">
-            <AvatarImage
-              src={user?.image || FALLBACK_USER_PROFILE_IMG}
-              alt="user-profile-image"
-              height={24}
-              width={24}
-            />
+        <Button
+          variant="ghost"
+          className="hover:bg-accent relative h-8 w-8 cursor-pointer rounded-full transition-all duration-100 hover:scale-125"
+        >
+          <Avatar className="h-8 w-8">
+            <AvatarFallback>{getUserInitials()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -63,5 +65,3 @@ export function UserProfile({ user }: { user: User | undefined }) {
     </DropdownMenu>
   );
 }
-
-export const FALLBACK_USER_PROFILE_IMG = "/user.svg";
