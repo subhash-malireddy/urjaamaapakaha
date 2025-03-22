@@ -5,11 +5,13 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, systemTheme, setTheme } = useTheme();
 
+  const ifDarkTheme = theme === "dark";
+  const ifSystemThemeIsDark = theme === "system" && systemTheme === "dark";
   // istanbul ignore next - we simply check if a mock is called onClick
   const handleClick = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme(ifDarkTheme || ifSystemThemeIsDark ? "light" : "dark");
   };
 
   return (
