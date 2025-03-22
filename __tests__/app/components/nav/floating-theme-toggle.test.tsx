@@ -1,5 +1,15 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { ThemeToggle } from "../../../../src/components/custom/nav/floating-theme-toggle";
+
+// Mock next-themes
+jest.mock("next-themes", () => ({
+  useTheme: () => ({
+    theme: "light",
+    setTheme: jest.fn().mockImplementation(() => {
+      console.log("setTheme called");
+    }),
+  }),
+}));
 
 describe("ThemeToggle", () => {
   it("renders the icons correctly", () => {
@@ -38,6 +48,15 @@ describe("ThemeToggle", () => {
     );
   });
 
-  // Note: The actual theme toggle functionality is commented out in the component
-  // When implemented, add tests for the toggle behavior
+  it("toggles theme when clicked", () => {
+    const { getByLabelText } = render(<ThemeToggle />);
+    const mockConsoleLog = jest.fn();
+    jest.spyOn(console, "log").mockImplementation(mockConsoleLog);
+
+    const button = getByLabelText("Toggle theme");
+    fireEvent.click(button);
+
+    //* since we are mocking the setTheme function to console.log, we can check if the console.log is called.
+    expect(mockConsoleLog).toHaveBeenCalledWith("setTheme called");
+  });
 });

@@ -1,9 +1,6 @@
+import { UserProfile } from "@/components/custom/nav/user-profile";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {
-  FALLBACK_USER_PROFILE_IMG,
-  UserProfile,
-} from "@/components/custom/nav/user-profile";
 import { ReactNode } from "react";
 
 // Mock the auth module
@@ -25,24 +22,8 @@ jest.mock("@/components/ui/avatar", () => ({
       {children}
     </span>
   ),
-  AvatarImage: ({
-    src,
-    alt,
-    height,
-    width,
-  }: {
-    src: string;
-    alt: string;
-    height?: number;
-    width?: number;
-  }) => (
-    <img
-      data-testid="avatar-image"
-      src={src}
-      alt={alt}
-      height={height}
-      width={width}
-    />
+  AvatarFallback: ({ children }: { children: ReactNode }) => (
+    <span data-testid="avatar-fallback">{children}</span>
   ),
 }));
 
@@ -58,16 +39,14 @@ describe("UserProfile", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("renders user avatar with image when provided", () => {
-    render(<UserProfile user={mockUser} />);
+  it("displays user initials when email is provided but user name is not", () => {
+    render(<UserProfile user={{ email: "test@example.com" }} />);
+    expect(screen.getByText("TE")).toBeInTheDocument();
+  });
 
-    // Check that the Avatar component is rendered
-    const avatar = screen.getByTestId("avatar");
-    expect(avatar).toBeInTheDocument();
-
-    // Check that the AvatarImage has the correct src
-    const avatarImage = screen.getByTestId("avatar-image");
-    expect(avatarImage).toHaveAttribute("src", mockUser.image);
+  it("displays user initials when name is provided but email is not", () => {
+    render(<UserProfile user={{ name: "Jest User" }} />);
+    expect(screen.getByText("JE")).toBeInTheDocument();
   });
 
   it("displays user name and email in dropdown", async () => {
@@ -80,21 +59,6 @@ describe("UserProfile", () => {
     // Check dropdown content
     expect(screen.getByText("Test User")).toBeInTheDocument();
     expect(screen.getByText("test@example.com")).toBeInTheDocument();
-  });
-
-  it("uses fallback image when user image is not provided", () => {
-    const userWithoutImage = {
-      name: "Test User",
-      email: "test@example.com",
-      image: null,
-    };
-
-    render(<UserProfile user={userWithoutImage} />);
-
-    // Check that the Avatar component is rendered
-    const avatarImage = screen.getByTestId("avatar-image");
-    expect(avatarImage).toBeInTheDocument();
-    expect(avatarImage).toHaveAttribute("src", FALLBACK_USER_PROFILE_IMG);
   });
 
   it("calls signOut when sign out button is clicked", async () => {
