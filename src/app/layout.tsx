@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MainNav } from "@/components/custom/nav/main-nav";
+import { ThemeProvider } from "@/components/theme-provider";
 import { auth } from "./auth";
 
 const geistSans = Geist({
@@ -27,17 +28,28 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
-    <html lang="en" style={{ scrollbarGutter: "stable both-edges" }}>
+    <html
+      lang="en"
+      style={{ scrollbarGutter: "stable both-edges" }}
+      suppressHydrationWarning
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} grid min-h-[100svh] grid-cols-1 grid-rows-[auto_1fr] antialiased`}
         style={{ scrollbarGutter: "stable both-edges" }}
       >
-        <MainNav session={session} />
-        <main className="flex items-center justify-center p-4 sm:p-2">
-          {children}
-        </main>
-        {/* Add padding at the bottom for the mobile nav */}
-        <div className="h-14 md:h-0"></div>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <MainNav session={session} />
+          <main className="flex items-center justify-center p-4 sm:p-2">
+            {children}
+          </main>
+          {/* Add padding at the bottom for the mobile nav */}
+          <div className="h-14 md:h-0"></div>
+        </ThemeProvider>
       </body>
     </html>
   );
