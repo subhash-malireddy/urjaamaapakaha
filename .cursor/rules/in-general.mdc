@@ -1,7 +1,7 @@
 ---
-description: Overall coding strategy
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 ---
 description: Overall coding strategy
