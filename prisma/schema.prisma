@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//! Make sure to add onDelete: Restrict to the device and usage relations when a fresh migration is created or on a fresh db pull
+
+model active_device {
+  device_id       String @id @db.VarChar(255)
+  usage_record_id BigInt @unique
+  device          device @relation(fields: [device_id], references: [id], onUpdate: NoAction, onDelete: Restrict, map: "fk_active_device_device")
+  usage           usage  @relation(fields: [usage_record_id], references: [id], onUpdate: NoAction, onDelete: Restrict, map: "fk_active_device_usage")
+}
+
+model device {
+  id               String         @id @db.VarChar(255)
+  mac_address      String         @unique @db.VarChar(17)
+  ip_address       String         @unique @db.Inet
+  alias            String         @unique @db.VarChar(60)
+  is_archived      Boolean?       @default(false)
+  previous_aliases String[]       @db.VarChar(60)
+  active_device    active_device?
+  usage            usage[]
+}
+
+//! Make sure to add onDelete: Restrict to the device relation when a fresh migration is created or on a fresh db pull
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model usage {
+  id                 BigInt         @id @default(autoincrement())
+  user_email         String         @db.Citext
+  start_date         DateTime       @default(now()) @db.Timestamptz(6)
+  end_date           DateTime       @default(now()) @db.Timestamptz(6)
+  estimated_use_time DateTime?      @db.Timestamptz(6)
+  consumption        Decimal        @default(0.00) @db.Decimal(10, 2)
+  charge             Decimal        @default(0.00) @db.Decimal(10, 2)
+  device_id          String         @db.VarChar(255)
+  active_device      active_device?
+  device             device         @relation(fields: [device_id], references: [id], onUpdate: NoAction, onDelete: Restrict, map: "fk_usage_device")
+}

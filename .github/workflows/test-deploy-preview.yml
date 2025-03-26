@@ -139,6 +139,10 @@ jobs:
           vercel env add MEMBER_EMAILS preview < member_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm member_emails.txt
 
+          printf "%s" "${{ secrets.DATABASE_URL }}" > database_url.txt
+          vercel env add DATABASE_URL preview < database_url.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm database_url.txt
+
       - name: Build Project Artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
