@@ -113,6 +113,7 @@ jobs:
           vercel env rm NEXTAUTH_SECRET preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm ADMIN_EMAILS preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm MEMBER_EMAILS preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm DATABASE_URL preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
 
           # Add environment variables using Vercel CLI without newlines
           printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
