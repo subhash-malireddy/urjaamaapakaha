@@ -1,9 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { faker } from "@faker-js/faker";
 import crypto from "crypto";
-import dotenv from "dotenv";
-
-dotenv.config({ path: ".env.local" });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 

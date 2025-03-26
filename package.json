@@ -10,7 +10,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prisma:pull:local": "pnpm dotenv -e .env.local -- prisma db pull"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
@@ -52,7 +53,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "dotenv": "^16.4.7",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.2.0",
     "eslint-config-prettier": "^10.0.2",

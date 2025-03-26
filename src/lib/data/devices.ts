@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import type { device } from "@prisma/client";
+import type { active_device, device } from "@prisma/client";
 
 export async function getAllDevices() {
   return db.device.findMany({
@@ -65,14 +65,15 @@ export async function getDevicesWithActiveStatus(): Promise<
   }));
 }
 
-type ActiveDevices = device & {
-  isActive: true;
-  usage_record_id: string;
+type BusyDevice = device & {
+  active_device: active_device;
 };
 
+type FreeDevice = device;
+
 export type DevicesWithStatus = {
-  activeDevices: ActiveDevices[];
-  inactiveDevices: device[];
+  freeDevices: FreeDevice[];
+  busyDevices: BusyDevice[];
 };
 
 export async function getDevicesWithStatus(): Promise<DevicesWithStatus> {
@@ -81,30 +82,33 @@ export async function getDevicesWithStatus(): Promise<DevicesWithStatus> {
       is_archived: false,
     },
     include: {
-      active_device: true,
+      active_device: {
+        include: {
+          usage: true,
+        },
+      },
     },
     orderBy: {
       alias: "asc",
     },
   });
 
-  const activeDevices: ActiveDevices[] = [];
-  const inactiveDevices: device[] = [];
+  const freeDevices: FreeDevice[] = [];
+  const busyDevices: BusyDevice[] = [];
 
   devices.forEach((device) => {
     if (device.active_device) {
-      activeDevices.push({
+      busyDevices.push({
         ...device,
-        isActive: true,
-        usage_record_id: device.active_device.usage_record_id.toString(),
+        active_device: device.active_device,
       });
     } else {
-      inactiveDevices.push(device);
+      freeDevices.push(device);
     }
   });
 
   return {
-    activeDevices,
-    inactiveDevices,
+    freeDevices,
+    busyDevices,
   };
 }

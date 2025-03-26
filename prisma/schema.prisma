@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//! Make sure to add onDelete: Restrict to the device and usage relations when a fresh migration is created or on a fresh db pull
+
 model active_device {
   device_id       String @id @db.VarChar(255)
   usage_record_id BigInt @unique
@@ -24,6 +26,8 @@ model device {
   active_device    active_device?
   usage            usage[]
 }
+
+//! Make sure to add onDelete: Restrict to the device relation when a fresh migration is created or on a fresh db pull
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.

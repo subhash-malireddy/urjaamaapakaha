@@ -1,9 +1,5 @@
 import { neon } from "@neondatabase/serverless";
-import dotenv from "dotenv";
 
-dotenv.config({ path: ".env.local" });
-
-// Update this with your Neon connection string
 const DATABASE_URL = process.env.DATABASE_URL;
 
 async function createTables() {
