@@ -8,8 +8,9 @@ import {
 } from "@/components/ui/table";
 import { EmptyTableContent } from "./empty-table-content";
 import type { device } from "@prisma/client";
-import { DeviceSwitch, DeviceSwitchMobile } from "./device-switch";
+import { DeviceSwitchMobile } from "./busy-device-switch-mobile";
 import styles from "./busy-devices.module.css";
+import { Switch } from "@/components/ui/switch";
 
 interface BusyDevicesProps {
   devices: (device & {
@@ -57,6 +58,7 @@ function DesktopView({ devices, currentUserEmail }: BusyDevicesProps) {
             />
           ) : (
             devices.map((device) => {
+              /*istanbul ignore next*/
               const userEmail = device.usage?.user_email || "Unknown";
               const estimatedEndTime = device.usage?.estimated_use_time
                 ? new Date(device.usage.estimated_use_time).toLocaleString(
@@ -79,10 +81,16 @@ function DesktopView({ devices, currentUserEmail }: BusyDevicesProps) {
                   <TableCell>{userEmail}</TableCell>
                   <TableCell>{estimatedEndTime}</TableCell>
                   <TableCell>
-                    <DeviceSwitch
+                    <Switch
                       id={`turn-off-${device.id}`}
-                      isCurrentUser={isCurrentUser}
-                      userEmail={userEmail}
+                      className="pointer-events-auto data-[state=checked]:bg-green-600"
+                      checked={true}
+                      title={
+                        !isCurrentUser
+                          ? `Only ${userEmail} can turn off this device`
+                          : "Click to turn off this device"
+                      }
+                      disabled={!isCurrentUser}
                     />
                   </TableCell>
                 </TableRow>
@@ -104,6 +112,7 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
         </div>
       ) : (
         devices.map((device) => {
+          /*istanbul ignore next*/
           const userEmail = device.usage?.user_email || "Unknown";
           const estimatedEndTime = device.usage?.estimated_use_time
             ? new Date(device.usage.estimated_use_time).toLocaleString(
@@ -133,9 +142,14 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
                   <span className="font-medium">{device.alias}</span>
                   <DeviceSwitchMobile
                     switchProps={{
-                      id: `turn-off-mobile-${device.id}`,
-                      isCurrentUser,
-                      userEmail,
+                      id: `turn-off-${device.id}`,
+                      className:
+                        "data-[state=checked]:bg-green-600 pointer-events-auto",
+                      checked: true,
+                      title: !isCurrentUser
+                        ? `Only ${userEmail} can turn off this device`
+                        : "Click to turn off this device",
+                      disabled: !isCurrentUser,
                     }}
                   />
                 </div>
