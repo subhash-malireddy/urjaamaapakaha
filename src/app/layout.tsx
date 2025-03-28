@@ -44,9 +44,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <MainNav session={session} />
-          <main className="flex items-center justify-center p-4 sm:p-2">
-            {children}
-          </main>
+          <main className="flex justify-center p-4 sm:p-2">{children}</main>
           {/* Add padding at the bottom for the mobile nav */}
           <div className="h-14 md:h-0"></div>
         </ThemeProvider>

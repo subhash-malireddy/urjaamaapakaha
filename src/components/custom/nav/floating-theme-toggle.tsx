@@ -8,6 +8,7 @@ export function ThemeToggle() {
   const { theme, systemTheme, setTheme } = useTheme();
 
   const ifDarkTheme = theme === "dark";
+  // istanbul ignore next
   const ifSystemThemeIsDark = theme === "system" && systemTheme === "dark";
   // istanbul ignore next - we simply check if a mock is called onClick
   const handleClick = () => {

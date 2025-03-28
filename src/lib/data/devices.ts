@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import type { active_device, device } from "@prisma/client";
+import type { device, usage } from "@prisma/client";
 
 export async function getAllDevices() {
   return db.device.findMany({
@@ -66,7 +66,7 @@ export async function getDevicesWithActiveStatus(): Promise<
 }
 
 type BusyDevice = device & {
-  active_device: active_device;
+  usage: usage;
 };
 
 type FreeDevice = device;
@@ -100,7 +100,7 @@ export async function getDevicesWithStatus(): Promise<DevicesWithStatus> {
     if (device.active_device) {
       busyDevices.push({
         ...device,
-        active_device: device.active_device,
+        usage: device.active_device.usage,
       });
     } else {
       freeDevices.push(device);
