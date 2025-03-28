@@ -127,7 +127,7 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
               name="device-details" // needed to auto-close other opened one.
             >
               <summary
-                className={`relative cursor-pointer ${styles.summary} rounded-t-lg px-3`}
+                className={`relative ${styles.summary} rounded-t-lg px-3`}
               >
                 <div className="inline-flex items-center justify-between py-3 pl-1">
                   <span className="font-medium">{device.alias}</span>
