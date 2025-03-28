@@ -41,7 +41,7 @@ export function FreeDevices({ devices }: FreeDevicesProps) {
                       disabled
                       id={`turn-on-${device.id}`}
                       title="Coming soon! Button will be enabled in future updates"
-                      className="data-[state=unchecked]:bg-red-600"
+                      className="data-[state=unchecked]:bg-red-600 dark:data-[state=unchecked]:bg-red-600"
                     />
                   </TableCell>
                 </TableRow>
