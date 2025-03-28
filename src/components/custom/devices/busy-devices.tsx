@@ -9,6 +9,7 @@ import {
 import { EmptyTableContent } from "./empty-table-content";
 import type { device } from "@prisma/client";
 import { DeviceSwitch, DeviceSwitchMobile } from "./device-switch";
+import styles from "./busy-devices.module.css";
 
 interface BusyDevicesProps {
   devices: (device & {
@@ -122,11 +123,13 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
           return (
             <details
               key={device.id}
-              className="group bg-card text-card-foreground hover:shadow-accent-foreground/20 dark:hover:shadow-accent-foreground/50 rounded-lg border pr-6 pl-6 transition-shadow hover:shadow"
+              className={`group bg-card text-card-foreground hover:shadow-accent-foreground/20 dark:hover:shadow-accent-foreground/50 rounded-lg border transition-shadow hover:shadow ${styles.details}`}
               name="device-details" // needed to auto-close other opened one.
             >
-              <summary className="relative cursor-pointer list-outside">
-                <div className="flex items-center justify-between px-4 py-3 pl-1">
+              <summary
+                className={`relative cursor-pointer ${styles.summary} rounded-t-lg px-3`}
+              >
+                <div className="inline-flex items-center justify-between py-3 pl-1">
                   <span className="font-medium">{device.alias}</span>
                   <DeviceSwitchMobile
                     switchProps={{
