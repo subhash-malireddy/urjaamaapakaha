@@ -112,3 +112,63 @@ export async function getDevicesWithStatus(): Promise<DevicesWithStatus> {
     busyDevices,
   };
 }
+
+/**
+ * Turns on a device by creating a usage record and active device entry
+ * @param deviceId The ID of the device to turn on
+ * @param userEmail The email of the user turning on the device
+ * @param estimatedUseTime Optional estimated time when the user will finish using the device
+ * @returns The created active device entry with usage information
+ */
+export async function turnOnDevice(
+  deviceId: string,
+  userEmail: string,
+  estimatedUseTime?: Date,
+) {
+  try {
+    // 1. Call the simulate API to get dummy data
+    const { simulateApiCall } = await import("@/lib/utils");
+    const currentDate = new Date().toISOString();
+    const apiResponse = await simulateApiCall(
+      deviceId,
+      true,
+      null,
+      currentDate,
+    );
+
+    // 2. Create a transaction to ensure both operations succeed or fail together
+    return await db.$transaction(async (tx) => {
+      // 3. Create a usage record with the dummy data
+      const usageRecord = await tx.usage.create({
+        data: {
+          user_email: userEmail,
+          device_id: deviceId,
+          start_date: new Date(),
+          end_date: new Date(), // Same as start_date when device is turned on
+          estimated_use_time: estimatedUseTime,
+          consumption: apiResponse.usage.today_energy, // Initial consumption is 0
+          charge: 0, // Initial charge is 0
+        },
+      });
+
+      // 4. Create an active device entry linked to the usage record
+      const activeDevice = await tx.active_device.create({
+        data: {
+          device_id: deviceId,
+          usage_record_id: usageRecord.id,
+        },
+        include: {
+          usage: true,
+          device: true,
+        },
+      });
+
+      return activeDevice;
+    });
+  } catch (error) {
+    console.error("Error turning on device:", error);
+    throw new Error(
+      `Failed to turn on device: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+}
