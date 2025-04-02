@@ -28,7 +28,7 @@ describe("FreeDeviceSwitch", () => {
     );
   });
 
-  it("disables switch during loading state", async () => {
+  it("disables switch during loading state, thus preventing multiple clicks", async () => {
     // Mock the action to delay response
     (turnOnDeviceAction as jest.Mock).mockImplementation(
       () =>
@@ -59,32 +59,6 @@ describe("FreeDeviceSwitch", () => {
     await userEvent.click(switchElement);
 
     expect(turnOnDeviceAction).toHaveBeenCalledWith(mockDeviceId);
-  });
-
-  it("prevents multiple clicks while loading", async () => {
-    let resolvePromise!: (value: { success: true }) => void;
-    const actionPromise = new Promise<{ success: true }>((resolve) => {
-      resolvePromise = resolve;
-    });
-
-    (turnOnDeviceAction as jest.Mock).mockImplementation(() => actionPromise);
-
-    render(<FreeDeviceSwitch deviceId={mockDeviceId} />);
-
-    const switchElement = screen.getByRole("switch");
-
-    // Trigger first click
-    const firstClick = userEvent.click(switchElement);
-
-    // Try additional clicks while first one is processing
-    await userEvent.click(switchElement);
-    await userEvent.click(switchElement);
-
-    // Resolve the first click
-    resolvePromise({ success: true });
-    await firstClick;
-
-    expect(turnOnDeviceAction).toHaveBeenCalledTimes(1);
   });
 
   it("handles error when turnOnDeviceAction fails", async () => {

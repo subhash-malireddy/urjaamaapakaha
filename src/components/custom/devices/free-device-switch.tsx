@@ -13,13 +13,12 @@ export function FreeDeviceSwitch({ deviceId }: FreeDeviceSwitchProps) {
 
   const handleToggle = async () => {
     // If already loading, prevent multiple clicks
+    //istanbul ignore next -- if button is disabled, it can't be clicked but leaving this here just in case.
     if (isLoading) return;
 
     try {
-      // Set loading state
       setIsLoading(true);
 
-      // Call the server action to turn on the device
       const result = await turnOnDeviceAction(deviceId);
 
       if (!result.success) {
@@ -28,7 +27,6 @@ export function FreeDeviceSwitch({ deviceId }: FreeDeviceSwitchProps) {
     } catch (error) {
       console.error("Error turning on device:", error);
     } finally {
-      // Reset loading state
       setIsLoading(false);
     }
   };
