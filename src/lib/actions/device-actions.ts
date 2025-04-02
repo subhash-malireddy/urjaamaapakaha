@@ -8,9 +8,13 @@ import { revalidatePath } from "next/cache";
 /**
  * Server action to turn on a device
  * @param deviceId The ID of the device to turn on
+ * @param estimatedUseTime Optional estimated time when the user will finish using the device
  * @returns Object containing success status and message or error
  */
-export async function turnOnDeviceAction(deviceId: string) {
+export async function turnOnDeviceAction(
+  deviceId: string,
+  estimatedUseTime?: Date,
+) {
   try {
     // Get the current user session
     const session = await auth();
@@ -23,7 +27,11 @@ export async function turnOnDeviceAction(deviceId: string) {
     }
 
     // Turn on the device
-    const result = await turnOnDevice(deviceId, session.user.email);
+    const result = await turnOnDevice(
+      deviceId,
+      session.user.email,
+      estimatedUseTime,
+    );
     revalidatePath("/");
     // Serialize the result to handle Decimal objects
     return { success: true, data: serialize(result) };

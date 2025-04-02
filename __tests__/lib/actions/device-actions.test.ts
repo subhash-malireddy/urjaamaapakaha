@@ -68,7 +68,30 @@ describe("turnOnDeviceAction", () => {
       success: true,
       data: mockDeviceData,
     });
-    expect(turnOnDevice).toHaveBeenCalledWith(mockDeviceId, mockUserEmail);
+    expect(turnOnDevice).toHaveBeenCalledWith(
+      mockDeviceId,
+      mockUserEmail,
+      undefined,
+    );
+    expect(revalidatePath).toHaveBeenCalledWith("/");
+  });
+
+  it("successfully turns on device with estimated usage time", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    (turnOnDevice as jest.Mock).mockResolvedValue(mockDeviceData);
+
+    const estimatedUseTime = new Date();
+    const result = await turnOnDeviceAction(mockDeviceId, estimatedUseTime);
+
+    expect(result).toEqual({
+      success: true,
+      data: mockDeviceData,
+    });
+    expect(turnOnDevice).toHaveBeenCalledWith(
+      mockDeviceId,
+      mockUserEmail,
+      estimatedUseTime,
+    );
     expect(revalidatePath).toHaveBeenCalledWith("/");
   });
 
