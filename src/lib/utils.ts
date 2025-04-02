@@ -46,15 +46,15 @@ export async function simulateApiCall(
   }
 }
 
-//istanbul ignore next
 // Seeded random function
+//istanbul ignore next
 function seededRandom(seed: number): number {
   const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
 
-//istanbul ignore next
 // Function to get energy value for a specific date
+//istanbul ignore next
 function getEnergyValueForDate(date?: string | null): number {
   if (!date) {
     throw new Error("date must be provided to get energy value");
