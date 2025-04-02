@@ -1,4 +1,4 @@
-import { auth } from "./auth";
+import { auth } from "../auth";
 import { getDevicesWithStatus } from "@/lib/data/devices";
 import { FreeDevices } from "@/components/custom/devices/free-devices";
 import { BusyDevices } from "@/components/custom/devices/busy-devices";

@@ -1,3 +1,5 @@
+/*istanbul ignore file*/
+
 "use client";
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";

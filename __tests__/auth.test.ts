@@ -1,4 +1,4 @@
-import { GET, POST, auth, signIn, signOut, config } from "@/app/auth";
+import { GET, POST, auth, signIn, signOut, config } from "@/auth";
 import NextAuth, { NextAuthConfig, NextAuthResult, Session } from "next-auth";
 import { OAuthUserConfig } from "next-auth/providers";
 import Google, { GoogleProfile } from "next-auth/providers/google";

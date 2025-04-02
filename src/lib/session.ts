@@ -1,4 +1,4 @@
-import { auth } from "@/app/auth";
+import { auth } from "@/auth";
 import { Role, isRoleAdmin, isRoleMember, isRoleGuest } from "./roles";
 
 /**

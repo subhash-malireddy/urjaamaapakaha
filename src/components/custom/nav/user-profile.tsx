@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut } from "lucide-react";
 import { type User } from "next-auth";
-import { signOut } from "@/app/auth";
+import { signOut } from "@/auth";
 
 export function UserProfile({ user }: { user: User | undefined }) {
   if (!user) return null;

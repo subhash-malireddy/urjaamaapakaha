@@ -1,6 +1,6 @@
 import { middleware, config } from "@/middleware";
 import { ROLES_OBJ } from "@/lib/roles";
-import { auth } from "@/app/auth";
+import { auth } from "@/auth";
 
 // Mock next/server
 jest.mock("next/server", () => {
@@ -20,7 +20,7 @@ jest.mock("next/server", () => {
 });
 
 // Mock auth module
-jest.mock("@/app/auth", () => ({
+jest.mock("@/auth", () => ({
   auth: jest.fn(),
 }));
 

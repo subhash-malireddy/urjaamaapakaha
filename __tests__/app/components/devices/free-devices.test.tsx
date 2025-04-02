@@ -1,17 +1,18 @@
 import { render, screen } from "@testing-library/react";
-import { FreeDevices } from "../../../../src/components/custom/devices/free-devices";
+import { FreeDevices } from "@/components/custom/devices/free-devices";
 
-// Mock the Switch component used directly in free-devices.tsx
-jest.mock("@/components/ui/switch", () => ({
-  Switch: ({ id, title }: { id: string; title: string }) => (
-    <div
-      data-testid={`switch-${id}`}
-      role="switch"
-      aria-checked="false"
-      title={title}
-    ></div>
-  ),
-}));
+jest.mock("@/components/custom/devices/device-usage-time-picker", () => {
+  return {
+    DeviceUsageTimePicker: ({ deviceId }: { deviceId: string }) => (
+      <div
+        data-testid="device-usage-time-picker-mock"
+        data-device-id={deviceId}
+      >
+        <div data-testid="free-device-switch-mock" data-device-id={deviceId} />
+      </div>
+    ),
+  };
+});
 
 const mockDevices = [
   {
@@ -35,68 +36,69 @@ const mockDevices = [
     updated_at: new Date(),
   },
 ];
-
 describe("FreeDevices", () => {
   describe("Desktop View", () => {
-    it("renders empty state when no devices are provided", () => {
-      render(<FreeDevices devices={[]} />);
-      const desktopView = screen.getByTestId("desktop-view");
-      expect(desktopView).toBeInTheDocument();
-      expect(desktopView).toHaveTextContent("No available devices found");
-    });
-
-    it("renders devices list when devices are provided", () => {
+    it("renders both desktop and mobile views", () => {
       render(<FreeDevices devices={mockDevices} />);
-      const desktopView = screen.getByTestId("desktop-view");
-      expect(desktopView).toBeInTheDocument();
-      expect(desktopView).toHaveTextContent("Device 1");
-      expect(desktopView).toHaveTextContent("Device 2");
+
+      expect(screen.getByTestId("desktop-view")).toBeInTheDocument();
+      expect(screen.getByTestId("mobile-view")).toBeInTheDocument();
     });
 
-    it("renders header correctly", () => {
+    it("displays correct heading", () => {
       render(<FreeDevices devices={mockDevices} />);
-      const desktopView = screen.getByTestId("desktop-view");
-      expect(desktopView).toBeInTheDocument();
-      expect(screen.getByText("Device Name")).toBeInTheDocument();
-      expect(screen.getByText("Turn On")).toBeInTheDocument();
-    });
-  });
 
-  describe("Mobile View", () => {
-    it("renders empty state when no devices are provided", () => {
-      render(<FreeDevices devices={[]} />);
-      const mobileView = screen.getByTestId("mobile-view");
-      expect(mobileView).toBeInTheDocument();
-      expect(mobileView).toHaveTextContent("No available devices found");
+      expect(screen.getByText("Available Devices")).toBeInTheDocument();
     });
 
-    it("renders devices list when devices are provided", () => {
+    it("renders device switches for each device in desktop view", () => {
       render(<FreeDevices devices={mockDevices} />);
-      const mobileView = screen.getByTestId("mobile-view");
-      expect(mobileView).toBeInTheDocument();
-      expect(mobileView).toHaveTextContent("Device 1");
-      expect(mobileView).toHaveTextContent("Device 2");
-    });
-  });
 
-  it("renders switches for each device in both views", () => {
-    render(<FreeDevices devices={mockDevices} />);
-
-    // Check all switches
-    const switchElements = screen.getAllByRole("switch");
-    expect(switchElements).toHaveLength(4); // 2 devices x 2 views = 4 switches
-
-    // Verify all switches have the correct title
-    switchElements.forEach((switchEl) => {
-      expect(switchEl).toHaveAttribute(
-        "title",
-        "Coming soon! Button will be enabled in future updates",
+      const desktopView = screen.getByTestId("desktop-view");
+      const switches = desktopView.querySelectorAll(
+        "[data-testid='free-device-switch-mock']",
       );
-    });
-  });
 
-  it("renders heading correctly", () => {
-    render(<FreeDevices devices={mockDevices} />);
-    expect(screen.getByText("Available Devices")).toBeInTheDocument();
+      expect(switches).toHaveLength(mockDevices.length);
+      switches.forEach((switchEl, index) => {
+        expect(switchEl).toHaveAttribute(
+          "data-device-id",
+          mockDevices[index].id,
+        );
+      });
+    });
+
+    it("renders device switches for each device in mobile view", () => {
+      render(<FreeDevices devices={mockDevices} />);
+
+      const mobileView = screen.getByTestId("mobile-view");
+      const switches = mobileView.querySelectorAll(
+        "[data-testid='free-device-switch-mock']",
+      );
+
+      expect(switches).toHaveLength(mockDevices.length);
+      switches.forEach((switchEl, index) => {
+        expect(switchEl).toHaveAttribute(
+          "data-device-id",
+          mockDevices[index].id,
+        );
+      });
+    });
+
+    it("displays device names correctly in desktop and mobile views", () => {
+      render(<FreeDevices devices={mockDevices} />);
+
+      mockDevices.forEach((device) => {
+        const cells = screen.getAllByText(device.alias);
+        expect(cells).toHaveLength(2); // Should appear in both views
+      });
+    });
+
+    it("shows empty state message when no devices are available", () => {
+      render(<FreeDevices devices={[]} />);
+
+      const emptyMessages = screen.getAllByText("No available devices found");
+      expect(emptyMessages).toHaveLength(2); // One for desktop, one for mobile
+    });
   });
 });

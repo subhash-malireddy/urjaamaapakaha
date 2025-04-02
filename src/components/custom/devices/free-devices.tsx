@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { EmptyTableContent } from "./empty-table-content";
 import type { device } from "@prisma/client";
-import { Switch } from "@/components/ui/switch";
+import { DeviceUsageTimePicker } from "./device-usage-time-picker";
 
 interface FreeDevicesProps {
   devices: device[];
@@ -52,12 +52,7 @@ function DesktopView({ devices }: FreeDevicesProps) {
               <TableRow key={device.id}>
                 <TableCell className="font-normal">{device.alias}</TableCell>
                 <TableCell>
-                  <Switch
-                    disabled
-                    id={`turn-on-${device.id}`}
-                    title="Coming soon! Button will be enabled in future updates"
-                    className="data-[state=unchecked]:bg-red-600 dark:data-[state=unchecked]:bg-red-600"
-                  />
+                  <DeviceUsageTimePicker deviceId={device.id} />
                 </TableCell>
               </TableRow>
             ))
@@ -83,12 +78,7 @@ function MobileView({ devices }: FreeDevicesProps) {
           >
             <div className="inline-flex w-full items-center justify-between">
               <span className="font-medium">{device.alias}</span>
-              <Switch
-                disabled
-                id={`turn-on-${device.id}`}
-                className="data-[state=unchecked]:bg-red-600 dark:data-[state=unchecked]:bg-red-600"
-                title="Coming soon! Button will be enabled in future updates"
-              />
+              <DeviceUsageTimePicker deviceId={device.id} />
             </div>
           </div>
         ))

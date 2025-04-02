@@ -1,4 +1,4 @@
-import { auth } from "@/app/auth";
+import { auth } from "@/auth";
 import { ROLES_OBJ } from "@/lib/roles";
 import {
   getUserRoleFromSession,
@@ -9,7 +9,7 @@ import {
 } from "@/lib/session";
 
 // Mock the auth function
-jest.mock("@/app/auth", () => ({
+jest.mock("@/auth", () => ({
   auth: jest.fn(),
 }));
 
