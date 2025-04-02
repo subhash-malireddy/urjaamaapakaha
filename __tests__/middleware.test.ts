@@ -20,7 +20,7 @@ jest.mock("next/server", () => {
 });
 
 // Mock auth module
-jest.mock("@/app/auth", () => ({
+jest.mock("@/auth", () => ({
   auth: jest.fn(),
 }));
 

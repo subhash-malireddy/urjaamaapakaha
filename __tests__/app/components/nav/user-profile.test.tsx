@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { ReactNode } from "react";
 
 // Mock the auth module
-jest.mock("@/app/auth", () => ({
+jest.mock("@/auth", () => ({
   signOut: jest.fn(),
 }));
 

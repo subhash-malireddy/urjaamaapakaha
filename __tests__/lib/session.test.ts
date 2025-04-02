@@ -9,7 +9,7 @@ import {
 } from "@/lib/session";
 
 // Mock the auth function
-jest.mock("@/app/auth", () => ({
+jest.mock("@/auth", () => ({
   auth: jest.fn(),
 }));
 

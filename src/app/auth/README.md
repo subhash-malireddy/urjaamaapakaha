@@ -54,7 +54,7 @@ pnpm test __tests__/middleware
 Mock auth in tests:
 
 ```tsx
-jest.mock("@/app/auth", () => ({
+jest.mock("@/auth", () => ({
   auth: jest.fn().mockResolvedValue({
     user: { role: ROLES_OBJ.MEMBER },
   }),
