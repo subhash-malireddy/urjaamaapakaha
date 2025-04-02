@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ROLES_OBJ } from "@/lib/roles";
-import { auth } from "@/app/auth";
+import { auth } from "@/auth";
 
 // Define public routes that don't require authentication
 const PUBLIC_PATHS = ["/auth/signin", "/auth/error"];

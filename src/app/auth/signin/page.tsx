@@ -1,4 +1,4 @@
-import { signIn } from "@/app/auth";
+import { signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,

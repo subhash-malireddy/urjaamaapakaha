@@ -1,4 +1,4 @@
 /*istanbul ignore file*/
-import { GET, POST } from "@/app/auth";
+import { GET, POST } from "@/auth";
 
 export { GET, POST };

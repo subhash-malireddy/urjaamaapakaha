@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/app/auth";
+import { auth } from "@/auth";
 import { turnOnDevice } from "../data/devices";
 import { serialize } from "@/lib/utils";
 import { revalidatePath } from "next/cache";

@@ -1,4 +1,4 @@
-import { auth } from "@/app/auth";
+import { auth } from "@/auth";
 import { ROLES_OBJ } from "@/lib/roles";
 import {
   getUserRoleFromSession,
