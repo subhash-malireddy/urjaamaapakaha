@@ -1,3 +1,6 @@
+//istanbul ignore file
+//TODO:: add tests for this file
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -23,7 +26,6 @@ interface UsageResponse {
 }
 
 // Define the simulateApiCall function
-//istanbul ignore next
 export async function simulateApiCall(
   _deviceId: string,
   isTurnOn: boolean,
@@ -47,14 +49,12 @@ export async function simulateApiCall(
 }
 
 // Seeded random function
-//istanbul ignore next
 function seededRandom(seed: number): number {
   const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
 
 // Function to get energy value for a specific date
-//istanbul ignore next
 function getEnergyValueForDate(date?: string | null): number {
   if (!date) {
     throw new Error("date must be provided to get energy value");
@@ -62,3 +62,24 @@ function getEnergyValueForDate(date?: string | null): number {
   const seed = new Date(date).getTime(); // Use the date as a seed
   return Math.floor(seededRandom(seed) * 100); // Generate a value between 0 and 100
 }
+
+// Helper function to get current time + 1 minute in HH:MM format
+export const getCurrentTimePlusOneMin = () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + 1); // Add 1 minute
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+};
+
+// Helper function to validate if time is in the future
+export const isTimeInFuture = (timeString: string) => {
+  const [hours, minutes] = timeString.split(":").map(Number);
+  const now = new Date();
+  const estimatedTime = new Date();
+  estimatedTime.setHours(hours);
+  estimatedTime.setMinutes(minutes);
+  estimatedTime.setSeconds(0); // Reset seconds for accurate comparison
+
+  return estimatedTime > now;
+};

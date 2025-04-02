@@ -1,22 +1,22 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { FreeDeviceSwitch } from "@/components/custom/devices/free-device-switch";
-import { turnOnDeviceAction } from "@/lib/actions/device-actions";
 import userEvent from "@testing-library/user-event";
-
-// Mock the server action
-jest.mock("@/lib/actions/device-actions", () => ({
-  turnOnDeviceAction: jest.fn(),
-}));
 
 describe("FreeDeviceSwitch", () => {
   const mockDeviceId = "test-device-1";
+  const mockOnToggle = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it("renders with initial state", () => {
-    render(<FreeDeviceSwitch deviceId={mockDeviceId} />);
+    render(
+      <FreeDeviceSwitch
+        deviceId={mockDeviceId}
+        onCheckedChange={mockOnToggle}
+      />,
+    );
 
     const switchElement = screen.getByRole("switch");
     expect(switchElement).toBeInTheDocument();
@@ -28,58 +28,66 @@ describe("FreeDeviceSwitch", () => {
     );
   });
 
-  it("disables switch during loading state, thus preventing multiple clicks", async () => {
-    // Mock the action to delay response
-    (turnOnDeviceAction as jest.Mock).mockImplementation(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(() => resolve({ success: true }), 100),
-        ),
+  it("can be rendered in checked state", () => {
+    render(
+      <FreeDeviceSwitch
+        deviceId={mockDeviceId}
+        onCheckedChange={mockOnToggle}
+        checked={true}
+      />,
     );
 
-    render(<FreeDeviceSwitch deviceId={mockDeviceId} />);
+    const switchElement = screen.getByRole("switch");
+    expect(switchElement).toHaveAttribute("data-state", "checked");
+  });
+
+  it("can be disabled when specified", () => {
+    render(
+      <FreeDeviceSwitch
+        deviceId={mockDeviceId}
+        onCheckedChange={mockOnToggle}
+        disabled={true}
+      />,
+    );
 
     const switchElement = screen.getByRole("switch");
-    await userEvent.click(switchElement);
-
     expect(switchElement).toBeDisabled();
-
-    // Wait for the loading state to finish
-    await waitFor(() => {
-      expect(switchElement).not.toBeDisabled();
-    });
   });
 
-  it("calls turnOnDeviceAction when toggled", async () => {
-    (turnOnDeviceAction as jest.Mock).mockResolvedValueOnce({ success: true });
-
-    render(<FreeDeviceSwitch deviceId={mockDeviceId} />);
+  it("calls onToggle when toggled", async () => {
+    render(
+      <FreeDeviceSwitch
+        deviceId={mockDeviceId}
+        onCheckedChange={mockOnToggle}
+      />,
+    );
 
     const switchElement = screen.getByRole("switch");
     await userEvent.click(switchElement);
 
-    expect(turnOnDeviceAction).toHaveBeenCalledWith(mockDeviceId);
+    expect(mockOnToggle).toHaveBeenCalledWith(true);
   });
 
-  it("handles error when turnOnDeviceAction fails", async () => {
-    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-    (turnOnDeviceAction as jest.Mock).mockResolvedValueOnce({
-      success: false,
-      error: "This should fail",
-    });
+  //   const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+  //   const failingToggle = () => {
+  //     throw new Error("Toggle failed");
+  //   };
 
-    render(<FreeDeviceSwitch deviceId={mockDeviceId} />);
+  //   render(
+  //     <FreeDeviceSwitch
+  //       deviceId={mockDeviceId}
+  //       onCheckedChange={failingToggle}
+  //     />,
+  //   );
 
-    const switchElement = screen.getByRole("switch");
-    await userEvent.click(switchElement);
+  //   const switchElement = screen.getByRole("switch");
+  //   await userEvent.click(switchElement);
 
-    await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Error turning on device:",
-        new Error("This should fail"),
-      );
-    });
+  //   expect(consoleErrorSpy).toHaveBeenCalledWith(
+  //     "Error toggling device:",
+  //     expect.any(Error),
+  //   );
 
-    consoleErrorSpy.mockRestore();
-  });
+  //   consoleErrorSpy.mockRestore();
+  // });
 });

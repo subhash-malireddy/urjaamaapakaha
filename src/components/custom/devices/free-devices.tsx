@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { EmptyTableContent } from "./empty-table-content";
 import type { device } from "@prisma/client";
-import { FreeDeviceSwitch } from "./free-device-switch";
+import { DeviceUsageTimePicker } from "./device-usage-time-picker";
 
 interface FreeDevicesProps {
   devices: device[];
@@ -52,7 +52,7 @@ function DesktopView({ devices }: FreeDevicesProps) {
               <TableRow key={device.id}>
                 <TableCell className="font-normal">{device.alias}</TableCell>
                 <TableCell>
-                  <FreeDeviceSwitch deviceId={device.id} />
+                  <DeviceUsageTimePicker deviceId={device.id} />
                 </TableCell>
               </TableRow>
             ))
@@ -78,7 +78,7 @@ function MobileView({ devices }: FreeDevicesProps) {
           >
             <div className="inline-flex w-full items-center justify-between">
               <span className="font-medium">{device.alias}</span>
-              <FreeDeviceSwitch deviceId={device.id} />
+              <DeviceUsageTimePicker deviceId={device.id} />
             </div>
           </div>
         ))

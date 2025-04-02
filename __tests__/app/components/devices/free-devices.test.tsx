@@ -1,11 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { FreeDevices } from "@/components/custom/devices/free-devices";
 
-// Mock the FreeDeviceSwitch component
-jest.mock("@/components/custom/devices/free-device-switch", () => {
+jest.mock("@/components/custom/devices/device-usage-time-picker", () => {
   return {
-    FreeDeviceSwitch: ({ deviceId }: { deviceId: string }) => (
-      <div data-testid="free-device-switch-mock" data-device-id={deviceId} />
+    DeviceUsageTimePicker: ({ deviceId }: { deviceId: string }) => (
+      <div
+        data-testid="device-usage-time-picker-mock"
+        data-device-id={deviceId}
+      >
+        <div data-testid="free-device-switch-mock" data-device-id={deviceId} />
+      </div>
     ),
   };
 });
