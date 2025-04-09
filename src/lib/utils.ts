@@ -19,7 +19,7 @@ export function serialize<T>(data: T): T {
 //TODO:: remove this function once api implemented
 
 // Define the structure of the usage response
-interface UsageResponse {
+export interface UsageResponse {
   usage: {
     today_energy: number; // Energy value in watts
   };
@@ -27,7 +27,7 @@ interface UsageResponse {
 
 // Define the simulateApiCall function
 export async function simulateApiCall(
-  _deviceId: string,
+  _deviceIp: string,
   isTurnOn: boolean,
   startTime?: string | null,
   date?: string | null,

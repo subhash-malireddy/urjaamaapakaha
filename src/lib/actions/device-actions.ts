@@ -13,6 +13,7 @@ import { revalidatePath } from "next/cache";
  */
 export async function turnOnDeviceAction(
   deviceId: string,
+  deviceIp: string,
   estimatedUseTime?: Date,
 ) {
   try {
@@ -26,9 +27,14 @@ export async function turnOnDeviceAction(
       return { success: false, error: "Device ID is required" };
     }
 
+    if (!deviceIp) {
+      return { success: false, error: "Device ip is required" };
+    }
+
     // Turn on the device
     const result = await turnOnDevice(
       deviceId,
+      deviceIp,
       session.user.email,
       estimatedUseTime,
     );

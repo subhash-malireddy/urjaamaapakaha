@@ -18,10 +18,12 @@ import { getCurrentTimePlusOneMin, isTimeInFuture } from "@/lib/utils";
 
 interface DeviceUsageTimePickerProps {
   deviceId: string;
+  deviceIp: string;
 }
 
 export function DeviceUsageTimePicker({
   deviceId,
+  deviceIp,
 }: DeviceUsageTimePickerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState(getCurrentTimePlusOneMin);
@@ -75,7 +77,11 @@ export function DeviceUsageTimePicker({
       estimatedUseTime.setHours(hours);
       estimatedUseTime.setMinutes(minutes);
 
-      const result = await turnOnDeviceAction(deviceId, estimatedUseTime);
+      const result = await turnOnDeviceAction(
+        deviceId,
+        deviceIp,
+        estimatedUseTime,
+      );
 
       if (!result.success) {
         throw new Error(result.error);
@@ -100,7 +106,7 @@ export function DeviceUsageTimePicker({
     try {
       setIsLoading(true);
 
-      const result = await turnOnDeviceAction(deviceId);
+      const result = await turnOnDeviceAction(deviceId, deviceIp);
 
       if (!result.success) {
         throw new Error(result.error);

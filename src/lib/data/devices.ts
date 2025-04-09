@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { UsageResponse } from "@/lib/utils";
 import type { device, usage } from "@prisma/client";
 
 export async function getAllDevices() {
@@ -116,25 +117,38 @@ export async function getDevicesWithStatus(): Promise<DevicesWithStatus> {
 /**
  * Turns on a device by creating a usage record and active device entry
  * @param deviceId The ID of the device to turn on
+ * @param deviceIp The IP address of the device to turn on
  * @param userEmail The email of the user turning on the device
  * @param estimatedUseTime Optional estimated time when the user will finish using the device
  * @returns The created active device entry with usage information
  */
 export async function turnOnDevice(
   deviceId: string,
+  deviceIp: string,
   userEmail: string,
   estimatedUseTime?: Date,
 ) {
   try {
-    // 1. Call the simulate API to get dummy data
-    const { simulateApiCall } = await import("@/lib/utils");
-    const currentDate = new Date().toISOString();
-    const apiResponse = await simulateApiCall(
-      deviceId,
-      true,
-      null,
-      currentDate,
-    );
+    let apiResponse: UsageResponse;
+    if (process.env.NODE_ENV === "production" || deviceIp === "192.168.0.190") {
+      const credentials = Buffer.from(
+        `${process.env.URJ_FSFY_API_USER}:${process.env.URJ_FSFY_API_PWD}`,
+      ).toString("base64");
+      apiResponse = await (
+        await fetch(`${process.env.URJ_FSFY_API}/on/${deviceIp}`, {
+          cache: "no-cache",
+          headers: {
+            "x-forwarded-authybasic": `Basic ${credentials}`,
+          },
+        })
+      ).json();
+    } else {
+      // 1. Call the simulate API to get dummy data
+      const { simulateApiCall } = await import("@/lib/utils");
+      const currentDate = new Date().toISOString();
+      apiResponse = await simulateApiCall(deviceIp, true, null, currentDate);
+    }
+    console.log("🚀 ~ apiResponse:", apiResponse);
 
     // 2. Create a transaction to ensure both operations succeed or fail together
     return await db.$transaction(async (tx) => {
