@@ -18,11 +18,12 @@ jest.mock("next/cache", () => ({
 
 describe("turnOnDeviceAction", () => {
   const mockDeviceId = "test-device-1";
+  const mockDeviceIp = "192.168.1.1";
   const mockUserEmail = "test@example.com";
   const mockDeviceData = {
     id: mockDeviceId,
     mac_address: "00:00:00:00:00:01",
-    ip_address: "192.168.1.1",
+    ip_address: mockDeviceIp,
     alias: "Test Device",
     is_archived: false,
     previous_aliases: [],
@@ -35,7 +36,11 @@ describe("turnOnDeviceAction", () => {
   it("returns error when user is not authenticated", async () => {
     (auth as jest.Mock).mockResolvedValue({ user: null });
 
-    const result = await turnOnDeviceAction(mockDeviceId);
+    const result = await turnOnDeviceAction(
+      mockDeviceId,
+      mockDeviceIp,
+      undefined,
+    );
 
     expect(result).toEqual({
       success: false,
@@ -48,7 +53,7 @@ describe("turnOnDeviceAction", () => {
   it("returns error when deviceId is not provided", async () => {
     (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
 
-    const result = await turnOnDeviceAction("");
+    const result = await turnOnDeviceAction("", mockDeviceIp);
 
     expect(result).toEqual({
       success: false,
@@ -58,11 +63,24 @@ describe("turnOnDeviceAction", () => {
     expect(revalidatePath).not.toHaveBeenCalled();
   });
 
+  it("returns error when deviceIp is not provided", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+
+    const result = await turnOnDeviceAction(mockDeviceId, "");
+
+    expect(result).toEqual({
+      success: false,
+      error: "Device ip is required",
+    });
+    expect(turnOnDevice).not.toHaveBeenCalled();
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
   it("successfully turns on device and revalidates path", async () => {
     (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
     (turnOnDevice as jest.Mock).mockResolvedValue(mockDeviceData);
 
-    const result = await turnOnDeviceAction(mockDeviceId);
+    const result = await turnOnDeviceAction(mockDeviceId, mockDeviceIp);
 
     expect(result).toEqual({
       success: true,
@@ -70,6 +88,7 @@ describe("turnOnDeviceAction", () => {
     });
     expect(turnOnDevice).toHaveBeenCalledWith(
       mockDeviceId,
+      mockDeviceIp,
       mockUserEmail,
       undefined,
     );
@@ -81,7 +100,11 @@ describe("turnOnDeviceAction", () => {
     (turnOnDevice as jest.Mock).mockResolvedValue(mockDeviceData);
 
     const estimatedUseTime = new Date();
-    const result = await turnOnDeviceAction(mockDeviceId, estimatedUseTime);
+    const result = await turnOnDeviceAction(
+      mockDeviceId,
+      mockDeviceIp,
+      estimatedUseTime,
+    );
 
     expect(result).toEqual({
       success: true,
@@ -89,6 +112,7 @@ describe("turnOnDeviceAction", () => {
     });
     expect(turnOnDevice).toHaveBeenCalledWith(
       mockDeviceId,
+      mockDeviceIp,
       mockUserEmail,
       estimatedUseTime,
     );
@@ -100,7 +124,7 @@ describe("turnOnDeviceAction", () => {
     (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
     (turnOnDevice as jest.Mock).mockRejectedValue(mockError);
 
-    const result = await turnOnDeviceAction(mockDeviceId);
+    const result = await turnOnDeviceAction(mockDeviceId, mockDeviceIp);
 
     expect(result).toEqual({
       success: false,
@@ -113,7 +137,7 @@ describe("turnOnDeviceAction", () => {
     (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
     (turnOnDevice as jest.Mock).mockRejectedValue("String error");
 
-    const result = await turnOnDeviceAction(mockDeviceId);
+    const result = await turnOnDeviceAction(mockDeviceId, mockDeviceIp);
 
     expect(result).toEqual({
       success: false,
