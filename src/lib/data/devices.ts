@@ -77,6 +77,7 @@ export type DevicesWithStatus = {
   busyDevices: BusyDevice[];
 };
 
+//TODO:: Add tests for this function
 export async function getDevicesWithStatus(): Promise<DevicesWithStatus> {
   const devices = await db.device.findMany({
     where: {
@@ -130,7 +131,9 @@ export async function turnOnDevice(
 ) {
   try {
     let apiResponse: UsageResponse;
-    if (process.env.NODE_ENV === "production" || deviceIp === "192.168.0.190") {
+    const shouldCallRealApi =
+      process.env.NODE_ENV === "production" || deviceIp === "192.168.0.190";
+    if (shouldCallRealApi) {
       const credentials = Buffer.from(
         `${process.env.URJ_FSFY_API_USER}:${process.env.URJ_FSFY_API_PWD}`,
       ).toString("base64");
@@ -148,7 +151,6 @@ export async function turnOnDevice(
       const currentDate = new Date().toISOString();
       apiResponse = await simulateApiCall(deviceIp, true, null, currentDate);
     }
-    console.log("🚀 ~ apiResponse:", apiResponse);
 
     // 2. Create a transaction to ensure both operations succeed or fail together
     return await db.$transaction(async (tx) => {
