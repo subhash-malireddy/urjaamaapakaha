@@ -20,13 +20,16 @@ jest.mock("@/lib/utils", () => {
 
 describe("DeviceUsageTimePicker Component", () => {
   const mockDeviceId = "test-device-1";
+  const mockDeviceIp = "192.168.1.1";
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it("renders the component with a switch", () => {
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     const switchElement = screen.getByRole("switch");
     expect(switchElement).toBeInTheDocument();
@@ -37,7 +40,9 @@ describe("DeviceUsageTimePicker Component", () => {
       () => "14:31",
     );
 
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Click the switch to toggle it ON
     const switchElement = screen.getByRole("switch");
@@ -56,7 +61,9 @@ describe("DeviceUsageTimePicker Component", () => {
   it("shows error when time is set to past time", async () => {
     // Mock isTimeInFuture to return false for this test
     (utils.isTimeInFuture as jest.Mock).mockReturnValue(false);
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Click the switch to toggle it ON
     const switchElement = screen.getByRole("switch");
@@ -84,7 +91,9 @@ describe("DeviceUsageTimePicker Component", () => {
     // Mock isTimeInFuture to return true for this test
     (utils.isTimeInFuture as jest.Mock).mockReturnValue(true);
 
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Click the switch to toggle it ON
     const switchElement = screen.getByRole("switch");
@@ -109,7 +118,9 @@ describe("DeviceUsageTimePicker Component", () => {
   });
 
   it("resets switch state when dialog is closed", async () => {
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Toggle the switch ON to open dialog
     const switchElement = screen.getByRole("switch");
@@ -133,7 +144,9 @@ describe("DeviceUsageTimePicker Component", () => {
     // Mock successful response
     (turnOnDeviceAction as jest.Mock).mockResolvedValue({ success: true });
 
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Open the dialog by toggling the switch
     const switchElement = screen.getByRole("switch");
@@ -146,7 +159,10 @@ describe("DeviceUsageTimePicker Component", () => {
     fireEvent.click(turnOnButton);
 
     await waitFor(() => {
-      expect(turnOnDeviceAction).toHaveBeenCalledWith(mockDeviceId);
+      expect(turnOnDeviceAction).toHaveBeenCalledWith(
+        mockDeviceId,
+        mockDeviceIp,
+      );
     });
 
     // Dialog should close and switch should stay ON after successful turn on
@@ -164,7 +180,9 @@ describe("DeviceUsageTimePicker Component", () => {
     // Ensure isTimeInFuture returns true
     (utils.isTimeInFuture as jest.Mock).mockReturnValue(true);
 
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Open the dialog by toggling the switch
     const switchElement = screen.getByRole("switch");
@@ -185,6 +203,7 @@ describe("DeviceUsageTimePicker Component", () => {
     await waitFor(() => {
       expect(turnOnDeviceAction).toHaveBeenCalledWith(
         mockDeviceId,
+        mockDeviceIp,
         expect.any(Date),
       );
     });
@@ -204,7 +223,9 @@ describe("DeviceUsageTimePicker Component", () => {
       error: "Failed to turn on device",
     });
 
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Open the dialog by toggling the switch
     const switchElement = screen.getByRole("switch");
@@ -239,7 +260,9 @@ describe("DeviceUsageTimePicker Component", () => {
     // Ensure isTimeInFuture returns true
     (utils.isTimeInFuture as jest.Mock).mockReturnValue(true);
 
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Open the dialog by toggling the switch
     const switchElement = screen.getByRole("switch");
@@ -270,7 +293,9 @@ describe("DeviceUsageTimePicker Component", () => {
       error: "Failed to turn on device",
     });
 
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Find and click the switch
     const switchElement = screen.getByRole("switch");
@@ -288,7 +313,9 @@ describe("DeviceUsageTimePicker Component", () => {
   });
 
   it("resets switch to OFF state when dialog is closed using the X button", async () => {
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Find and click the switch
     const switchElement = screen.getByRole("switch");
@@ -308,7 +335,9 @@ describe("DeviceUsageTimePicker Component", () => {
     (turnOnDeviceAction as jest.Mock).mockResolvedValue({
       success: true,
     });
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Find and click the switch
     const switchElement = screen.getByRole("switch");
@@ -326,7 +355,9 @@ describe("DeviceUsageTimePicker Component", () => {
   });
 
   it("resets switch to OFF state when dialog is closed using the Escape key", async () => {
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Find and click the switch
     const switchElement = screen.getByRole("switch");
@@ -350,20 +381,13 @@ describe("DeviceUsageTimePicker Component", () => {
     (utils.getCurrentTimePlusOneMin as jest.Mock).mockReturnValue("15:30");
     const turnOnActionSpy = turnOnDeviceAction as jest.Mock;
 
-    render(<DeviceUsageTimePicker deviceId={mockDeviceId} />);
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
 
     // Open the dialog
     const switchElement = screen.getByRole("switch");
     await userEvent.click(switchElement);
-
-    // // At this point, we want the time to appear valid
-    // (utils.isTimeInFuture as jest.Mock).mockReturnValue(true);
-
-    // // Set the time (which appears valid for now)
-    // const timeInput = await screen.findByLabelText(/estimated usage time/i);
-    // fireEvent.change(timeInput, { target: { value: "15:30" } });
-
-    // Now make the validation fail right before clicking the button
 
     // Try to turn on with an invalid time
     const timerButton = screen.getByRole("button", {
