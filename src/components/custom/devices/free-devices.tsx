@@ -52,7 +52,10 @@ function DesktopView({ devices }: FreeDevicesProps) {
               <TableRow key={device.id}>
                 <TableCell className="font-normal">{device.alias}</TableCell>
                 <TableCell>
-                  <DeviceUsageTimePicker deviceId={device.id} />
+                  <DeviceUsageTimePicker
+                    deviceId={device.id}
+                    deviceIp={device.ip_address}
+                  />
                 </TableCell>
               </TableRow>
             ))
@@ -78,7 +81,10 @@ function MobileView({ devices }: FreeDevicesProps) {
           >
             <div className="inline-flex w-full items-center justify-between">
               <span className="font-medium">{device.alias}</span>
-              <DeviceUsageTimePicker deviceId={device.id} />
+              <DeviceUsageTimePicker
+                deviceId={device.id}
+                deviceIp={device.ip_address}
+              />
             </div>
           </div>
         ))

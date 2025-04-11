@@ -114,6 +114,9 @@ jobs:
           vercel env rm ADMIN_EMAILS preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm MEMBER_EMAILS preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm DATABASE_URL preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm URJ_FSFY_API preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm URJ_FSFY_API_USER preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm URJ_FSFY_API_PWD preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
 
           # Add environment variables using Vercel CLI without newlines
           printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
@@ -143,6 +146,18 @@ jobs:
           printf "%s" "${{ secrets.DATABASE_URL }}" > database_url.txt
           vercel env add DATABASE_URL preview < database_url.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm database_url.txt
+
+          printf "%s" "${{ secrets.URJ_FSFY_API }}" > urj_fsfy_api.txt
+          vercel env add URJ_FSFY_API preview < urj_fsfy_api.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm urj_fsfy_api.txt
+
+          printf "%s" "${{ secrets.URJ_FSFY_API_USER }}" > urj_fsfy_api_user.txt
+          vercel env add URJ_FSFY_API_USER preview < urj_fsfy_api_user.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm urj_fsfy_api_user.txt
+
+          printf "%s" "${{ secrets.URJ_FSFY_API_PWD }}" > urj_fsfy_api_pwd.txt
+          vercel env add URJ_FSFY_API_PWD preview < urj_fsfy_api_pwd.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm urj_fsfy_api_pwd.txt
 
       - name: Build Project Artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
