@@ -21,18 +21,25 @@ export function BusyDeviceSwitch({
   const [isSwitchOn, setIsSwitchOn] = useState(true);
 
   const handleTurnOff = async () => {
+    if (!isCurrentUser) return;
+
     try {
       setIsLoading(true);
+      // Set switch state immediately for better UX
+      setIsSwitchOn(false);
+
       const result = await turnOffDeviceAction(deviceId, deviceIp);
       if (!result.success) {
         // If the action fails, revert the switch state
         setIsSwitchOn(true);
+        setIsLoading(false);
         throw new Error(result.error);
       }
-      setIsSwitchOn(false);
+      // Don't set loading to false on success - let revalidation handle it
     } catch (error) {
       console.error("Failed to turn off device:", error);
-    } finally {
+      // Revert switch state on error
+      setIsSwitchOn(true);
       setIsLoading(false);
     }
   };
@@ -40,7 +47,7 @@ export function BusyDeviceSwitch({
   return (
     <Switch
       id={`turn-off-${deviceId}`}
-      className="pointer-events-auto data-[state=checked]:bg-green-600"
+      className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-red-600 dark:data-[state=checked]:bg-green-600 dark:data-[state=unchecked]:bg-red-600"
       checked={isSwitchOn}
       title={
         !isCurrentUser
