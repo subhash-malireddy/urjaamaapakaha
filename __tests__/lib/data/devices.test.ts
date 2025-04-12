@@ -11,61 +11,13 @@ jest.mock("@/lib/utils", () => ({
   }),
 }));
 
-const mockDB = db as unknown as DeepMockProxy<PrismaClient>;
-
 describe("Device data functions", () => {
+  // Reset all mocks before each test
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe("turnOnDevice", () => {
-    // Common test data
-    const deviceId = "device-123";
-    const deviceIp = "192.168.0.143";
-    const userEmail = "user@example.com";
-    const mockUsageId = BigInt(123);
-    const mockCurrentDate = new Date();
-
-    // Helper function to create mock usage record
-    const createMockUsageRecord = (estimatedUseTime: Date | null = null) => ({
-      id: mockUsageId,
-      user_email: userEmail,
-      device_id: deviceId,
-      start_date: mockCurrentDate,
-      end_date: mockCurrentDate,
-      estimated_use_time: estimatedUseTime,
-      consumption: 42, // Simplified
-      charge: 0, // Simplified
-    });
-
-    // Helper function to create mock active device record
-    const createMockActiveDeviceRecord = (
-      estimatedUseTime: Date | null = null,
-    ) => ({
-      device_id: deviceId,
-      usage_record_id: mockUsageId,
-      usage: createMockUsageRecord(estimatedUseTime),
-      device: {
-        id: deviceId,
-        mac_address: "00:11:22:33:44:55",
-        ip_address: "192.168.1.100",
-        alias: "Test Device",
-        is_archived: false,
-        previous_aliases: [],
-      },
-    });
-
-    // Helper function to setup transaction mock
-    const setupTransactionMock = () => {
-      mockDB.$transaction.mockImplementation(async (callback: any) => {
-        if (typeof callback === "function") {
-          return callback(mockDB);
-        }
-        return Promise.resolve([]);
-      });
-    };
-
-    // Reset all mocks before each test
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
-
     it("should successfully turn on a device", async () => {
       // Setup mocks
       setupTransactionMock();
@@ -75,7 +27,11 @@ describe("Device data functions", () => {
       );
 
       // Call the function under test
-      const result = await turnOnDevice(deviceId, deviceIp, userEmail);
+      const result = await turnOnDevice(
+        TEST_DATA.deviceId,
+        TEST_DATA.deviceIp,
+        TEST_DATA.userEmail,
+      );
 
       // Assert the transaction was called
       expect(db.$transaction).toHaveBeenCalledTimes(1);
@@ -83,8 +39,8 @@ describe("Device data functions", () => {
       // Assert that usage.create was called with the correct parameters
       expect(db.usage.create).toHaveBeenCalledWith({
         data: {
-          user_email: userEmail,
-          device_id: deviceId,
+          user_email: TEST_DATA.userEmail,
+          device_id: TEST_DATA.deviceId,
           start_date: expect.any(Date),
           end_date: expect.any(Date),
           estimated_use_time: undefined,
@@ -96,8 +52,8 @@ describe("Device data functions", () => {
       // Assert that active_device.create was called with the correct parameters
       expect(db.active_device.create).toHaveBeenCalledWith({
         data: {
-          device_id: deviceId,
-          usage_record_id: mockUsageId,
+          device_id: TEST_DATA.deviceId,
+          usage_record_id: TEST_DATA.mockUsageId,
         },
         include: {
           usage: true,
@@ -108,15 +64,15 @@ describe("Device data functions", () => {
       // Assert the returned result matches our expected structure
       expect(result).toEqual(
         expect.objectContaining({
-          device_id: deviceId,
-          usage_record_id: mockUsageId,
+          device_id: TEST_DATA.deviceId,
+          usage_record_id: TEST_DATA.mockUsageId,
           usage: expect.objectContaining({
-            id: mockUsageId,
-            user_email: userEmail,
-            device_id: deviceId,
+            id: TEST_DATA.mockUsageId,
+            user_email: TEST_DATA.userEmail,
+            device_id: TEST_DATA.deviceId,
           }),
           device: expect.objectContaining({
-            id: deviceId,
+            id: TEST_DATA.deviceId,
             alias: "Test Device",
           }),
         }),
@@ -125,7 +81,9 @@ describe("Device data functions", () => {
 
     it("should successfully turn on a device with estimated use time", async () => {
       // Setup estimated use time
-      const estimatedUseTime = new Date(mockCurrentDate.getTime() + 3600000); // 1 hour later
+      const estimatedUseTime = new Date(
+        TEST_DATA.mockCurrentDate.getTime() + 3600000,
+      ); // 1 hour later
 
       // Setup mocks
       setupTransactionMock();
@@ -138,17 +96,17 @@ describe("Device data functions", () => {
 
       // Call the function under test
       const result = await turnOnDevice(
-        deviceId,
-        deviceIp,
-        userEmail,
+        TEST_DATA.deviceId,
+        TEST_DATA.deviceIp,
+        TEST_DATA.userEmail,
         estimatedUseTime,
       );
 
       // Assert that usage.create was called with the correct parameters
       expect(db.usage.create).toHaveBeenCalledWith({
         data: {
-          user_email: userEmail,
-          device_id: deviceId,
+          user_email: TEST_DATA.userEmail,
+          device_id: TEST_DATA.deviceId,
           start_date: expect.any(Date),
           end_date: expect.any(Date),
           estimated_use_time: estimatedUseTime,
@@ -162,32 +120,25 @@ describe("Device data functions", () => {
     });
 
     it("should use fetch API for specific IP address 192.168.0.190", async () => {
-      // Special IP that should use fetch
-      const specialIp = "192.168.0.190";
-
       // Setup mocks
       setupTransactionMock();
       mockDB.usage.create.mockResolvedValueOnce(createMockUsageRecord() as any);
       mockDB.active_device.create.mockResolvedValueOnce({} as any);
 
-      // Mock fetch to mock its behavior
-      global.fetch = jest.fn().mockResolvedValue({
-        json: jest.fn().mockResolvedValue({
-          usage: { today_energy: 42 },
-        }),
-      } as any);
-
-      // Set environment variables
-      process.env.URJ_FSFY_API = "http://api.example.com";
-      process.env.URJ_FSFY_API_USER = "testuser";
-      process.env.URJ_FSFY_API_PWD = "testpass";
+      // Setup API environment and mock fetch
+      setupApiEnvironment();
+      mockFetchApi();
 
       // Call the function
-      await turnOnDevice(deviceId, specialIp, userEmail);
+      await turnOnDevice(
+        TEST_DATA.deviceId,
+        TEST_DATA.specialIp,
+        TEST_DATA.userEmail,
+      );
 
       // Verify fetch was called with correct parameters
       expect(global.fetch).toHaveBeenCalledWith(
-        `http://api.example.com/on/${specialIp}`,
+        `${TEST_DATA.apiEndpoint}/on/${TEST_DATA.specialIp}`,
         {
           cache: "no-cache",
           headers: {
@@ -204,12 +155,16 @@ describe("Device data functions", () => {
       mockDB.$transaction.mockRejectedValueOnce(dbErrorInstance);
 
       // Spy on console.error to keep the jest output clean
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+      const consoleErrorSpy = setupConsoleErrorSpy();
 
       // Call the function and expect it to throw
-      await expect(turnOnDevice(deviceId, deviceIp, userEmail)).rejects.toThrow(
-        `Failed to turn on device: ${errorMessage}`,
-      );
+      await expect(
+        turnOnDevice(
+          TEST_DATA.deviceId,
+          TEST_DATA.deviceIp,
+          TEST_DATA.userEmail,
+        ),
+      ).rejects.toThrow(`Failed to turn on device: ${errorMessage}`);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         "Error turning on device:",
@@ -226,12 +181,16 @@ describe("Device data functions", () => {
       mockDB.$transaction.mockRejectedValueOnce(unknownError);
 
       // Spy on console.error to keep the jest output clean
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+      const consoleErrorSpy = setupConsoleErrorSpy();
 
       // Call the function and expect it to throw with a generic message
-      await expect(turnOnDevice(deviceId, deviceIp, userEmail)).rejects.toThrow(
-        "Failed to turn on device: Unknown error",
-      );
+      await expect(
+        turnOnDevice(
+          TEST_DATA.deviceId,
+          TEST_DATA.deviceIp,
+          TEST_DATA.userEmail,
+        ),
+      ).rejects.toThrow("Failed to turn on device: Unknown error");
 
       // Verify console.error was called with the unknown error
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -245,56 +204,6 @@ describe("Device data functions", () => {
   });
 
   describe("turnOffDevice", () => {
-    // Common test data
-    const deviceId = "device-123";
-    const deviceIp = "192.168.0.143";
-    const mockUsageId = BigInt(123);
-    const mockCurrentDate = new Date();
-    const mockInitialConsumption = 42;
-    const mockFinalConsumption = 100;
-
-    // Helper function to create mock usage record
-    const createMockUsageRecord = () => ({
-      id: mockUsageId,
-      user_email: "user@example.com",
-      device_id: deviceId,
-      start_date: mockCurrentDate,
-      end_date: mockCurrentDate,
-      estimated_use_time: null,
-      consumption: mockInitialConsumption,
-      charge: 0,
-    });
-
-    // Helper function to create mock active device record
-    const createMockActiveDeviceRecord = () => ({
-      device_id: deviceId,
-      usage_record_id: mockUsageId,
-      usage: createMockUsageRecord(),
-      device: {
-        id: deviceId,
-        mac_address: "00:11:22:33:44:55",
-        ip_address: "192.168.1.100",
-        alias: "Test Device",
-        is_archived: false,
-        previous_aliases: [],
-      },
-    });
-
-    // Helper function to setup transaction mock
-    const setupTransactionMock = () => {
-      mockDB.$transaction.mockImplementation(async (callback: any) => {
-        if (typeof callback === "function") {
-          return callback(mockDB);
-        }
-        return Promise.resolve([]);
-      });
-    };
-
-    // Reset all mocks before each test
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
-
     it("should successfully turn off a device", async () => {
       // Setup mocks
       setupTransactionMock();
@@ -303,24 +212,28 @@ describe("Device data functions", () => {
       );
       mockDB.usage.update.mockResolvedValueOnce({
         ...createMockUsageRecord(),
-        end_date: mockCurrentDate,
-        consumption: mockFinalConsumption - mockInitialConsumption,
+        end_date: TEST_DATA.mockCurrentDate,
+        consumption:
+          TEST_DATA.mockFinalConsumption - TEST_DATA.mockInitialConsumption,
       } as any);
       mockDB.active_device.delete.mockResolvedValueOnce({} as any);
 
       jest.spyOn(utils, "simulateApiCall").mockResolvedValueOnce({
-        usage: { today_energy: mockFinalConsumption },
+        usage: { today_energy: TEST_DATA.mockFinalConsumption },
       } as any);
 
       // Call the function under test
-      const result = await turnOffDevice(deviceId, deviceIp);
+      const result = await turnOffDevice(
+        TEST_DATA.deviceId,
+        TEST_DATA.deviceIp,
+      );
 
       // Assert the transaction was called
       expect(db.$transaction).toHaveBeenCalledTimes(1);
 
       // Assert that active_device.findFirst was called with correct parameters
       expect(db.active_device.findFirst).toHaveBeenCalledWith({
-        where: { device_id: deviceId },
+        where: { device_id: TEST_DATA.deviceId },
         include: {
           usage: true,
           device: true,
@@ -329,27 +242,29 @@ describe("Device data functions", () => {
 
       // Assert that usage.update was called with correct parameters
       expect(db.usage.update).toHaveBeenCalledWith({
-        where: { id: mockUsageId },
+        where: { id: TEST_DATA.mockUsageId },
         data: {
           end_date: expect.any(Date),
-          consumption: mockFinalConsumption - mockInitialConsumption,
+          consumption:
+            TEST_DATA.mockFinalConsumption - TEST_DATA.mockInitialConsumption,
         },
       });
 
       // Assert that active_device.delete was called with correct parameters
       expect(db.active_device.delete).toHaveBeenCalledWith({
-        where: { device_id: deviceId },
+        where: { device_id: TEST_DATA.deviceId },
       });
 
       // Assert the returned result matches our expected structure
       expect(result).toEqual(
         expect.objectContaining({
-          device_id: deviceId,
-          usage_record_id: mockUsageId,
+          device_id: TEST_DATA.deviceId,
+          usage_record_id: TEST_DATA.mockUsageId,
           usage: expect.objectContaining({
-            id: mockUsageId,
+            id: TEST_DATA.mockUsageId,
             end_date: expect.any(Date),
-            consumption: mockFinalConsumption - mockInitialConsumption,
+            consumption:
+              TEST_DATA.mockFinalConsumption - TEST_DATA.mockInitialConsumption,
           }),
         }),
       );
@@ -360,10 +275,12 @@ describe("Device data functions", () => {
       mockDB.active_device.findFirst.mockResolvedValueOnce(null);
 
       // Spy on console.error to keep the jest output clean
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+      const consoleErrorSpy = setupConsoleErrorSpy();
 
       // Call the function and expect it to throw
-      await expect(turnOffDevice(deviceId, deviceIp)).rejects.toThrow(
+      await expect(
+        turnOffDevice(TEST_DATA.deviceId, TEST_DATA.deviceIp),
+      ).rejects.toThrow(
         "Device is not currently active or missing usage record",
       );
 
@@ -381,9 +298,6 @@ describe("Device data functions", () => {
     });
 
     it("should use fetch API for specific IP address 192.168.0.190", async () => {
-      // Special IP that should use fetch
-      const specialIp = "192.168.0.190";
-
       // Setup mocks
       setupTransactionMock();
       mockDB.active_device.findFirst.mockResolvedValueOnce(
@@ -391,29 +305,22 @@ describe("Device data functions", () => {
       );
       mockDB.usage.update.mockResolvedValueOnce({
         ...createMockUsageRecord(),
-        end_date: mockCurrentDate,
-        consumption: mockFinalConsumption - mockInitialConsumption,
+        end_date: TEST_DATA.mockCurrentDate,
+        consumption:
+          TEST_DATA.mockFinalConsumption - TEST_DATA.mockInitialConsumption,
       } as any);
       mockDB.active_device.delete.mockResolvedValueOnce({} as any);
 
-      // Mock fetch to mock its behavior
-      global.fetch = jest.fn().mockResolvedValue({
-        json: jest.fn().mockResolvedValue({
-          usage: { today_energy: mockFinalConsumption },
-        }),
-      } as any);
-
-      // Set environment variables
-      process.env.URJ_FSFY_API = "http://api.example.com";
-      process.env.URJ_FSFY_API_USER = "testuser";
-      process.env.URJ_FSFY_API_PWD = "testpass";
+      // Setup API environment and mock fetch
+      setupApiEnvironment();
+      mockFetchApi();
 
       // Call the function
-      await turnOffDevice(deviceId, specialIp);
+      await turnOffDevice(TEST_DATA.deviceId, TEST_DATA.specialIp);
 
       // Verify fetch was called with correct parameters
       expect(global.fetch).toHaveBeenCalledWith(
-        `http://api.example.com/off/${specialIp}`,
+        `${TEST_DATA.apiEndpoint}/off/${TEST_DATA.specialIp}`,
         {
           cache: "no-cache",
           headers: {
@@ -439,16 +346,16 @@ describe("Device data functions", () => {
 
       // Mock the API call to ensure it's not the source of error
       jest.spyOn(utils, "simulateApiCall").mockResolvedValueOnce({
-        usage: { today_energy: mockFinalConsumption },
+        usage: { today_energy: TEST_DATA.mockFinalConsumption },
       } as any);
 
       // Spy on console.error to keep the jest output clean
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+      const consoleErrorSpy = setupConsoleErrorSpy();
 
       // Call the function and expect it to throw
-      await expect(turnOffDevice(deviceId, deviceIp)).rejects.toThrow(
-        `Failed to turn off device: ${errorMessage}`,
-      );
+      await expect(
+        turnOffDevice(TEST_DATA.deviceId, TEST_DATA.deviceIp),
+      ).rejects.toThrow(`Failed to turn off device: ${errorMessage}`);
 
       // Verify error was logged correctly
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -472,16 +379,16 @@ describe("Device data functions", () => {
 
       // Mock the API call to ensure it's not the source of error
       jest.spyOn(utils, "simulateApiCall").mockResolvedValueOnce({
-        usage: { today_energy: mockFinalConsumption },
+        usage: { today_energy: TEST_DATA.mockFinalConsumption },
       } as any);
 
       // Spy on console.error to keep the jest output clean
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+      const consoleErrorSpy = setupConsoleErrorSpy();
 
       // Call the function and expect it to throw with a generic message
-      await expect(turnOffDevice(deviceId, deviceIp)).rejects.toThrow(
-        "Failed to turn off device: Unknown error",
-      );
+      await expect(
+        turnOffDevice(TEST_DATA.deviceId, TEST_DATA.deviceIp),
+      ).rejects.toThrow("Failed to turn off device: Unknown error");
 
       // Verify error was logged with the unknown error
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -494,3 +401,81 @@ describe("Device data functions", () => {
     });
   });
 });
+
+const mockDB = db as unknown as DeepMockProxy<PrismaClient>;
+
+// Common test data and utilities
+const TEST_DATA = {
+  deviceId: "device-123",
+  deviceIp: "192.168.0.143",
+  userEmail: "user@example.com",
+  mockUsageId: BigInt(123),
+  mockCurrentDate: new Date(),
+  mockInitialConsumption: 42,
+  mockFinalConsumption: 100,
+  specialIp: "192.168.0.190",
+  apiEndpoint: "http://api.example.com",
+};
+
+// Helper function to create mock usage record
+const createMockUsageRecord = (
+  estimatedUseTime: Date | null = null,
+  consumption: number = TEST_DATA.mockInitialConsumption,
+) => ({
+  id: TEST_DATA.mockUsageId,
+  user_email: TEST_DATA.userEmail,
+  device_id: TEST_DATA.deviceId,
+  start_date: TEST_DATA.mockCurrentDate,
+  end_date: TEST_DATA.mockCurrentDate,
+  estimated_use_time: estimatedUseTime,
+  consumption,
+  charge: 0,
+});
+
+// Helper function to create mock active device record
+const createMockActiveDeviceRecord = (
+  estimatedUseTime: Date | null = null,
+) => ({
+  device_id: TEST_DATA.deviceId,
+  usage_record_id: TEST_DATA.mockUsageId,
+  usage: createMockUsageRecord(estimatedUseTime),
+  device: {
+    id: TEST_DATA.deviceId,
+    mac_address: "00:11:22:33:44:55",
+    ip_address: "192.168.1.100",
+    alias: "Test Device",
+    is_archived: false,
+    previous_aliases: [],
+  },
+});
+
+// Helper function to setup transaction mock
+const setupTransactionMock = () => {
+  mockDB.$transaction.mockImplementation(async (callback: any) => {
+    if (typeof callback === "function") {
+      return callback(mockDB);
+    }
+    return Promise.resolve([]);
+  });
+};
+
+// Helper to setup API environment
+const setupApiEnvironment = () => {
+  process.env.URJ_FSFY_API = TEST_DATA.apiEndpoint;
+  process.env.URJ_FSFY_API_USER = "testuser";
+  process.env.URJ_FSFY_API_PWD = "testpass";
+};
+
+// Helper to mock fetch API
+const mockFetchApi = (energyValue: number = TEST_DATA.mockFinalConsumption) => {
+  return (global.fetch = jest.fn().mockResolvedValue({
+    json: jest.fn().mockResolvedValue({
+      usage: { today_energy: energyValue },
+    }),
+  } as any));
+};
+
+// Helper to create and setup console error spy
+const setupConsoleErrorSpy = () => {
+  return jest.spyOn(console, "error").mockImplementation();
+};
