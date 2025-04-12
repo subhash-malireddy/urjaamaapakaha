@@ -1,6 +1,20 @@
 import { render, screen, within } from "@testing-library/react";
 import { BusyDevices } from "../../../../src/components/custom/devices/busy-devices";
 
+jest.mock(
+  "../../../../src/components/custom/devices/busy-device-switch",
+  () => ({
+    BusyDeviceSwitch: ({ deviceId, isCurrentUser, userEmail }: any) => (
+      <div
+        data-testid={`switch-${deviceId}`}
+        data-is-current-user={isCurrentUser}
+      >
+        {userEmail}
+      </div>
+    ),
+  }),
+);
+
 const mockDevices = [
   {
     id: "1",
@@ -32,16 +46,7 @@ const mockDevices = [
   },
 ];
 
-const NUM_VIEWS = 2; // desktop and mobile view
-
 describe("BusyDevices", () => {
-  const originalInnerWidth = global.innerWidth;
-
-  afterEach(() => {
-    global.innerWidth = originalInnerWidth;
-    jest.restoreAllMocks();
-  });
-
   it("renders empty state when no devices are provided", () => {
     render(<BusyDevices devices={[]} currentUserEmail="test@example.com" />);
 
@@ -62,15 +67,42 @@ describe("BusyDevices", () => {
     expect(emptyContentElement_mobile).toBeInTheDocument();
   });
 
-  it("renders devices list when devices are provided", () => {
+  it("renders devices list with correct data", () => {
+    render(
+      <BusyDevices
+        devices={mockDevices}
+        currentUserEmail="user1@example.com"
+      />,
+    );
+
+    // Check if device names are rendered
+    expect(screen.getAllByText("Device 1")).toHaveLength(2); // desktop and mobile
+    expect(screen.getAllByText("Device 2")).toHaveLength(2);
+
+    // Check if BusyDeviceSwitch components are rendered with correct props
+    const device1Switches = screen.getAllByTestId("switch-1");
+    const device2Switches = screen.getAllByTestId("switch-2");
+
+    device1Switches.forEach((switchEl) => {
+      expect(switchEl).toHaveAttribute("data-is-current-user", "true");
+      expect(switchEl).toHaveTextContent("user1@example.com");
+    });
+
+    device2Switches.forEach((switchEl) => {
+      expect(switchEl).toHaveAttribute("data-is-current-user", "false");
+      expect(switchEl).toHaveTextContent("user2@example.com");
+    });
+  });
+
+  it("formats estimated time correctly", () => {
     render(
       <BusyDevices devices={mockDevices} currentUserEmail="test@example.com" />,
     );
-    expect(screen.getAllByText("Device 1")).toHaveLength(2);
-    expect(screen.getAllByText("Device 2")).toHaveLength(2);
+    expect(screen.getAllByText(/Mar 20, 2024/).length).toBe(2); // desktop and mobile
+    expect(screen.getAllByText(/Not specified/).length).toBe(2);
   });
 
-  it("renders desktop view correctly", () => {
+  it("renders correct table headers in desktop view", () => {
     render(
       <BusyDevices devices={mockDevices} currentUserEmail="test@example.com" />,
     );
@@ -85,72 +117,36 @@ describe("BusyDevices", () => {
     expect(within(desktopView).getByText("Turn Off")).toBeInTheDocument();
   });
 
-  it("shows user emails correctly", () => {
-    render(
-      <BusyDevices devices={mockDevices} currentUserEmail="test@example.com" />,
-    );
-    expect(screen.getAllByText("user1@example.com").length).toBe(2);
-    expect(screen.getAllByText("user2@example.com").length).toBe(2);
-  });
-
-  it("formats estimated time correctly", () => {
-    render(
-      <BusyDevices devices={mockDevices} currentUserEmail="test@example.com" />,
-    );
-    expect(screen.queryAllByText(/Mar 20, 2024/).length).toBe(2); //one for desktop and one for mobile view
-    expect(screen.queryAllByText(/Not specified/).length).toBe(2);
-  });
-
-  it("enables switch only for current user's devices", () => {
-    render(
-      <BusyDevices
-        devices={mockDevices}
-        currentUserEmail="user1@example.com"
-      />,
-    );
-    const switches = screen.getAllByRole("switch");
-
-    expect(switches).toHaveLength(mockDevices.length * NUM_VIEWS);
-
-    expect(switches[0]).not.toBeDisabled();
-    expect(switches[0]).toHaveAttribute(
-      "title",
-      "Click to turn off this device",
-    );
-
-    expect(switches[1]).toBeDisabled();
-    expect(switches[1]).toHaveAttribute(
-      "title",
-      "Only user2@example.com can turn off this device",
-    );
-
-    //switches in mobile view
-    expect(switches[2]).not.toBeDisabled();
-    expect(switches[2]).toHaveAttribute(
-      "title",
-      "Click to turn off this device",
-    );
-
-    expect(switches[3]).toBeDisabled();
-    expect(switches[3]).toHaveAttribute(
-      "title",
-      "Only user2@example.com can turn off this device",
-    );
-  });
-
-  it("renders mobile view correctly", () => {
+  it("renders mobile view with correct device details", () => {
     render(
       <BusyDevices devices={mockDevices} currentUserEmail="test@example.com" />,
     );
 
-    const detailsElements = screen.getAllByRole("group");
-    expect(detailsElements).toHaveLength(2);
+    const mobileView = screen.getByTestId("mobile-view");
+    const deviceCards = within(mobileView).getAllByRole("group");
 
-    detailsElements.forEach((element, index) => {
-      expect(element).toHaveTextContent(mockDevices[index].alias);
-      expect(element).toHaveTextContent(mockDevices[index].usage.user_email);
-      expect(element).toHaveTextContent("Being Used By:");
-      expect(element).toHaveTextContent("Estimated Until:");
-    });
+    expect(deviceCards).toHaveLength(2);
+
+    // Check first device card
+    const firstCard = deviceCards[0];
+    expect(within(firstCard).getByText("Device 1")).toBeInTheDocument();
+    expect(within(firstCard).getByText("Being Used By:")).toBeInTheDocument();
+    expect(
+      within(firstCard).getByText("user1@example.com"),
+    ).toBeInTheDocument();
+    expect(within(firstCard).getByText("Estimated Until:")).toBeInTheDocument();
+    expect(within(firstCard).getByText(/Mar 20, 2024/)).toBeInTheDocument();
+
+    // Check second device card
+    const secondCard = deviceCards[1];
+    expect(within(secondCard).getByText("Device 2")).toBeInTheDocument();
+    expect(within(secondCard).getByText("Being Used By:")).toBeInTheDocument();
+    expect(
+      within(secondCard).getByText("user2@example.com"),
+    ).toBeInTheDocument();
+    expect(
+      within(secondCard).getByText("Estimated Until:"),
+    ).toBeInTheDocument();
+    expect(within(secondCard).getByText("Not specified")).toBeInTheDocument();
   });
 });
