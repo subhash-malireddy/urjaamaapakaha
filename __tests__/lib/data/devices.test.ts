@@ -119,7 +119,7 @@ describe("Device data functions", () => {
       expect(result.usage.estimated_use_time).toEqual(estimatedUseTime);
     });
 
-    it("should use fetch API for specific IP address 192.168.0.190", async () => {
+    it("should use fetch API if the IP address is in the SPECIAL_DEVICE_IPS env var", async () => {
       // Setup mocks
       setupTransactionMock();
       mockDB.usage.create.mockResolvedValueOnce(createMockUsageRecord() as any);
@@ -297,7 +297,7 @@ describe("Device data functions", () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it("should use fetch API for specific IP address 192.168.0.190", async () => {
+    it("should use fetch API if the IP address is in the SPECIAL_DEVICE_IPS env var", async () => {
       // Setup mocks
       setupTransactionMock();
       mockDB.active_device.findFirst.mockResolvedValueOnce(
@@ -464,6 +464,7 @@ const setupApiEnvironment = () => {
   process.env.URJ_FSFY_API = TEST_DATA.apiEndpoint;
   process.env.URJ_FSFY_API_USER = "testuser";
   process.env.URJ_FSFY_API_PWD = "testpass";
+  process.env.SPECIAL_DEVICE_IPS = TEST_DATA.specialIp;
 };
 
 // Helper to mock fetch API
