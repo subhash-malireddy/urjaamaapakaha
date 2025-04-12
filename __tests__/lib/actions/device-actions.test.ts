@@ -22,42 +22,56 @@ jest.mock("next/cache", () => ({
 
 jest.spyOn(console, "error").mockImplementation(() => {});
 
-describe("turnOnDeviceAction", () => {
-  const mockDeviceId = "test-device-1";
-  const mockDeviceIp = "192.168.1.1";
-  const mockUserEmail = "test@example.com";
-  const mockDeviceData = {
-    id: mockDeviceId,
-    mac_address: "00:00:00:00:00:01",
-    ip_address: mockDeviceIp,
-    alias: "Test Device",
-    is_archived: false,
-    previous_aliases: [],
-  };
+// Common test data
+const mockDeviceId = "test-device-1";
+const mockDeviceIp = "192.168.1.1";
+const mockUserEmail = "test@example.com";
+const mockDeviceData = {
+  id: mockDeviceId,
+  mac_address: "00:00:00:00:00:01",
+  ip_address: mockDeviceIp,
+  alias: "Test Device",
+  is_archived: false,
+  previous_aliases: [],
+};
 
+// Common setup and assertions
+const setupAuthenticatedUser = () => {
+  (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+};
+
+const setupUnauthenticatedUser = () => {
+  (auth as jest.Mock).mockResolvedValue({ user: null });
+};
+
+const expectUnauthorizedError = (result: any) => {
+  expect(result).toEqual({
+    success: false,
+    error: "Unauthorized. Please sign in.",
+  });
+};
+
+const expectNoRevalidation = () => {
+  expect(revalidatePath).not.toHaveBeenCalled();
+};
+
+describe("turnOnDeviceAction", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   it("returns error when user is not authenticated", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: null });
+    setupUnauthenticatedUser();
 
-    const result = await turnOnDeviceAction(
-      mockDeviceId,
-      mockDeviceIp,
-      undefined,
-    );
+    const result = await turnOnDeviceAction(mockDeviceId, mockDeviceIp);
 
-    expect(result).toEqual({
-      success: false,
-      error: "Unauthorized. Please sign in.",
-    });
+    expectUnauthorizedError(result);
     expect(turnOnDevice).not.toHaveBeenCalled();
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expectNoRevalidation();
   });
 
   it("returns error when deviceId is not provided", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
 
     const result = await turnOnDeviceAction("", mockDeviceIp);
 
@@ -66,11 +80,11 @@ describe("turnOnDeviceAction", () => {
       error: "Device ID is required",
     });
     expect(turnOnDevice).not.toHaveBeenCalled();
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expectNoRevalidation();
   });
 
   it("returns error when deviceIp is not provided", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
 
     const result = await turnOnDeviceAction(mockDeviceId, "");
 
@@ -79,11 +93,11 @@ describe("turnOnDeviceAction", () => {
       error: "Device ip is required",
     });
     expect(turnOnDevice).not.toHaveBeenCalled();
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expectNoRevalidation();
   });
 
   it("successfully turns on device and revalidates path", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
     (turnOnDevice as jest.Mock).mockResolvedValue(mockDeviceData);
 
     const result = await turnOnDeviceAction(mockDeviceId, mockDeviceIp);
@@ -102,7 +116,7 @@ describe("turnOnDeviceAction", () => {
   });
 
   it("successfully turns on device with estimated usage time", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
     (turnOnDevice as jest.Mock).mockResolvedValue(mockDeviceData);
 
     const estimatedUseTime = new Date();
@@ -127,7 +141,7 @@ describe("turnOnDeviceAction", () => {
 
   it("handles errors from turnOnDevice", async () => {
     const mockError = new Error("Database error");
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
     (turnOnDevice as jest.Mock).mockRejectedValue(mockError);
 
     const result = await turnOnDeviceAction(mockDeviceId, mockDeviceIp);
@@ -136,11 +150,11 @@ describe("turnOnDeviceAction", () => {
       success: false,
       error: "Database error",
     });
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expectNoRevalidation();
   });
 
   it("handles non-Error objects thrown by turnOnDevice", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
     (turnOnDevice as jest.Mock).mockRejectedValue("String error");
 
     const result = await turnOnDeviceAction(mockDeviceId, mockDeviceIp);
@@ -149,42 +163,27 @@ describe("turnOnDeviceAction", () => {
       success: false,
       error: "Failed to turn on device",
     });
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expectNoRevalidation();
   });
 });
 
 describe("turnOffDeviceAction", () => {
-  const mockDeviceId = "test-device-1";
-  const mockDeviceIp = "192.168.1.1";
-  const mockUserEmail = "test@example.com";
-  const mockDeviceData = {
-    id: mockDeviceId,
-    mac_address: "00:00:00:00:00:01",
-    ip_address: mockDeviceIp,
-    alias: "Test Device",
-    is_archived: false,
-    previous_aliases: [],
-  };
-
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   it("returns error when user is not authenticated", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: null });
+    setupUnauthenticatedUser();
 
     const result = await turnOffDeviceAction(mockDeviceId, mockDeviceIp);
 
-    expect(result).toEqual({
-      success: false,
-      error: "Unauthorized. Please sign in.",
-    });
+    expectUnauthorizedError(result);
     expect(turnOffDevice).not.toHaveBeenCalled();
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expectNoRevalidation();
   });
 
   it("returns error when deviceId is not provided", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
 
     const result = await turnOffDeviceAction("", mockDeviceIp);
 
@@ -193,11 +192,11 @@ describe("turnOffDeviceAction", () => {
       error: "Device ID is required",
     });
     expect(turnOffDevice).not.toHaveBeenCalled();
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expectNoRevalidation();
   });
 
   it("returns error when deviceIp is not provided", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
 
     const result = await turnOffDeviceAction(mockDeviceId, "");
 
@@ -206,11 +205,11 @@ describe("turnOffDeviceAction", () => {
       error: "Device ip is required",
     });
     expect(turnOffDevice).not.toHaveBeenCalled();
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expectNoRevalidation();
   });
 
   it("successfully turns off device and revalidates path", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
     (turnOffDevice as jest.Mock).mockResolvedValue(mockDeviceData);
 
     const result = await turnOffDeviceAction(mockDeviceId, mockDeviceIp);
@@ -225,7 +224,7 @@ describe("turnOffDeviceAction", () => {
 
   it("handles errors from turnOffDevice", async () => {
     const mockError = new Error("Database error");
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
     (turnOffDevice as jest.Mock).mockRejectedValue(mockError);
 
     const result = await turnOffDeviceAction(mockDeviceId, mockDeviceIp);
@@ -234,11 +233,11 @@ describe("turnOffDeviceAction", () => {
       success: false,
       error: "Database error",
     });
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expectNoRevalidation();
   });
 
   it("handles non-Error objects thrown by turnOffDevice", async () => {
-    (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+    setupAuthenticatedUser();
     (turnOffDevice as jest.Mock).mockRejectedValue("String error");
 
     const result = await turnOffDeviceAction(mockDeviceId, mockDeviceIp);
@@ -247,6 +246,6 @@ describe("turnOffDeviceAction", () => {
       success: false,
       error: "Failed to turn off device",
     });
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expectNoRevalidation();
   });
 });
