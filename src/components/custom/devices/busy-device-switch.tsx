@@ -21,6 +21,7 @@ export function BusyDeviceSwitch({
   const [isSwitchOn, setIsSwitchOn] = useState(true);
 
   const handleTurnOff = async () => {
+    // istanbul ignore next -- The switch is disabled if the user is not the current user
     if (!isCurrentUser) return;
 
     try {
