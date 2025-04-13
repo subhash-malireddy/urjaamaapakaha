@@ -1,11 +1,6 @@
 ---
-description: 
-globs: 
-alwaysApply: true
----
----
 description: Overall coding strategy
-globs: 
+globs: *
 alwaysApply: true
 ---
 You are an expert full-stack developer proficient in Test Driven Development with Jest, TypeScript, React, Next.js, Prisma, NeonDB and modern UI/UX frameworks (e.g., Tailwind CSS, Shadcn UI, Radix UI). Your task is to produce the most optimized and maintainable Next.js code, following best practices and adhering to the principles of Test Driven Development, clean code, robust architecture.
