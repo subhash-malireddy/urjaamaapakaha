@@ -69,23 +69,11 @@ function DesktopView({ devices, currentUserEmail }: BusyDevicesProps) {
                   <TableCell className="font-normal">{device.alias}</TableCell>
                   <TableCell>{userEmail}</TableCell>
                   <TableCell>
-                    {isCurrentUser ? (
-                      <InlineTimeEdit
-                        deviceId={device.id}
-                        estimatedUseUntil={estimatedUseUntil}
-                      />
-                    ) : estimatedUseUntil ? (
-                      new Date(estimatedUseUntil).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      })
-                    ) : (
-                      "Not specified"
-                    )}
+                    <EstimatedTimeDisplay
+                      deviceId={device.id}
+                      estimatedTime={estimatedUseUntil}
+                      isCurrentUser={isCurrentUser}
+                    />
                   </TableCell>
                   <TableCell>
                     <Switch
@@ -159,23 +147,11 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
                     Estimated Until:
                   </span>
                   <span>
-                    {isCurrentUser ? (
-                      <InlineTimeEdit
-                        deviceId={device.id}
-                        estimatedUseUntil={estimatedUseUntil}
-                      />
-                    ) : estimatedUseUntil ? (
-                      new Date(estimatedUseUntil).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      })
-                    ) : (
-                      "Not specified"
-                    )}
+                    <EstimatedTimeDisplay
+                      deviceId={device.id}
+                      estimatedTime={estimatedUseUntil}
+                      isCurrentUser={isCurrentUser}
+                    />
                   </span>
                 </div>
               </div>
@@ -186,3 +162,33 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
     </div>
   );
 }
+
+// Component to display estimated time (either editable or read-only)
+function EstimatedTimeDisplay({
+  deviceId,
+  estimatedTime,
+  isCurrentUser,
+}: {
+  deviceId: string;
+  estimatedTime: Date | null;
+  isCurrentUser: boolean;
+}) {
+  return isCurrentUser ? (
+    <InlineTimeEdit deviceId={deviceId} estimatedUseUntil={estimatedTime} />
+  ) : (
+    formatEstimatedTime(estimatedTime)
+  );
+}
+
+// Helper function to format estimated time
+const formatEstimatedTime = (date: Date | null): string => {
+  if (!date) return "Not specified";
+  return new Date(date).toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
