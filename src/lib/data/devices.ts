@@ -139,7 +139,8 @@ export async function turnOnDevice(
   try {
     let apiResponse: UsageResponse;
     const shouldCallRealApi =
-      process.env.NODE_ENV === "production" || deviceIp === "192.168.0.190";
+      process.env.NODE_ENV === "production" ||
+      process.env.SPECIAL_DEVICE_IPS?.split(",").includes(deviceIp);
     if (shouldCallRealApi) {
       const credentials = Buffer.from(
         `${process.env.URJ_FSFY_API_USER}:${process.env.URJ_FSFY_API_PWD}`,
@@ -192,6 +193,83 @@ export async function turnOnDevice(
     console.error("Error turning on device:", error);
     throw new Error(
       `Failed to turn on device: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+}
+
+export async function turnOffDevice(deviceId: string, deviceIp: string) {
+  try {
+    // Get active device and its usage record
+    const activeDevice = await db.active_device.findFirst({
+      where: { device_id: deviceId },
+      include: {
+        usage: true,
+        device: true,
+      },
+    });
+
+    if (!activeDevice || !activeDevice.usage) {
+      throw new Error("Device is not currently active or missing usage record");
+    }
+
+    // Call API/simulate API to get current energy reading
+    let apiResponse: UsageResponse;
+    const shouldCallRealApi =
+      process.env.NODE_ENV === "production" ||
+      process.env.SPECIAL_DEVICE_IPS?.split(",").includes(deviceIp);
+    if (shouldCallRealApi) {
+      const credentials = Buffer.from(
+        `${process.env.URJ_FSFY_API_USER}:${process.env.URJ_FSFY_API_PWD}`,
+      ).toString("base64");
+      apiResponse = await (
+        await fetch(`${process.env.URJ_FSFY_API}/off/${deviceIp}`, {
+          cache: "no-cache",
+          headers: {
+            "x-forwarded-authybasic": `Basic ${credentials}`,
+          },
+        })
+      ).json();
+    } else {
+      // Call the simulate API to get dummy data
+      const { simulateApiCall } = await import("@/lib/utils");
+      apiResponse = await simulateApiCall(
+        deviceIp,
+        false,
+        activeDevice.usage.start_date.toISOString(),
+        new Date().toISOString(),
+      );
+    }
+
+    // Calculate final consumption and update records in a transaction
+    return await db.$transaction(async (tx) => {
+      // Calculate final consumption (current - initial)
+      const finalConsumption =
+        Number(apiResponse.usage.today_energy) -
+        Number(activeDevice.usage.consumption);
+
+      // Update usage record with end time and final consumption
+      const updatedUsage = await tx.usage.update({
+        where: { id: activeDevice.usage.id },
+        data: {
+          end_date: new Date(),
+          consumption: finalConsumption,
+        },
+      });
+
+      // Remove active device entry
+      await tx.active_device.delete({
+        where: { device_id: deviceId },
+      });
+
+      return {
+        ...activeDevice,
+        usage: updatedUsage,
+      };
+    });
+  } catch (error) {
+    console.error("Error turning off device:", error);
+    throw new Error(
+      `Failed to turn off device: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }

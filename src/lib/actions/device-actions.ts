@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { getActiveDevice, turnOnDevice } from "../data/devices";
+import { getActiveDevice, turnOnDevice, turnOffDevice } from "../data/devices";
 import { serialize } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import { updateEstimatedTime } from "../data/usage";
@@ -48,6 +48,36 @@ export async function turnOnDeviceAction(
       success: false,
       error:
         error instanceof Error ? error.message : "Failed to turn on device",
+    };
+  }
+}
+
+export async function turnOffDeviceAction(deviceId: string, deviceIp: string) {
+  try {
+    // Get the current user session
+    const session = await auth();
+    if (!session?.user?.email) {
+      return { success: false, error: "Unauthorized. Please sign in." };
+    }
+
+    if (!deviceId) {
+      return { success: false, error: "Device ID is required" };
+    }
+
+    if (!deviceIp) {
+      return { success: false, error: "Device ip is required" };
+    }
+
+    // Turn off the device
+    const result = await turnOffDevice(deviceId, deviceIp);
+    revalidatePath("/");
+    return { success: true, data: serialize(result) };
+  } catch (error) {
+    console.error("Error turning off device:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to turn off device",
     };
   }
 }

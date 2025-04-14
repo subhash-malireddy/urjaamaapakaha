@@ -23,6 +23,7 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       NEXTAUTH_URL: https://preview-subhash-malireddy-urjaamaapakaha.vercel.app
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      SPECIAL_DEVICE_IPS: ${{ secrets.SPECIAL_DEVICE_IPS }}
 
     steps:
       - uses: actions/checkout@v4
