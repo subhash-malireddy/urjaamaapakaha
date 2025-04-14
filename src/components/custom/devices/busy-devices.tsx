@@ -11,6 +11,7 @@ import type { device } from "@prisma/client";
 import { DeviceSwitchMobile } from "./busy-device-switch-mobile";
 import styles from "./busy-devices.module.css";
 import { Switch } from "@/components/ui/switch";
+import { InlineTimeEdit } from "./inline-time-edit";
 
 interface BusyDevicesProps {
   devices: (device & {
@@ -60,26 +61,32 @@ function DesktopView({ devices, currentUserEmail }: BusyDevicesProps) {
             devices.map((device) => {
               /*istanbul ignore next*/
               const userEmail = device.usage?.user_email || "Unknown";
-              const estimatedEndTime = device.usage?.estimated_use_time
-                ? new Date(device.usage.estimated_use_time).toLocaleString(
-                    "en-US",
-                    {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                    },
-                  )
-                : "Not specified";
+              const estimatedUseUntil = device.usage?.estimated_use_time;
               const isCurrentUser = userEmail === currentUserEmail;
 
               return (
                 <TableRow key={device.id}>
                   <TableCell className="font-normal">{device.alias}</TableCell>
                   <TableCell>{userEmail}</TableCell>
-                  <TableCell>{estimatedEndTime}</TableCell>
+                  <TableCell>
+                    {isCurrentUser ? (
+                      <InlineTimeEdit
+                        deviceId={device.id}
+                        estimatedUseUntil={estimatedUseUntil}
+                      />
+                    ) : estimatedUseUntil ? (
+                      new Date(estimatedUseUntil).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    ) : (
+                      "Not specified"
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Switch
                       id={`turn-off-${device.id}`}
@@ -114,19 +121,7 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
         devices.map((device) => {
           /*istanbul ignore next*/
           const userEmail = device.usage?.user_email || "Unknown";
-          const estimatedEndTime = device.usage?.estimated_use_time
-            ? new Date(device.usage.estimated_use_time).toLocaleString(
-                "en-US",
-                {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                },
-              )
-            : "Not specified";
+          const estimatedUseUntil = device.usage?.estimated_use_time;
           const isCurrentUser = userEmail === currentUserEmail;
 
           return (
@@ -163,7 +158,25 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
                   <span className="text-muted-foreground">
                     Estimated Until:
                   </span>
-                  <span>{estimatedEndTime}</span>
+                  <span>
+                    {isCurrentUser ? (
+                      <InlineTimeEdit
+                        deviceId={device.id}
+                        estimatedUseUntil={estimatedUseUntil}
+                      />
+                    ) : estimatedUseUntil ? (
+                      new Date(estimatedUseUntil).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    ) : (
+                      "Not specified"
+                    )}
+                  </span>
                 </div>
               </div>
             </details>
