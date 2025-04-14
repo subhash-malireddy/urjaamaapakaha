@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { CheckIcon, PencilIcon, Loader2, XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useActionState } from "react";
-import { updateEstimatedTime } from "@/lib/actions/device-actions";
+import { updateEstimatedTimeAction } from "@/lib/actions/device-actions";
 
 interface InlineTimeEditProps {
   deviceId: string;
@@ -36,7 +36,7 @@ export function InlineTimeEdit({
 
   // Use useActionState instead of useFormState + useFormStatus
   const [serverState, formAction, isPending] = useActionState(
-    updateEstimatedTime,
+    updateEstimatedTimeAction,
     initialState,
   );
 

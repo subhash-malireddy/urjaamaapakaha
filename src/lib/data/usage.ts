@@ -44,3 +44,16 @@ export async function getActiveUsages() {
     },
   });
 }
+
+/**
+ * Update the estimated use time for a usage record
+ * @param usageId The ID of the usage record to update
+ * @param newTime The new estimated use time
+ * @returns The updated usage record
+ */
+export async function updateEstimatedTime(usageId: bigint, newTime: Date) {
+  return db.usage.update({
+    where: { id: usageId },
+    data: { estimated_use_time: newTime },
+  });
+}

@@ -30,15 +30,22 @@ export async function getDeviceUsage(deviceId: string) {
   });
 }
 
-export async function getActiveDevice(deviceId: string) {
-  return db.active_device.findUnique({
-    where: {
-      device_id: deviceId,
-    },
-    include: {
-      usage: true,
-    },
-  });
+type ActiveDeviceFindUniqueArgs = Parameters<
+  typeof db.active_device.findUnique
+>[0];
+
+type GetActiveDeviceReturnType<T extends ActiveDeviceFindUniqueArgs> =
+  ReturnType<typeof db.active_device.findUnique<T>>;
+
+/**
+ * Get an active device by its ID
+ * @param options The options for the findUnique query
+ * @returns The active device based on the requested shape in the options
+ */
+export async function getActiveDevice<T extends ActiveDeviceFindUniqueArgs>(
+  options: T,
+): Promise<GetActiveDeviceReturnType<T>> {
+  return db.active_device.findUnique(options) as GetActiveDeviceReturnType<T>;
 }
 
 export type DeviceWithActiveStatus = device & {

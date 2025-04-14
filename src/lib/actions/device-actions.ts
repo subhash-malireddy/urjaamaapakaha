@@ -1,9 +1,10 @@
 "use server";
 
 import { auth } from "@/auth";
-import { turnOnDevice } from "../data/devices";
+import { getActiveDevice, turnOnDevice } from "../data/devices";
 import { serialize } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
+import { updateEstimatedTime } from "../data/usage";
 
 /**
  * Server action to turn on a device
@@ -61,7 +62,7 @@ interface EstimatedTimeState {
 /**
  * Update the estimated usage time for a device
  */
-export async function updateEstimatedTime(
+export async function updateEstimatedTimeAction(
   _prevState: EstimatedTimeState,
   formData: FormData,
 ): Promise<EstimatedTimeState> {
@@ -88,10 +89,8 @@ export async function updateEstimatedTime(
       };
     }
 
-    // Check if the user is authorized to update this device's time
     // Get current active device record
-    const db = await import("@/lib/db").then((module) => module.db);
-    const activeDevice = await db.active_device.findUnique({
+    const activeDevice = await getActiveDevice({
       where: {
         device_id: deviceId,
       },
@@ -132,10 +131,7 @@ export async function updateEstimatedTime(
     }
 
     // Update the usage record with the new estimated time
-    await db.usage.update({
-      where: { id: activeDevice.usage.id },
-      data: { estimated_use_time: newTime },
-    });
+    await updateEstimatedTime(activeDevice.usage.id, newTime);
 
     // Revalidate the path to reflect changes
     revalidatePath("/");
