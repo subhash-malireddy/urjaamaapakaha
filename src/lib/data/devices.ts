@@ -129,15 +129,10 @@ export async function turnOnDevice(
   userEmail: string,
   estimatedUseTime?: Date,
 ) {
-  console.log(
-    "🚀 ~ process.env.NEXT_PUBLIC_VERCEL_ENV:",
-    process.env.NEXT_PUBLIC_VERCEL_ENV,
-  );
-  console.log("🚀 ~ process.env.NODE_ENV:", process.env.NODE_ENV);
   try {
     let apiResponse: UsageResponse;
     const shouldCallRealApi =
-      process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ||
+      process.env.SHOULD_CALL_REAL_API === "1" ||
       process.env.SPECIAL_DEVICE_IPS?.split(",").includes(deviceIp);
     if (shouldCallRealApi) {
       const credentials = Buffer.from(
@@ -213,7 +208,7 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
     // Call API/simulate API to get current energy reading
     let apiResponse: UsageResponse;
     const shouldCallRealApi =
-      process.env.NODE_ENV === "production" ||
+      process.env.SHOULD_CALL_REAL_API === "1" ||
       process.env.SPECIAL_DEVICE_IPS?.split(",").includes(deviceIp);
     if (shouldCallRealApi) {
       const credentials = Buffer.from(
