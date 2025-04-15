@@ -53,15 +53,15 @@ describe("Device data functions", () => {
       expect(result).toBeNull();
     });
 
-    it("should handle database errors", async () => {
-      const error = new Error("Database error");
+    it("should throw database errors", async () => {
+      const error = new Error("Some DB error");
       mockDB.active_device.findUnique.mockRejectedValueOnce(error);
 
       await expect(
         getActiveDevice({
           where: { device_id: TEST_DATA.deviceId },
         }),
-      ).rejects.toThrow("Database error");
+      ).rejects.toThrow("Some DB error");
     });
   });
 
