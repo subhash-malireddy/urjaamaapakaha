@@ -26,7 +26,7 @@ export function DeviceUsageTimePicker({
   deviceIp,
 }: DeviceUsageTimePickerProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [estimatedTime, setEstimatedTime] = useState(getCurrentTimePlusOneMin);
+  const [estimatedTime, setEstimatedTime] = useState<string>("00:00");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSwitchOn, setIsSwitchOn] = useState(false);
   const [timeError, setTimeError] = useState(false);

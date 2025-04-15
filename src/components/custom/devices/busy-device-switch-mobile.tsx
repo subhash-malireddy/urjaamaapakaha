@@ -1,23 +1,24 @@
 "use client";
 
-import { Switch } from "@/components/ui/switch";
-import { ComponentProps, HTMLAttributes } from "react";
+import { ComponentProps } from "react";
+import { BusyDeviceSwitch } from "./busy-device-switch";
 
-export function DeviceSwitchMobile({
-  containerProps,
-  switchProps,
-}: {
-  containerProps?: HTMLAttributes<HTMLDivElement>;
-  switchProps?: ComponentProps<typeof Switch>;
-}) {
+export function BusyDeviceSwitchMobile(
+  props: ComponentProps<typeof BusyDeviceSwitch>,
+) {
   return (
     <div
       className="absolute top-0 right-0 bottom-0 flex cursor-default items-center p-3"
       onClick={(e) => e.preventDefault()}
       onPointerDown={(e) => e.preventDefault()}
-      {...containerProps}
+      data-testid="busy-device-switch-mobile"
     >
-      <Switch {...switchProps} />
+      <BusyDeviceSwitch
+        deviceId={props.deviceId}
+        deviceIp={props.deviceIp}
+        isCurrentUser={props.isCurrentUser}
+        userEmail={props.userEmail}
+      />
     </div>
   );
 }

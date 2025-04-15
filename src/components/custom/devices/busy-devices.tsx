@@ -8,9 +8,9 @@ import {
 } from "@/components/ui/table";
 import { EmptyTableContent } from "./empty-table-content";
 import type { device } from "@prisma/client";
-import { DeviceSwitchMobile } from "./busy-device-switch-mobile";
+import { BusyDeviceSwitchMobile } from "./busy-device-switch-mobile";
 import styles from "./busy-devices.module.css";
-import { Switch } from "@/components/ui/switch";
+import { BusyDeviceSwitch } from "./busy-device-switch";
 
 interface BusyDevicesProps {
   devices: (device & {
@@ -81,16 +81,11 @@ function DesktopView({ devices, currentUserEmail }: BusyDevicesProps) {
                   <TableCell>{userEmail}</TableCell>
                   <TableCell>{estimatedEndTime}</TableCell>
                   <TableCell>
-                    <Switch
-                      id={`turn-off-${device.id}`}
-                      className="pointer-events-auto data-[state=checked]:bg-green-600"
-                      checked={true}
-                      title={
-                        !isCurrentUser
-                          ? `Only ${userEmail} can turn off this device`
-                          : "Click to turn off this device"
-                      }
-                      disabled={!isCurrentUser}
+                    <BusyDeviceSwitch
+                      deviceId={device.id}
+                      deviceIp={device.ip_address}
+                      isCurrentUser={isCurrentUser}
+                      userEmail={userEmail}
                     />
                   </TableCell>
                 </TableRow>
@@ -140,17 +135,11 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
               >
                 <div className="inline-flex items-center justify-between py-3 pl-1">
                   <span className="font-medium">{device.alias}</span>
-                  <DeviceSwitchMobile
-                    switchProps={{
-                      id: `turn-off-${device.id}`,
-                      className:
-                        "data-[state=checked]:bg-green-600 pointer-events-auto",
-                      checked: true,
-                      title: !isCurrentUser
-                        ? `Only ${userEmail} can turn off this device`
-                        : "Click to turn off this device",
-                      disabled: !isCurrentUser,
-                    }}
+                  <BusyDeviceSwitchMobile
+                    deviceId={device.id}
+                    deviceIp={device.ip_address}
+                    isCurrentUser={isCurrentUser}
+                    userEmail={userEmail}
                   />
                 </div>
               </summary>
