@@ -72,6 +72,7 @@ export const getCurrentTimePlusOneMin = () => {
   return `${hours}:${minutes}`;
 };
 
+//todo:: revisit this function
 // Helper function to validate if time is in the future
 export const isTimeInFuture = (timeString: string) => {
   const [hours, minutes] = timeString.split(":").map(Number);
@@ -83,3 +84,30 @@ export const isTimeInFuture = (timeString: string) => {
 
   return estimatedTime > now;
 };
+
+/**
+ * Normalizes a date to minute precision by setting seconds and milliseconds to 0
+ */
+export function normalizeToMinute(date: Date): Date {
+  return new Date(new Date(date).setSeconds(0, 0));
+}
+
+/**
+ * Compares two dates for equality at minute precision
+ * @returns true if dates are equal up to the minute
+ */
+export function areDatesEqualToMinute(date1: Date, date2: Date): boolean {
+  const normalized1 = normalizeToMinute(date1);
+  const normalized2 = normalizeToMinute(date2);
+  return normalized1.getTime() === normalized2.getTime();
+}
+
+/**
+ * Checks if a date is in the future at minute precision
+ * @returns true if the date is in the future
+ */
+export function isDateInFuture(date: Date): boolean {
+  const normalized = normalizeToMinute(date);
+  const normalizedNow = normalizeToMinute(new Date());
+  return normalized.getTime() > normalizedNow.getTime();
+}

@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { getActiveDevice } from "../data/devices";
 import { updateEstimatedTime } from "../data/usage";
+import { areDatesEqualToMinute, isDateInFuture } from "../utils";
 
 // Define the state type
 interface EstimatedTimeState {
@@ -34,7 +35,7 @@ export async function updateEstimatedTimeAction(
     }
 
     const newTime = new Date(newTimeStr);
-    if (isNaN(newTime.getTime()) || newTime <= new Date()) {
+    if (isNaN(newTime.getTime()) || !isDateInFuture(newTime)) {
       return {
         message: "Time must be in the future",
         error: "Validation Error",
@@ -72,9 +73,7 @@ export async function updateEstimatedTimeAction(
     // Check if the new time is the same as the current time
     if (activeDevice.usage.estimated_use_time) {
       const currentTime = new Date(activeDevice.usage.estimated_use_time);
-      const isSameTime = currentTime.getTime() === newTime.getTime();
-
-      if (isSameTime) {
+      if (areDatesEqualToMinute(currentTime, newTime)) {
         return {
           message: "No change made to the time",
           error: "Validation Error",
