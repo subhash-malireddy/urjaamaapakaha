@@ -129,6 +129,11 @@ export async function turnOnDevice(
   userEmail: string,
   estimatedUseTime?: Date,
 ) {
+  console.log(
+    "🚀 ~ process.env.NEXT_PUBLIC_VERCEL_ENV:",
+    process.env.NEXT_PUBLIC_VERCEL_ENV,
+  );
+  console.log("🚀 ~ process.env.NODE_ENV:", process.env.NODE_ENV);
   try {
     let apiResponse: UsageResponse;
     const shouldCallRealApi =
