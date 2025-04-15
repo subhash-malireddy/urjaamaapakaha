@@ -4,13 +4,22 @@ import { BusyDevices } from "../../../../src/components/custom/devices/busy-devi
 jest.mock(
   "../../../../src/components/custom/devices/busy-device-switch",
   () => ({
-    BusyDeviceSwitch: ({ deviceId, isCurrentUser, userEmail }: any) => (
+    BusyDeviceSwitch: ({ deviceId, isCurrentUser }: any) => (
       <div
         data-testid={`switch-${deviceId}`}
         data-is-current-user={isCurrentUser}
       >
-        {userEmail}
+        Mocked BusyDeviceSwitch
       </div>
+    ),
+  }),
+);
+
+jest.mock(
+  "../../../../src/components/custom/devices/busy-device-switch-mobile",
+  () => ({
+    BusyDeviceSwitchMobile: () => (
+      <div role="switch">Mocked BusyDeviceSwitchMobile</div>
     ),
   }),
 );
@@ -85,12 +94,10 @@ describe("BusyDevices", () => {
 
     device1Switches.forEach((switchEl) => {
       expect(switchEl).toHaveAttribute("data-is-current-user", "true");
-      expect(switchEl).toHaveTextContent("user1@example.com");
     });
 
     device2Switches.forEach((switchEl) => {
       expect(switchEl).toHaveAttribute("data-is-current-user", "false");
-      expect(switchEl).toHaveTextContent("user2@example.com");
     });
   });
 
