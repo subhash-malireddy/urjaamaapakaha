@@ -139,7 +139,7 @@ export async function turnOnDevice(
   try {
     let apiResponse: UsageResponse;
     const shouldCallRealApi =
-      process.env.NODE_ENV === "production" ||
+      process.env.SHOULD_CALL_REAL_API === "1" ||
       process.env.SPECIAL_DEVICE_IPS?.split(",").includes(deviceIp);
     if (shouldCallRealApi) {
       const credentials = Buffer.from(
@@ -215,7 +215,7 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
     // Call API/simulate API to get current energy reading
     let apiResponse: UsageResponse;
     const shouldCallRealApi =
-      process.env.NODE_ENV === "production" ||
+      process.env.SHOULD_CALL_REAL_API === "1" ||
       process.env.SPECIAL_DEVICE_IPS?.split(",").includes(deviceIp);
     if (shouldCallRealApi) {
       const credentials = Buffer.from(
