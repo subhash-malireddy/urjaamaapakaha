@@ -1,7 +1,8 @@
+"use server";
+
 import { auth } from "@/auth";
 import { getActiveDevice } from "../data/devices";
 import { updateEstimatedTime } from "../data/usage";
-import { revalidatePath } from "next/cache";
 
 // Define the state type
 interface EstimatedTimeState {
@@ -83,9 +84,6 @@ export async function updateEstimatedTimeAction(
 
     // Update the usage record with the new estimated time
     await updateEstimatedTime(activeDevice.usage.id, newTime);
-
-    // Revalidate the path to reflect changes
-    revalidatePath("/");
 
     return {
       message: "Time updated successfully",
