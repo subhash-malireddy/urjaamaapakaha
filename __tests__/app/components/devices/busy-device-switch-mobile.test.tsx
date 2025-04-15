@@ -1,16 +1,30 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { DeviceSwitchMobile } from "../../../../src/components/custom/devices/busy-device-switch-mobile";
+import { BusyDeviceSwitchMobile } from "../../../../src/components/custom/devices/busy-device-switch-mobile";
+
+jest.mock(
+  "../../../../src/components/custom/devices/busy-device-switch",
+  () => ({
+    BusyDeviceSwitch: () => <div role="switch">Mocked Switch</div>,
+  }),
+);
+
+const mockProps = {
+  deviceId: "test-device-1",
+  deviceIp: "192.168.1.1",
+  isCurrentUser: true,
+  userEmail: "test@example.com",
+};
 
 afterAll(() => {
   jest.resetAllMocks();
 });
 
-describe("DeviceSwitchMobile", () => {
+describe("BusyDeviceSwitchMobile", () => {
   it("renders DeviceSwitch within a container", () => {
-    render(<DeviceSwitchMobile />);
-    const containerElement = screen.getByRole("switch").closest("div");
+    render(<BusyDeviceSwitchMobile {...mockProps} />);
+    const containerElement = screen.getByTestId("busy-device-switch-mobile");
     expect(containerElement).toHaveClass(
       "absolute top-0 right-0 bottom-0 flex cursor-default items-center p-3",
     );
@@ -22,8 +36,8 @@ describe("DeviceSwitchMobile", () => {
     jest
       .spyOn(Event.prototype, "preventDefault")
       .mockImplementation(mockPreventDefault);
-    render(<DeviceSwitchMobile />);
-    const containerElement = screen.getByRole("switch").closest("div");
+    render(<BusyDeviceSwitchMobile {...mockProps} />);
+    const containerElement = screen.getByTestId("busy-device-switch-mobile");
     if (containerElement) {
       await userEvent.click(containerElement);
       expect(mockPreventDefault).toHaveBeenCalledTimes(2);
