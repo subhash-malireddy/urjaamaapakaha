@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { CheckIcon, PencilIcon, Loader2, XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useActionState } from "react";
-import { updateEstimatedTimeAction } from "@/lib/actions/device-actions";
+import { updateEstimatedTimeAction } from "@/lib/actions/usage-actions";
 
 interface InlineTimeEditProps {
   deviceId: string;
