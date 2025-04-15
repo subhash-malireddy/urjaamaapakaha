@@ -118,6 +118,7 @@ jobs:
           vercel env rm URJ_FSFY_API preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm URJ_FSFY_API_USER preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm URJ_FSFY_API_PWD preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm SPECIAL_DEVICE_IPS preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
 
           # Add environment variables using Vercel CLI without newlines
           printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
@@ -159,6 +160,10 @@ jobs:
           printf "%s" "${{ secrets.URJ_FSFY_API_PWD }}" > urj_fsfy_api_pwd.txt
           vercel env add URJ_FSFY_API_PWD preview < urj_fsfy_api_pwd.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm urj_fsfy_api_pwd.txt
+
+          printf "%s" "${{ secrets.SPECIAL_DEVICE_IPS }}" > special_device_ips.txt
+          vercel env add SPECIAL_DEVICE_IPS preview < special_device_ips.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm special_device_ips.txt
 
       - name: Build Project Artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

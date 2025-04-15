@@ -132,7 +132,7 @@ export async function turnOnDevice(
   try {
     let apiResponse: UsageResponse;
     const shouldCallRealApi =
-      process.env.NODE_ENV === "production" ||
+      process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ||
       process.env.SPECIAL_DEVICE_IPS?.split(",").includes(deviceIp);
     if (shouldCallRealApi) {
       const credentials = Buffer.from(
