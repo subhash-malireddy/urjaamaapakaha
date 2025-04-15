@@ -1,5 +1,9 @@
 import { db } from "@/lib/db";
-import { turnOnDevice, turnOffDevice } from "@/lib/data/devices";
+import {
+  turnOnDevice,
+  turnOffDevice,
+  getActiveDevice,
+} from "@/lib/data/devices";
 import { PrismaClient } from "@prisma/client";
 import { DeepMockProxy } from "jest-mock-extended";
 import * as utils from "@/lib/utils";
@@ -15,6 +19,50 @@ describe("Device data functions", () => {
   // Reset all mocks before each test
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe("getActiveDevice", () => {
+    it("should successfully retrieve an active device", async () => {
+      const mockActiveDevice = createMockActiveDeviceRecord();
+      mockDB.active_device.findUnique.mockResolvedValueOnce(
+        mockActiveDevice as any,
+      );
+
+      const result = await getActiveDevice({
+        where: { device_id: TEST_DATA.deviceId },
+        include: { usage: true, device: true },
+      });
+
+      expect(db.active_device.findUnique).toHaveBeenCalledWith({
+        where: { device_id: TEST_DATA.deviceId },
+        include: { usage: true, device: true },
+      });
+      expect(result).toEqual(mockActiveDevice);
+    });
+
+    it("should return null when no active device is found", async () => {
+      mockDB.active_device.findUnique.mockResolvedValueOnce(null);
+
+      const result = await getActiveDevice({
+        where: { device_id: TEST_DATA.deviceId },
+      });
+
+      expect(db.active_device.findUnique).toHaveBeenCalledWith({
+        where: { device_id: TEST_DATA.deviceId },
+      });
+      expect(result).toBeNull();
+    });
+
+    it("should handle database errors", async () => {
+      const error = new Error("Database error");
+      mockDB.active_device.findUnique.mockRejectedValueOnce(error);
+
+      await expect(
+        getActiveDevice({
+          where: { device_id: TEST_DATA.deviceId },
+        }),
+      ).rejects.toThrow("Database error");
+    });
   });
 
   describe("turnOnDevice", () => {
