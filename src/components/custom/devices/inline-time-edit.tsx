@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckIcon, PencilIcon, Loader2, XIcon } from "lucide-react";
@@ -18,11 +18,8 @@ export function InlineTimeEdit({
   estimatedUseUntil,
 }: InlineTimeEditProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [displayTime, setDisplayTime] = useState<Date | null>(
-    estimatedUseUntil,
-  );
   const [inputValue, setInputValue] = useState<string>("");
-  const [isDirty, setIsDirty] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const submitButtonRef = useRef<HTMLButtonElement>(null);
@@ -40,10 +37,17 @@ export function InlineTimeEdit({
     initialState,
   );
 
-  // Update local state when server action completes successfully
+  // Derive displayTime from either server response or prop
+  const displayTime = useMemo(() => {
+    if (serverState.updatedTime && !serverState.error) {
+      return new Date(serverState.updatedTime);
+    }
+    return estimatedUseUntil;
+  }, [serverState.updatedTime, serverState.error, estimatedUseUntil]);
+
+  // Update editing state when server action completes successfully
   useEffect(() => {
     if (serverState.updatedTime && !serverState.error) {
-      setDisplayTime(new Date(serverState.updatedTime));
       setIsEditing(false);
     }
   }, [serverState]);
@@ -94,7 +98,9 @@ export function InlineTimeEdit({
       : "";
     setInputValue(initialValue);
     initialInputValueRef.current = initialValue;
-    setIsDirty(false);
+    // Reset interaction state not to show error from previous interaction
+    // Fresh interaction should show fresh error message if needed
+    setHasInteracted(false);
     setIsEditing(true);
   };
 
@@ -103,7 +109,7 @@ export function InlineTimeEdit({
     setInputValue(newValue);
 
     // Mark as dirty as soon as the user interacts with the input
-    setIsDirty(true);
+    setHasInteracted(true);
   };
 
   const handleCancel = (e: React.MouseEvent) => {
@@ -153,7 +159,7 @@ export function InlineTimeEdit({
     }
 
     // Only check for unchanged time if the form is dirty but reverted to initial value
-    if (isDirty && inputValue === initialInputValueRef.current) {
+    if (hasInteracted && inputValue === initialInputValueRef.current) {
       return "No change made to the time";
     }
 
