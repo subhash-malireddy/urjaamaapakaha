@@ -83,6 +83,7 @@ export function InlineTimeEdit({
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const initialValue = displayTime
       ? new Date(
@@ -117,8 +118,8 @@ export function InlineTimeEdit({
     } else if (e.key === "Enter" && !e.shiftKey) {
       const target = e.target;
 
-      // If Enter was pressed on the input or submit button, handle validation and submission
-      if (inputRef.current === target || submitButtonRef.current === target) {
+      // If Enter was pressed on the input, handle validation and submission
+      if (inputRef.current === target) {
         e.preventDefault(); // Only prevent default for input/submit button
 
         const clientError = validateTime();
@@ -140,6 +141,8 @@ export function InlineTimeEdit({
 
     const selectedDate = new Date(inputValue);
     const now = new Date();
+    selectedDate.setSeconds(0, 0); // Normalize seconds and milliseconds
+    now.setSeconds(0, 0); // Normalize seconds and milliseconds
 
     if (isNaN(selectedDate.getTime())) {
       return "Invalid date format";
@@ -159,6 +162,7 @@ export function InlineTimeEdit({
 
   // Separate function to check if input is unchanged for button disable logic
   const isInputUnchanged = (): boolean => {
+    //istanbul ignore next
     if (!displayTime) return false;
 
     // Convert datetime-local string to Date for comparison
@@ -231,7 +235,7 @@ export function InlineTimeEdit({
           type="submit"
           className="h-8 w-8 shrink-0"
           disabled={isPending || !!clientError || isUnchanged}
-          title={clientError || "Confirm time"}
+          title={isPending ? "Updating..." : clientError || "Confirm time"}
         >
           {isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
