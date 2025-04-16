@@ -197,6 +197,12 @@ export async function turnOnDevice(
   }
 }
 
+/**
+ *
+ * @param deviceId The ID of the device to turn off
+ * @param deviceIp The IP address of the device to turn off
+ * @returns The updated in-active device entry with usage information
+ */
 export async function turnOffDevice(deviceId: string, deviceIp: string) {
   try {
     // Get active device and its usage record
