@@ -261,7 +261,9 @@ describe("updateEstimatedTimeAction", () => {
     });
 
     it("should return error when new time is same as time in the database (up to minute)", async () => {
-      const baseTime = new Date("2025-04-15T14:56:08.134Z");
+      const oneHour = 60 * 60 * 1000;
+      const baseTime = new Date(Date.now() + oneHour);
+      baseTime.setSeconds(0, 0); // Set seconds to 0 for comparison
       const currentTime = new Date(baseTime);
       const newTimeWithDifferentSeconds = new Date(baseTime);
       newTimeWithDifferentSeconds.setSeconds(currentTime.getSeconds() + 30); // Different seconds, same minute
