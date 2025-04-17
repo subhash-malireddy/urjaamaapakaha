@@ -138,3 +138,26 @@ export const getDateTimeLocalValue = (
   if (date === null) return "";
   return sliceISOStringUptoMinute(dateToLocalISOString(date));
 };
+
+// Helper function to get current time + 1 minute as a Date object
+export const getCurrentDatePlusOneMin = (): Date => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + 1); // Add 1 minute
+  return now;
+};
+
+// Helper function to get current time + 8 hours as a Date object
+export const getCurrentDatePlusEightHours = (): Date => {
+  const now = new Date();
+  now.setHours(now.getHours() + 8); // Add 8 hours
+  return now;
+};
+
+// Helper function to check if a date is within 8 hours from now
+export const isWithinEightHours = (date: Date): boolean => {
+  const normalizedDate = normalizeToMinute(date);
+  const normalizedEightHoursLater = normalizeToMinute(
+    getCurrentDatePlusEightHours(),
+  );
+  return normalizedDate.getTime() <= normalizedEightHoursLater.getTime();
+};

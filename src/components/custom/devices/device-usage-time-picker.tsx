@@ -14,7 +14,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { turnOnDeviceAction } from "@/lib/actions/device-actions";
 import { FreeDeviceSwitch } from "./free-device-switch";
-import { getCurrentTimePlusOneMin, isTimeInFuture } from "@/lib/utils";
+import {
+  getCurrentDatePlusOneMin,
+  getCurrentDatePlusEightHours,
+  getDateTimeLocalValue,
+  isDateInFuture,
+  isWithinEightHours,
+} from "@/lib/utils";
 
 interface DeviceUsageTimePickerProps {
   deviceId: string;
@@ -26,10 +32,27 @@ export function DeviceUsageTimePicker({
   deviceIp,
 }: DeviceUsageTimePickerProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [estimatedTime, setEstimatedTime] = useState<string>("00:00");
+  const [estimatedDateTime, setEstimatedDateTime] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSwitchOn, setIsSwitchOn] = useState(false);
-  const [timeError, setTimeError] = useState(false);
+  const [timeError, setTimeError] = useState<string | null>(null);
+
+  // Validate the selected date and return an error message if invalid
+  const validateDateTime = (dateTimeStr: string): string | null => {
+    const selectedDate = new Date(dateTimeStr);
+
+    // Validate if date is in the future
+    if (!isDateInFuture(selectedDate)) {
+      return "Time must be in the future";
+    }
+
+    // Validate if date is within 8 hours
+    if (!isWithinEightHours(selectedDate)) {
+      return "A device cannot be blocked for more than 8 hours";
+    }
+
+    return null;
+  };
 
   const handleCheckedChange = async (isOn: boolean) => {
     /* istanbul ignore else */
@@ -38,8 +61,8 @@ export function DeviceUsageTimePicker({
       setIsSwitchOn(true);
       setIsDialogOpen(true);
       // Update the time to current time + 1 minute whenever dialog opens
-      setEstimatedTime(getCurrentTimePlusOneMin());
-      setTimeError(false);
+      setEstimatedDateTime(getDateTimeLocalValue(getCurrentDatePlusOneMin()));
+      setTimeError(null);
     } else {
       //since the user never manually turns off the switch this part is never reached
       setIsSwitchOn(false);
@@ -50,38 +73,30 @@ export function DeviceUsageTimePicker({
     // When dialog is closed without action, reset the switch
     setIsDialogOpen(false);
     setIsSwitchOn(false);
-    setTimeError(false);
+    setTimeError(null);
   };
 
   const handleTimeChange = (value: string) => {
-    setEstimatedTime(value);
-    setTimeError(!isTimeInFuture(value));
+    setEstimatedDateTime(value);
+    setTimeError(validateDateTime(value));
   };
 
   const handleTurnOn = async () => {
     // istanbul ignore if
     if (isLoading || timeError) return;
 
-    // Validate time is in the future
-    if (!isTimeInFuture(estimatedTime)) {
-      setTimeError(true);
+    // Validate time again before proceeding
+    const error = validateDateTime(estimatedDateTime);
+    if (error) {
+      setTimeError(error);
       return;
     }
 
     try {
       setIsLoading(true);
+      const selectedDate = new Date(estimatedDateTime);
 
-      // Calculate estimated end time based on current time + estimated hours:minutes
-      const [hours, minutes] = estimatedTime.split(":").map(Number);
-      const estimatedUseTime = new Date();
-      estimatedUseTime.setHours(hours);
-      estimatedUseTime.setMinutes(minutes);
-
-      const result = await turnOnDeviceAction(
-        deviceId,
-        deviceIp,
-        estimatedUseTime,
-      );
+      const result = await turnOnDeviceAction(deviceId, deviceIp, selectedDate);
 
       if (!result.success) {
         throw new Error(result.error);
@@ -144,22 +159,18 @@ export function DeviceUsageTimePicker({
           <div className="py-4">
             <div className="space-y-2">
               <Label htmlFor={`est-time-${deviceId}`}>
-                Estimated usage time (hh:mm)
+                Estimated use until
               </Label>
               <Input
                 id={`est-time-${deviceId}`}
-                type="time"
-                value={estimatedTime}
+                type="datetime-local"
+                value={estimatedDateTime}
                 onChange={(e) => handleTimeChange(e.target.value)}
-                min="00:05"
-                max="24:00"
+                min={getDateTimeLocalValue(getCurrentDatePlusOneMin())}
+                max={getDateTimeLocalValue(getCurrentDatePlusEightHours())}
                 className={timeError ? "border-red-500" : ""}
               />
-              {timeError && (
-                <p className="text-sm text-red-500">
-                  Time must be in the future
-                </p>
-              )}
+              {timeError && <p className="text-sm text-red-500">{timeError}</p>}
             </div>
           </div>
 
@@ -172,7 +183,7 @@ export function DeviceUsageTimePicker({
             >
               {isLoading ? "Turning On..." : "Turn On Without Timer"}
             </Button>
-            <Button onClick={handleTurnOn} disabled={isLoading || timeError}>
+            <Button onClick={handleTurnOn} disabled={isLoading || !!timeError}>
               {isLoading ? "Turning On..." : "Turn On With Timer"}
             </Button>
           </DialogFooter>
