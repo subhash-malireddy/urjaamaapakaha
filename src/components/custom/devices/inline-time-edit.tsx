@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckIcon, PencilIcon, Loader2, XIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getDateTimeLocalValue, isDateInFuture } from "@/lib/utils";
 import { useActionState } from "react";
 import { updateEstimatedTimeAction } from "@/lib/actions/usage-actions";
 
@@ -89,13 +89,7 @@ export function InlineTimeEdit({
   const handleEditClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const initialValue = displayTime
-      ? new Date(
-          displayTime.getTime() - displayTime.getTimezoneOffset() * 60000,
-        )
-          .toISOString()
-          .slice(0, 16)
-      : "";
+    const initialValue = getDateTimeLocalValue(displayTime);
     setInputValue(initialValue);
     initialInputValueRef.current = initialValue;
     // Reset interaction state not to show error from previous interaction
@@ -146,15 +140,12 @@ export function InlineTimeEdit({
     }
 
     const selectedDate = new Date(inputValue);
-    const now = new Date();
-    selectedDate.setSeconds(0, 0); // Normalize seconds and milliseconds
-    now.setSeconds(0, 0); // Normalize seconds and milliseconds
 
     if (isNaN(selectedDate.getTime())) {
       return "Invalid date format";
     }
 
-    if (selectedDate <= now) {
+    if (!isDateInFuture(selectedDate)) {
       return "Time must be in the future";
     }
 
@@ -223,9 +214,7 @@ export function InlineTimeEdit({
             name="estimatedTime"
             value={inputValue}
             onChange={handleInputChange}
-            min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-              .toISOString()
-              .slice(0, 16)}
+            min={getDateTimeLocalValue()}
             className={cn(
               "h-8 w-full pr-2",
               (serverState.error || clientError) && "border-destructive",

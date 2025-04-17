@@ -111,3 +111,30 @@ export function isDateInFuture(date: Date): boolean {
   const normalizedNow = normalizeToMinute(new Date());
   return normalized.getTime() > normalizedNow.getTime();
 }
+
+// Convert Date to timezone-adjusted ISO string
+const dateToLocalISOString = (date: Date = new Date()): string => {
+  return new Date(
+    date.getTime() - date.getTimezoneOffset() * 60000,
+  ).toISOString();
+};
+
+// Slice the ISO string up to minute precision (YYYY-MM-DDTHH:MM)
+const sliceISOStringUptoMinute = (isoString: string): string => {
+  return isoString.slice(0, 16);
+};
+
+/**
+ * @description Get the local date-time string in YYYY-MM-DDTHH:MM format.
+ * Useful for input type="datetime-local"
+ * @param date - Date object (default: new Date())
+ * @returns Local date-time string in YYYY-MM-DDTHH:MM format
+ *
+ * @example getDateTimeLocalValue() => "2023-01-01T00:00"
+ * */
+export const getDateTimeLocalValue = (
+  date: Date | null = new Date(),
+): string => {
+  if (date === null) return "";
+  return sliceISOStringUptoMinute(dateToLocalISOString(date));
+};
