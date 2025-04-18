@@ -1,4 +1,3 @@
-//istanbul ignore file
 //TODO:: add tests for this file
 
 import { clsx, type ClassValue } from "clsx";
@@ -26,6 +25,7 @@ export interface UsageResponse {
 }
 
 // Define the simulateApiCall function
+/* istanbul ignore next */
 export async function simulateApiCall(
   _deviceIp: string,
   isTurnOn: boolean,
@@ -91,7 +91,7 @@ export function isDateInFuture(date: Date): boolean {
 }
 
 // Convert Date to timezone-adjusted ISO string
-const dateToLocalISOString = (date: Date = new Date()): string => {
+export const dateToLocalISOString = (date: Date): string => {
   return new Date(
     date.getTime() - date.getTimezoneOffset() * 60000,
   ).toISOString();
