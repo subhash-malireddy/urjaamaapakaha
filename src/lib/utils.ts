@@ -63,28 +63,6 @@ function getEnergyValueForDate(date?: string | null): number {
   return Math.floor(seededRandom(seed) * 100); // Generate a value between 0 and 100
 }
 
-// Helper function to get current time + 1 minute in HH:MM format
-export const getCurrentTimePlusOneMin = () => {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() + 1); // Add 1 minute
-  const hours = now.getHours().toString().padStart(2, "0");
-  const minutes = now.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
-};
-
-//todo:: revisit this function
-// Helper function to validate if time is in the future
-export const isTimeInFuture = (timeString: string) => {
-  const [hours, minutes] = timeString.split(":").map(Number);
-  const now = new Date();
-  const estimatedTime = new Date();
-  estimatedTime.setHours(hours);
-  estimatedTime.setMinutes(minutes);
-  estimatedTime.setSeconds(0); // Reset seconds for accurate comparison
-
-  return estimatedTime > now;
-};
-
 /**
  * Normalizes a date to minute precision by setting seconds and milliseconds to 0
  */
