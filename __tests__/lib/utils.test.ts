@@ -1,6 +1,7 @@
 import {
   areDatesEqualToMinute,
   dateToLocalISOString,
+  getCurrentDatePlusOneMin,
   getDateTimeLocalValue,
   isDateInFuture,
   normalizeToMinute,
@@ -66,6 +67,24 @@ describe("date utils", () => {
       const result = getDateTimeLocalValue(null);
 
       expect(result).toBe("");
+    });
+  });
+
+  describe("getCurrentDatePlusOneMin", () => {
+    it("should return a date one minute in the future", () => {
+      const mockNowReturn = new Date("2024-1-1");
+      //we need this because mockNowReturn will be mutated inside the function.
+      const forAssertingResult = new Date("2024-1-1");
+      // global.Date = jest.fn(() => mockNow) as unknown as DateConstructor;
+      const globalDateSpy = jest
+        .spyOn(global, "Date")
+        .mockImplementationOnce(() => mockNowReturn);
+      const result = getCurrentDatePlusOneMin();
+
+      // Verify one minute was added
+      expect(result.getTime()).toBe(forAssertingResult.getTime() + 60000);
+
+      globalDateSpy.mockRestore();
     });
   });
 
