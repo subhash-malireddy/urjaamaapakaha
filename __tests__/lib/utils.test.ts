@@ -3,6 +3,7 @@ import {
   dateToLocalISOString,
   isDateInFuture,
   normalizeToMinute,
+  sliceISOStringUptoMinute,
 } from "@/lib/utils";
 
 describe("date utils", () => {
@@ -31,6 +32,16 @@ describe("date utils", () => {
 
       expect(result).toBe(expected);
       expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\.000Z$/);
+    });
+  });
+
+  describe("sliceISOStringUptoMinute", () => {
+    it("should handle ISO strings without seconds or milliseconds", () => {
+      // Test with an ISO string that only has minutes
+      const isoString = "2024-01-01T12:30Z";
+      const result = sliceISOStringUptoMinute(isoString);
+
+      expect(result).toBe("2024-01-01T12:30");
     });
   });
 
