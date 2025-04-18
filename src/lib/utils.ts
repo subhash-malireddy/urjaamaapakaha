@@ -110,9 +110,7 @@ export const sliceISOStringUptoMinute = (isoString: string): string => {
  *
  * @example getDateTimeLocalValue() => "2023-01-01T00:00"
  * */
-export const getDateTimeLocalValue = (
-  date: Date | null = new Date(),
-): string => {
+export const getDateTimeLocalValue = (date: Date | null): string => {
   if (date === null) return "";
   return sliceISOStringUptoMinute(dateToLocalISOString(date));
 };

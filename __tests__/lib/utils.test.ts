@@ -1,6 +1,7 @@
 import {
   areDatesEqualToMinute,
   dateToLocalISOString,
+  getDateTimeLocalValue,
   isDateInFuture,
   normalizeToMinute,
   sliceISOStringUptoMinute,
@@ -42,6 +43,29 @@ describe("date utils", () => {
       const result = sliceISOStringUptoMinute(isoString);
 
       expect(result).toBe("2024-01-01T12:30");
+    });
+  });
+
+  describe("getDateTimeLocalValue", () => {
+    it("should return formatted date-time string in YYYY-MM-DDTHH:MM format", () => {
+      // Test with a specific date
+      const testDate = new Date(2024, 0, 1, 12, 30, 45, 500);
+      const result = getDateTimeLocalValue(testDate);
+
+      // Calculate expected result
+      const tzOffset = testDate.getTimezoneOffset();
+      const expectedTimestamp = testDate.getTime() - tzOffset * 60000;
+      const expectedISOString = new Date(expectedTimestamp).toISOString();
+      const expected = expectedISOString.slice(0, 16);
+
+      expect(result).toBe(expected);
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+    });
+
+    it("should return empty string for null date", () => {
+      const result = getDateTimeLocalValue(null);
+
+      expect(result).toBe("");
     });
   });
 
