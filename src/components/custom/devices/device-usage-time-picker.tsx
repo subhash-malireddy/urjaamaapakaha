@@ -64,7 +64,7 @@ export function DeviceUsageTimePicker({
       setEstimatedDateTime(getDateTimeLocalValue(getCurrentDatePlusOneMin()));
       setTimeError(null);
     } else {
-      //since the user never manually turns off the switch this part is never reached
+      //since the user never manually turns off the switch within the active device list this part is never reached
       setIsSwitchOn(false);
     }
   };
