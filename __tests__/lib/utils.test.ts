@@ -1,5 +1,6 @@
 import {
   areDatesEqualToMinute,
+  dateToLocalISOString,
   isDateInFuture,
   normalizeToMinute,
 } from "@/lib/utils";
@@ -14,6 +15,22 @@ describe("date utils", () => {
       expect(normalized.getMilliseconds()).toBe(0);
       expect(normalized.getMinutes()).toBe(30);
       expect(normalized.getHours()).toBe(12);
+    });
+  });
+
+  describe("dateToLocalISOString", () => {
+    // We need to export this function for testing or test it indirectly
+    it("should adjust for timezone offset", () => {
+      const testDate = new Date(2024, 0, 1, 12, 30, 0, 0);
+      const result = dateToLocalISOString(testDate);
+
+      // Calculate expected result manually
+      const expectedTimestamp =
+        testDate.getTime() - testDate.getTimezoneOffset() * 60000;
+      const expected = new Date(expectedTimestamp).toISOString();
+
+      expect(result).toBe(expected);
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\.000Z$/);
     });
   });
 
