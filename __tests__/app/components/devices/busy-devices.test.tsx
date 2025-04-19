@@ -1,28 +1,37 @@
 import { render, screen, within } from "@testing-library/react";
-import { BusyDevices } from "../../../../src/components/custom/devices/busy-devices";
+import { BusyDevices } from "@/components/custom/devices/busy-devices";
 
-jest.mock(
-  "../../../../src/components/custom/devices/busy-device-switch",
-  () => ({
-    BusyDeviceSwitch: ({ deviceId, isCurrentUser }: any) => (
-      <div
-        data-testid={`switch-${deviceId}`}
-        data-is-current-user={isCurrentUser}
-      >
-        Mocked BusyDeviceSwitch
-      </div>
-    ),
-  }),
-);
+jest.mock("@/components/custom/devices/busy-device-switch", () => ({
+  BusyDeviceSwitch: ({ deviceId, isCurrentUser }: any) => (
+    <div
+      data-testid={`switch-${deviceId}`}
+      data-is-current-user={isCurrentUser}
+    >
+      Mocked BusyDeviceSwitch
+    </div>
+  ),
+}));
 
-jest.mock(
-  "../../../../src/components/custom/devices/busy-device-switch-mobile",
-  () => ({
-    BusyDeviceSwitchMobile: () => (
-      <div role="switch">Mocked BusyDeviceSwitchMobile</div>
-    ),
-  }),
-);
+jest.mock("@/components/custom/devices/busy-device-switch-mobile", () => ({
+  BusyDeviceSwitchMobile: () => (
+    <div role="switch">Mocked BusyDeviceSwitchMobile</div>
+  ),
+}));
+
+jest.mock("@/components/custom/devices/inline-time-edit", () => ({
+  InlineTimeEdit: ({
+    value,
+    onSave,
+  }: {
+    value: Date | null;
+    onSave: (newValue: Date) => void;
+  }) => (
+    <div data-testid="inline-time-edit">
+      <span>{value ? value.toISOString() : "Not specified"}</span>
+      <button onClick={() => onSave(new Date())}>Edit</button>
+    </div>
+  ),
+}));
 
 const mockDevices = [
   {

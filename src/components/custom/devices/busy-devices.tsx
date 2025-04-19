@@ -11,6 +11,7 @@ import type { device } from "@prisma/client";
 import { BusyDeviceSwitchMobile } from "./busy-device-switch-mobile";
 import styles from "./busy-devices.module.css";
 import { BusyDeviceSwitch } from "./busy-device-switch";
+import { InlineTimeEdit } from "./inline-time-edit";
 
 interface BusyDevicesProps {
   devices: (device & {
@@ -60,26 +61,20 @@ function DesktopView({ devices, currentUserEmail }: BusyDevicesProps) {
             devices.map((device) => {
               /*istanbul ignore next*/
               const userEmail = device.usage?.user_email || "Unknown";
-              const estimatedEndTime = device.usage?.estimated_use_time
-                ? new Date(device.usage.estimated_use_time).toLocaleString(
-                    "en-US",
-                    {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                    },
-                  )
-                : "Not specified";
+              const estimatedUseUntil = device.usage?.estimated_use_time;
               const isCurrentUser = userEmail === currentUserEmail;
 
               return (
                 <TableRow key={device.id}>
                   <TableCell className="font-normal">{device.alias}</TableCell>
                   <TableCell>{userEmail}</TableCell>
-                  <TableCell>{estimatedEndTime}</TableCell>
+                  <TableCell>
+                    <EstimatedTimeDisplay
+                      deviceId={device.id}
+                      estimatedTime={estimatedUseUntil}
+                      isCurrentUser={isCurrentUser}
+                    />
+                  </TableCell>
                   <TableCell>
                     <BusyDeviceSwitch
                       deviceId={device.id}
@@ -109,19 +104,7 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
         devices.map((device) => {
           /*istanbul ignore next*/
           const userEmail = device.usage?.user_email || "Unknown";
-          const estimatedEndTime = device.usage?.estimated_use_time
-            ? new Date(device.usage.estimated_use_time).toLocaleString(
-                "en-US",
-                {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                },
-              )
-            : "Not specified";
+          const estimatedUseUntil = device.usage?.estimated_use_time;
           const isCurrentUser = userEmail === currentUserEmail;
 
           return (
@@ -152,7 +135,13 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
                   <span className="text-muted-foreground">
                     Estimated Until:
                   </span>
-                  <span>{estimatedEndTime}</span>
+                  <span>
+                    <EstimatedTimeDisplay
+                      deviceId={device.id}
+                      estimatedTime={estimatedUseUntil}
+                      isCurrentUser={isCurrentUser}
+                    />
+                  </span>
                 </div>
               </div>
             </details>
@@ -162,3 +151,33 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
     </div>
   );
 }
+
+// Component to display estimated time (either editable or read-only)
+function EstimatedTimeDisplay({
+  deviceId,
+  estimatedTime,
+  isCurrentUser,
+}: {
+  deviceId: string;
+  estimatedTime: Date | null;
+  isCurrentUser: boolean;
+}) {
+  return isCurrentUser ? (
+    <InlineTimeEdit deviceId={deviceId} estimatedUseUntil={estimatedTime} />
+  ) : (
+    formatEstimatedTime(estimatedTime)
+  );
+}
+
+// Helper function to format estimated time
+const formatEstimatedTime = (date: Date | null): string => {
+  if (!date) return "Not specified";
+  return new Date(date).toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};

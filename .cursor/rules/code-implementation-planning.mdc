@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+- When planning to implement a new feature, always
+    - do not assume anything unless something is very very obvious
+    - get clarified on any uncertainities 
+    - get answers for any questions you have
+    - always confirm if the plan looks good before jumping to implementation
+
+- Some minimum rules while planning
+    - always break the feature into smaller parts/jobs
+    - each job can have one or multiple steps
+    - each job/step shoould be able to be invidiually reviewed during implementation
+    - keep the jobs/setps small for easy and efficient human review process

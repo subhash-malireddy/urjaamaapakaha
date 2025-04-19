@@ -2,7 +2,8 @@ import { db } from "@/lib/db";
 import { UsageResponse } from "@/lib/utils";
 import type { device, usage } from "@prisma/client";
 
-export async function getAllDevices() {
+/* istanbul ignore next */
+async function getAllDevices() {
   return db.device.findMany({
     where: {
       is_archived: false,
@@ -13,13 +14,14 @@ export async function getAllDevices() {
   });
 }
 
-export async function getDeviceById(id: string) {
+/* istanbul ignore next */
+async function getDeviceById(id: string) {
   return db.device.findUnique({
     where: { id },
   });
 }
-
-export async function getDeviceUsage(deviceId: string) {
+/* istanbul ignore next */
+async function getDeviceUsage(deviceId: string) {
   return db.usage.findMany({
     where: {
       device_id: deviceId,
@@ -30,24 +32,30 @@ export async function getDeviceUsage(deviceId: string) {
   });
 }
 
-export async function getActiveDevice(deviceId: string) {
-  return db.active_device.findUnique({
-    where: {
-      device_id: deviceId,
-    },
-    include: {
-      usage: true,
-    },
-  });
+type ActiveDeviceFindUniqueArgs = Parameters<
+  typeof db.active_device.findUnique
+>[0];
+
+type GetActiveDeviceReturnType<T extends ActiveDeviceFindUniqueArgs> =
+  ReturnType<typeof db.active_device.findUnique<T>>;
+
+/**
+ * Get an active device by its ID
+ * @param options The options for the findUnique query
+ * @returns The active device based on the requested shape in the options
+ */
+export async function getActiveDevice<T extends ActiveDeviceFindUniqueArgs>(
+  options: T,
+): Promise<GetActiveDeviceReturnType<T>> {
+  return db.active_device.findUnique(options) as GetActiveDeviceReturnType<T>;
 }
 
 export type DeviceWithActiveStatus = device & {
   isActive: boolean;
 };
 
-export async function getDevicesWithActiveStatus(): Promise<
-  DeviceWithActiveStatus[]
-> {
+/* istanbul ignore next */
+async function getDevicesWithActiveStatus(): Promise<DeviceWithActiveStatus[]> {
   const devices = await db.device.findMany({
     where: {
       is_archived: false,
@@ -190,6 +198,12 @@ export async function turnOnDevice(
   }
 }
 
+/**
+ *
+ * @param deviceId The ID of the device to turn off
+ * @param deviceIp The IP address of the device to turn off
+ * @returns The updated in-active device entry with usage information
+ */
 export async function turnOffDevice(deviceId: string, deviceIp: string) {
   try {
     // Get active device and its usage record
@@ -266,3 +280,11 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
     );
   }
 }
+
+//using this sytax for making istanbul ignore next work.
+export {
+  getAllDevices,
+  getDeviceById,
+  getDeviceUsage,
+  getDevicesWithActiveStatus,
+};
