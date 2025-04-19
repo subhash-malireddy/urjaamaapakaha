@@ -19,8 +19,12 @@ jest.mock("@/lib/utils", () => {
   const originalModule = jest.requireActual("@/lib/utils");
   return {
     ...originalModule,
-    getCurrentDatePlusOneMin: jest.fn(),
-    getCurrentDatePlusEightHours: jest.fn(),
+    getCurrentDatePlusOneMin: jest
+      .fn()
+      .mockImplementation(originalModule.getCurrentDatePlusOneMin),
+    getCurrentDatePlusEightHours: jest
+      .fn()
+      .mockImplementation(originalModule.getCurrentDatePlusEightHours),
     isDateInFuture: jest.fn().mockImplementation(originalModule.isDateInFuture),
   };
 });
