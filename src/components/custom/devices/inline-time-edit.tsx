@@ -214,7 +214,7 @@ export function InlineTimeEdit({
             name="estimatedTime"
             value={inputValue}
             onChange={handleInputChange}
-            min={getDateTimeLocalValue()}
+            min={getDateTimeLocalValue(new Date())}
             className={cn(
               "h-8 w-full pr-2",
               (serverState.error || clientError) && "border-destructive",
