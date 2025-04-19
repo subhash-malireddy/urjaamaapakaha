@@ -11,11 +11,9 @@ import {
 } from "@/lib/utils";
 
 describe("date utils", () => {
-  beforeEach(() => {
-    jest.resetAllMocks();
-    jest.restoreAllMocks();
-    jest.clearAllMocks();
-  });
+  const oneMin = 60 * 1000;
+  const oneHour = 60 * oneMin;
+
   describe("normalizeToMinute", () => {
     it("should set seconds and milliseconds to 0", () => {
       const date = new Date(2024, 0, 1, 12, 30, 45, 500);
@@ -89,7 +87,7 @@ describe("date utils", () => {
       const result = getCurrentDatePlusOneMin();
 
       // Verify one minute was added
-      expect(result.getTime()).toBe(forAssertingResult.getTime() + 60000);
+      expect(result.getTime()).toBe(forAssertingResult.getTime() + oneMin);
 
       globalDateSpy.mockRestore();
     });
@@ -114,8 +112,6 @@ describe("date utils", () => {
   });
 
   describe("isWithinEightHours", () => {
-    const oneMin = 60 * 1000;
-    const oneHour = 60 * oneMin;
     it("should return true for date within 8 hours from now", () => {
       const futureDate = new Date(Date.now() + 7 * oneHour);
 
