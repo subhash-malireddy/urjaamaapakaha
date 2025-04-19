@@ -3,6 +3,7 @@ import {
   turnOnDevice,
   turnOffDevice,
   getActiveDevice,
+  getDevicesWithStatus,
 } from "@/lib/data/devices";
 import { PrismaClient } from "@prisma/client";
 import { DeepMockProxy } from "jest-mock-extended";
@@ -446,6 +447,128 @@ describe("Device data functions", () => {
 
       // Restore console.error
       consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe("getDevicesWithStatus", () => {
+    it("should retrieve and categorize devices correctly with getDevicesWithStatus", async () => {
+      // Create mock devices data with a mix of active and inactive devices
+      const mockDevices = [
+        {
+          id: "device-1",
+          alias: "Device 1",
+          mac_address: "00:11:22:33:44:55",
+          ip_address: "192.168.1.101",
+          is_archived: false,
+          previous_aliases: [],
+          active_device: null, // Free device
+        },
+        {
+          id: "device-2",
+          alias: "Device 2",
+          mac_address: "00:11:22:33:44:66",
+          ip_address: "192.168.1.102",
+          is_archived: false,
+          previous_aliases: [],
+          active_device: {
+            device_id: "device-2",
+            usage_record_id: BigInt(456),
+            usage: {
+              id: BigInt(456),
+              user_email: "user@example.com",
+              device_id: "device-2",
+              start_date: TEST_DATA.mockCurrentDate,
+              end_date: TEST_DATA.mockCurrentDate,
+              estimated_use_time: null,
+              consumption: 50,
+              charge: 0,
+            },
+          }, // Busy device
+        },
+        {
+          id: "device-3",
+          alias: "Device 3",
+          mac_address: "00:11:22:33:44:77",
+          ip_address: "192.168.1.103",
+          is_archived: false,
+          previous_aliases: [],
+          active_device: null, // Free device
+        },
+      ];
+
+      // Mock the database call
+      mockDB.device.findMany.mockResolvedValueOnce(mockDevices as any);
+
+      // Call the function under test
+      const result = await getDevicesWithStatus();
+
+      // Assert the database was called with the correct parameters
+      expect(db.device.findMany).toHaveBeenCalledWith({
+        where: {
+          is_archived: false,
+        },
+        include: {
+          active_device: {
+            include: {
+              usage: true,
+            },
+          },
+        },
+        orderBy: {
+          alias: "asc",
+        },
+      });
+
+      // Assert the result has the correct structure
+      expect(result).toHaveProperty("freeDevices");
+      expect(result).toHaveProperty("busyDevices");
+
+      // Verify free devices
+      expect(result.freeDevices).toHaveLength(2);
+      expect(result.freeDevices[0].id).toBe("device-1");
+      expect(result.freeDevices[1].id).toBe("device-3");
+
+      // Verify busy devices
+      expect(result.busyDevices).toHaveLength(1);
+      expect(result.busyDevices[0].id).toBe("device-2");
+      expect(result.busyDevices[0]).toHaveProperty("usage");
+      expect(result.busyDevices[0].usage.id).toEqual(BigInt(456));
+      expect(result.busyDevices[0].usage.user_email).toBe("user@example.com");
+    });
+
+    it("should handle the case when no devices are found in getDevicesWithStatus", async () => {
+      // Mock the database to return an empty array
+      mockDB.device.findMany.mockResolvedValueOnce([]);
+
+      // Call the function under test
+      const result = await getDevicesWithStatus();
+
+      // Assert the database was called with the correct parameters
+      expect(db.device.findMany).toHaveBeenCalledWith({
+        where: {
+          is_archived: false,
+        },
+        include: {
+          active_device: {
+            include: {
+              usage: true,
+            },
+          },
+        },
+        orderBy: {
+          alias: "asc",
+        },
+      });
+
+      // Assert the result has the correct structure with empty arrays
+      expect(result).toEqual({
+        freeDevices: [],
+        busyDevices: [],
+      });
+
+      // Verify both arrays are indeed empty
+      expect(result.freeDevices).toHaveLength(0);
+      expect(result.busyDevices).toHaveLength(0);
     });
   });
 });
