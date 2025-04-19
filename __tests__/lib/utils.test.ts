@@ -5,11 +5,17 @@ import {
   getCurrentDatePlusOneMin,
   getDateTimeLocalValue,
   isDateInFuture,
+  isWithinEightHours,
   normalizeToMinute,
   sliceISOStringUptoMinute,
 } from "@/lib/utils";
 
 describe("date utils", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+  });
   describe("normalizeToMinute", () => {
     it("should set seconds and milliseconds to 0", () => {
       const date = new Date(2024, 0, 1, 12, 30, 45, 500);
@@ -104,6 +110,28 @@ describe("date utils", () => {
       expect(result.getTime()).toBe(forAssertingResult.getTime());
 
       globalDateSpy.mockRestore();
+    });
+  });
+
+  describe("isWithinEightHours", () => {
+    const oneMin = 60 * 1000;
+    const oneHour = 60 * oneMin;
+    it("should return true for date within 8 hours from now", () => {
+      const futureDate = new Date(Date.now() + 7 * oneHour);
+
+      expect(isWithinEightHours(futureDate)).toBe(true);
+    });
+
+    it("should return true when date is exactly eight hours in the future", () => {
+      const exactlyEightHoursLater = new Date(Date.now() + 8 * oneHour);
+
+      expect(isWithinEightHours(exactlyEightHoursLater)).toBe(true);
+    });
+
+    it("should return false for date more than 8 hours from now", () => {
+      const nineHoursInFuture = new Date(Date.now() + 9 * oneHour);
+
+      expect(isWithinEightHours(nineHoursInFuture)).toBe(false);
     });
   });
 
