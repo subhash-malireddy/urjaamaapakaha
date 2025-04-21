@@ -6,16 +6,15 @@ import { Input } from "@/components/ui/input";
 import { CheckIcon, PencilIcon, Loader2, XIcon } from "lucide-react";
 import {
   cn,
-  // getCurrentDatePlusEightHours,
   getCurrentDatePlusOneMin,
   getDateTimeLocalValue,
   isDateInFuture,
-  // isWithinEightHours,
   isWithinEightHoursFromDate,
+  parseDateTimeLocal,
+  compareToMinutePrecision,
 } from "@/lib/utils";
 import { useActionState } from "react";
 import { updateEstimatedTimeAction } from "@/lib/actions/usage-actions";
-// import { Tooltip } from "@/components/ui/tooltip";
 
 interface InlineTimeEditProps {
   deviceId: string;
@@ -27,7 +26,7 @@ export function InlineTimeEdit({
   estimatedUseUntil,
 }: InlineTimeEditProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [inputValue, setInputValue] = useState<string>("");
+  const [inputDateTimeValue, setInputDateTimeValue] = useState<string>("");
   const [hasInteracted, setHasInteracted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -99,7 +98,7 @@ export function InlineTimeEdit({
     e.preventDefault();
     e.stopPropagation();
     const initialValue = getDateTimeLocalValue(displayTime);
-    setInputValue(initialValue);
+    setInputDateTimeValue(initialValue);
     initialInputValueRef.current = initialValue;
     // Reset interaction state not to show error from previous interaction
     // Fresh interaction should show fresh error message if needed
@@ -109,7 +108,7 @@ export function InlineTimeEdit({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    setInputValue(newValue);
+    setInputDateTimeValue(newValue);
 
     // Mark as dirty as soon as the user interacts with the input
     setHasInteracted(true);
@@ -126,14 +125,12 @@ export function InlineTimeEdit({
       setIsEditing(false);
     } else if (e.key === "Enter" && !e.shiftKey) {
       const target = e.target;
-
       // If Enter was pressed on the input, handle validation and submission
       if (inputRef.current === target) {
         e.preventDefault(); // Only prevent default for input/submit button
         //TODO:: see if we can remove these checks
         const clientError = validateTime();
         const isUnchanged = isInputUnchanged();
-
         if (!clientError && !isUnchanged && !isPending) {
           formRef.current?.requestSubmit();
         }
@@ -144,11 +141,12 @@ export function InlineTimeEdit({
 
   // Client side validation
   const validateTime = (): string | null => {
-    if (!inputValue) {
+    if (!inputDateTimeValue) {
       return "Time is required";
     }
 
-    const selectedDate = new Date(inputValue);
+    // Parse the input value using our consistent utility
+    const selectedDate = parseDateTimeLocal(inputDateTimeValue);
 
     if (isNaN(selectedDate.getTime())) {
       return "Invalid date format";
@@ -165,7 +163,7 @@ export function InlineTimeEdit({
     }
 
     // Only check for unchanged time if the form is dirty but reverted to initial value
-    if (hasInteracted && inputValue === initialInputValueRef.current) {
+    if (hasInteracted && inputDateTimeValue === initialInputValueRef.current) {
       return "No change made to the time";
     }
 
@@ -184,15 +182,11 @@ export function InlineTimeEdit({
     //istanbul ignore next
     if (!displayTime) return false;
 
-    // Convert datetime-local string to Date for comparison
-    const selectedDateTime = new Date(inputValue);
-    selectedDateTime.setSeconds(0, 0);
+    // Use parseDateTimeLocal to ensure consistent date handling
+    const selectedDateTime = parseDateTimeLocal(inputDateTimeValue);
 
-    // Create a normalized version of displayTime for comparison
-    const normalizedDisplayTime = new Date(displayTime);
-    normalizedDisplayTime.setSeconds(0, 0);
-
-    return selectedDateTime.getTime() === normalizedDisplayTime.getTime();
+    // Use compareToMinutePrecision for consistent UTC comparison
+    return compareToMinutePrecision(selectedDateTime, displayTime) === 0;
   };
 
   if (!isEditing)
@@ -234,7 +228,7 @@ export function InlineTimeEdit({
             ref={inputRef}
             type="datetime-local"
             name="estimatedTime"
-            value={inputValue}
+            value={inputDateTimeValue}
             onChange={handleInputChange}
             // min={getDateTimeLocalValue(new Date())}
             min={getDateTimeLocalValue(getCurrentDatePlusOneMin())}
