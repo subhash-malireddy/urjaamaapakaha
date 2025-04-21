@@ -4,9 +4,18 @@ import { useRef, useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckIcon, PencilIcon, Loader2, XIcon } from "lucide-react";
-import { cn, getDateTimeLocalValue, isDateInFuture } from "@/lib/utils";
+import {
+  cn,
+  // getCurrentDatePlusEightHours,
+  getCurrentDatePlusOneMin,
+  getDateTimeLocalValue,
+  isDateInFuture,
+  // isWithinEightHours,
+  isWithinEightHoursFromDate,
+} from "@/lib/utils";
 import { useActionState } from "react";
 import { updateEstimatedTimeAction } from "@/lib/actions/usage-actions";
+// import { Tooltip } from "@/components/ui/tooltip";
 
 interface InlineTimeEditProps {
   deviceId: string;
@@ -121,7 +130,7 @@ export function InlineTimeEdit({
       // If Enter was pressed on the input, handle validation and submission
       if (inputRef.current === target) {
         e.preventDefault(); // Only prevent default for input/submit button
-
+        //TODO:: see if we can remove these checks
         const clientError = validateTime();
         const isUnchanged = isInputUnchanged();
 
@@ -145,13 +154,26 @@ export function InlineTimeEdit({
       return "Invalid date format";
     }
 
-    if (!isDateInFuture(selectedDate)) {
+    if (
+      !isDateInFuture(selectedDate, (d1, d2) => {
+        if (deviceId !== "d9df82f94a462befde8d8a7d2a64fabf") return;
+        console.log("🚀 ~ !isDateInFuture ~ d2:", d2);
+        console.log("🚀 ~ !isDateInFuture ~ d1:", d1);
+      })
+    ) {
       return "Time must be in the future";
     }
 
     // Only check for unchanged time if the form is dirty but reverted to initial value
     if (hasInteracted && inputValue === initialInputValueRef.current) {
       return "No change made to the time";
+    }
+
+    // Validate if date is within 8 hours of the original estimated time
+    if (
+      !isWithinEightHoursFromDate(selectedDate, estimatedUseUntil ?? new Date())
+    ) {
+      return "A cannot be blocked for more than 8 hours from the original estimated time";
     }
 
     return null; // No error
@@ -214,7 +236,13 @@ export function InlineTimeEdit({
             name="estimatedTime"
             value={inputValue}
             onChange={handleInputChange}
-            min={getDateTimeLocalValue(new Date())}
+            // min={getDateTimeLocalValue(new Date())}
+            min={getDateTimeLocalValue(getCurrentDatePlusOneMin())}
+            max={getDateTimeLocalValue(
+              new Date(
+                (displayTime?.getTime() ?? Date.now()) + 8 * 60 * 60 * 1000,
+              ),
+            )}
             className={cn(
               "h-8 w-full pr-2",
               (serverState.error || clientError) && "border-destructive",

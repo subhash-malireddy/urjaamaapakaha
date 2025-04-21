@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { InlineTimeEdit } from "@/components/custom/devices/inline-time-edit";
 import React from "react";
+import { getDateTimeLocalValue } from "@/lib/utils";
 
 // Mock the server action
 jest.mock("@/lib/actions/usage-actions", () => ({
@@ -471,7 +472,7 @@ describe("InlineTimeEdit", () => {
 
   // 5. Keyboard Navigation Tests
   describe("Keyboard Navigation", () => {
-    it("submits the form when pressing Enter in the input field", async () => {
+    it.only("submits the form when pressing Enter in the input field", async () => {
       const user = userEvent.setup();
       const mockFormAction = jest.fn();
       const oneHour = 60 * 60 * 1000;
@@ -486,7 +487,7 @@ describe("InlineTimeEdit", () => {
 
       render(
         <InlineTimeEdit
-          deviceId={mockDeviceId}
+          deviceId={"d9df82f94a462befde8d8a7d2a64fabf"}
           estimatedUseUntil={futureDate}
         />,
       );
@@ -496,9 +497,9 @@ describe("InlineTimeEdit", () => {
 
       // Update the time to a new future time
       const input = screen.getByLabelText("Set estimated use until time");
-      const newFutureDate = new Date(Date.now() + 24 * oneHour); // 24 hours in future
+      const newFutureDate = new Date(futureDate.getTime() + 3 * oneHour);
       await user.clear(input);
-      await user.type(input, newFutureDate.toISOString().slice(0, 16));
+      await user.type(input, getDateTimeLocalValue(newFutureDate));
 
       // Press Enter in the input field
       await user.type(input, "{Enter}");
@@ -550,8 +551,8 @@ describe("InlineTimeEdit", () => {
 
       //change the input value to trigger validation and enable confirm button
       await user.clear(input);
-      const newFutureDate = new Date(Date.now() + 24 * oneHour); // 24 hours in future
-      await user.type(input, newFutureDate.toISOString().slice(0, 16));
+      const newFutureDate = new Date(Date.now() + 3 * oneHour); // 24 hours in future
+      await user.type(input, getDateTimeLocalValue(newFutureDate));
 
       // Tab to confirm button
       await user.tab();

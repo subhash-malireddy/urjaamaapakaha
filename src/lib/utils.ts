@@ -84,9 +84,15 @@ export function areDatesEqualToMinute(date1: Date, date2: Date): boolean {
  * Checks if a date is in the future at minute precision
  * @returns true if the date is in the future
  */
-export function isDateInFuture(date: Date): boolean {
+export function isDateInFuture(
+  date: Date,
+  cb?: (d1: Date, d2: Date) => void,
+): boolean {
   const normalized = normalizeToMinute(date);
   const normalizedNow = normalizeToMinute(new Date());
+  if (cb) {
+    cb(normalized, normalizedNow);
+  }
   return normalized.getTime() > normalizedNow.getTime();
 }
 
@@ -136,6 +142,20 @@ export const isWithinEightHours = (date: Date): boolean => {
     getCurrentDatePlusEightHours(),
   );
   return normalizedDate.getTime() <= normalizedEightHoursLater.getTime();
+};
+
+// Helper function to check if a date is within 8 hours from now
+export const isWithinEightHoursFromDate = (
+  givenDate: Date,
+  fromDate: Date,
+): boolean => {
+  const oneMin = 60 * 1000; // 1 minute in milliseconds
+  const oneHour = 60 * oneMin; // 1 hour in milliseconds
+  const nrmlzdDate = normalizeToMinute(givenDate);
+  const nrmalzdEightHoursLater = normalizeToMinute(
+    new Date(fromDate.getTime() + 8 * oneHour),
+  );
+  return nrmlzdDate.getTime() <= nrmalzdEightHoursLater.getTime();
 };
 
 //using this sytax for making istanbul ignore next work.
