@@ -10,8 +10,8 @@ import {
   getDateTimeLocalValue,
   isDateInFuture,
   isWithinEightHoursFromDate,
-  parseDateTimeLocal,
-  compareToMinutePrecision,
+  parseDateTimeLocalInput,
+  areDatesEqualToMinute,
 } from "@/lib/utils";
 import { useActionState } from "react";
 import { updateEstimatedTimeAction } from "@/lib/actions/usage-actions";
@@ -133,7 +133,7 @@ export function InlineTimeEdit({
     }
 
     // Parse the input value using our consistent utility
-    const selectedDate = parseDateTimeLocal(inputDateTimeValue);
+    const selectedDate = parseDateTimeLocalInput(inputDateTimeValue);
 
     if (isNaN(selectedDate.getTime())) {
       return "Invalid date format";
@@ -164,10 +164,10 @@ export function InlineTimeEdit({
     if (!displayTime) return false;
 
     // Use parseDateTimeLocal to ensure consistent date handling
-    const selectedDateTime = parseDateTimeLocal(inputDateTimeValue);
+    const selectedDateTime = parseDateTimeLocalInput(inputDateTimeValue);
 
-    // Use compareToMinutePrecision for consistent UTC comparison
-    return compareToMinutePrecision(selectedDateTime, displayTime) === 0;
+    // Use areDatesEqualToMinute for consistent UTC comparison
+    return areDatesEqualToMinute(selectedDateTime, displayTime);
   };
 
   if (!isEditing)
