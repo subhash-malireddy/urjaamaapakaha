@@ -7,6 +7,7 @@ import {
   getDateTimeLocalValue,
   isDateInFuture,
   isWithinEightHours,
+  parseDateTimeLocalInput,
   // normalizeToMinute,
   sliceISOStringUptoMinute,
   toUTCMinutePrecision,
@@ -118,6 +119,45 @@ describe("date utils", () => {
       const result = sliceISOStringUptoMinute(isoString);
 
       expect(result).toBe("2024-01-01T12:30");
+    });
+  });
+
+  describe("parseDateTimeLocalInput", () => {
+    it("should return current date when input string is empty", () => {
+      const mockCurrentDate = new Date("2024-01-15T10:30:00");
+      const globalDateSpy = jest
+        .spyOn(global, "Date")
+        .mockImplementationOnce(() => mockCurrentDate);
+
+      const result = parseDateTimeLocalInput("");
+
+      expect(result).toEqual(mockCurrentDate);
+
+      globalDateSpy.mockRestore();
+    });
+
+    it("should correctly parse a valid date-time local string", () => {
+      // Create a valid date-time local string in the format YYYY-MM-DDTHH:MM
+      const dateTimeStr = "2024-06-15T14:30";
+
+      // Expected date object that should be constructed from the string
+      const expectedDate = new Date("2024-06-15T14:30");
+
+      // Call the function
+      const result = parseDateTimeLocalInput(dateTimeStr);
+
+      // Verify the result is a Date object
+      expect(result).toBeInstanceOf(Date);
+
+      // Verify year, month, day, hours, and minutes match expected values
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(5); // June is month index 5
+      expect(result.getDate()).toBe(15);
+      expect(result.getHours()).toBe(14);
+      expect(result.getMinutes()).toBe(30);
+
+      // Verify time equality (comparing timestamps)
+      expect(result.getTime()).toBe(expectedDate.getTime());
     });
   });
 
