@@ -1,5 +1,6 @@
 import {
   areDatesEqualToMinute,
+  compareToMinutePrecision,
   dateToLocalISOString,
   getCurrentDatePlusEightHours,
   getCurrentDatePlusOneMin,
@@ -52,6 +53,45 @@ describe("date utils", () => {
       expect(resultDate.getUTCDate()).toBe(15);
       expect(resultDate.getUTCHours()).toBe(14);
       expect(resultDate.getUTCMinutes()).toBe(30);
+    });
+  });
+
+  describe("compareToMinutePrecision", () => {
+    it("should return a positive number when date1 is later than date2", () => {
+      const date1 = new Date(2024, 0, 1, 12, 30, 0, 0); // Jan 1, 2024, 12:30:00
+      const date2 = new Date(2024, 0, 1, 10, 15, 0, 0); // Jan 1, 2024, 10:15:00
+
+      const result = compareToMinutePrecision(date1, date2);
+
+      expect(result).toBeGreaterThan(0);
+
+      // We can also verify the exact difference in milliseconds
+      const expectedDiff = 12 * 60 + 30 - (10 * 60 + 15);
+      const expectedMilliseconds = expectedDiff * 60 * 1000;
+      expect(result).toBe(expectedMilliseconds);
+    });
+
+    it("should return a negative number when date1 is earlier than date2", () => {
+      const date1 = new Date(2024, 0, 1, 10, 15, 0, 0); // Jan 1, 2024, 10:15:00
+      const date2 = new Date(2024, 0, 1, 12, 30, 0, 0); // Jan 1, 2024, 12:30:00
+
+      const result = compareToMinutePrecision(date1, date2);
+
+      expect(result).toBeLessThan(0);
+
+      // We can also verify the exact difference in milliseconds
+      const expectedDiff = 10 * 60 + 15 - (12 * 60 + 30);
+      const expectedMilliseconds = expectedDiff * 60 * 1000;
+      expect(result).toBe(expectedMilliseconds);
+    });
+
+    it("should return zero when both dates are the same minute but different seconds/milliseconds", () => {
+      const date1 = new Date(2024, 0, 1, 12, 30, 15, 200); // Jan 1, 2024, 12:30:15.200
+      const date2 = new Date(2024, 0, 1, 12, 30, 45, 800); // Jan 1, 2024, 12:30:45.800
+
+      const result = compareToMinutePrecision(date1, date2);
+
+      expect(result).toBe(0);
     });
   });
 
