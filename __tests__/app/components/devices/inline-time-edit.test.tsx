@@ -472,7 +472,7 @@ describe("InlineTimeEdit", () => {
 
   // 5. Keyboard Navigation Tests
   describe("Keyboard Navigation", () => {
-    it.only("submits the form when pressing Enter in the input field", async () => {
+    it("submits the form when pressing Enter in the input field(default form behavior)", async () => {
       const user = userEvent.setup();
       const mockFormAction = jest.fn();
       const oneHour = 60 * 60 * 1000;

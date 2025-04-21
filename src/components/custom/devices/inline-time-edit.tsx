@@ -123,19 +123,6 @@ export function InlineTimeEdit({
     if (e.key === "Escape") {
       e.preventDefault();
       setIsEditing(false);
-    } else if (e.key === "Enter" && !e.shiftKey) {
-      const target = e.target;
-      // If Enter was pressed on the input, handle validation and submission
-      if (inputRef.current === target) {
-        e.preventDefault(); // Only prevent default for input/submit button
-        //TODO:: see if we can remove these checks
-        const clientError = validateTime();
-        const isUnchanged = isInputUnchanged();
-        if (!clientError && !isUnchanged && !isPending) {
-          formRef.current?.requestSubmit();
-        }
-      }
-      // Let browser handle Enter on other elements (like cancel button)
     }
   };
 
