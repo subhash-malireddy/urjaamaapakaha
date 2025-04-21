@@ -6,7 +6,7 @@ import {
   getDateTimeLocalValue,
   isDateInFuture,
   isWithinEightHours,
-  normalizeToMinute,
+  // normalizeToMinute,
   sliceISOStringUptoMinute,
 } from "@/lib/utils";
 
@@ -14,17 +14,17 @@ describe("date utils", () => {
   const oneMin = 60 * 1000;
   const oneHour = 60 * oneMin;
 
-  describe("normalizeToMinute", () => {
-    it("should set seconds and milliseconds to 0", () => {
-      const date = new Date(2024, 0, 1, 12, 30, 45, 500);
-      const normalized = normalizeToMinute(date);
+  // describe("normalizeToMinute", () => {
+  //   it("should set seconds and milliseconds to 0", () => {
+  //     const date = new Date(2024, 0, 1, 12, 30, 45, 500);
+  //     const normalized = normalizeToMinute(date);
 
-      expect(normalized.getSeconds()).toBe(0);
-      expect(normalized.getMilliseconds()).toBe(0);
-      expect(normalized.getMinutes()).toBe(30);
-      expect(normalized.getHours()).toBe(12);
-    });
-  });
+  //     expect(normalized.getSeconds()).toBe(0);
+  //     expect(normalized.getMilliseconds()).toBe(0);
+  //     expect(normalized.getMinutes()).toBe(30);
+  //     expect(normalized.getHours()).toBe(12);
+  //   });
+  // });
 
   describe("dateToLocalISOString", () => {
     // We need to export this function for testing or test it indirectly

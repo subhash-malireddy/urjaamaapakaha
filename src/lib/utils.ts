@@ -66,9 +66,9 @@ function getEnergyValueForDate(date?: string | null): number {
 /**
  * Normalizes a date to minute precision by setting seconds and milliseconds to 0
  */
-export function normalizeToMinute(date: Date): Date {
-  return new Date(new Date(date).setSeconds(0, 0));
-}
+// export function normalizeToMinute(date: Date): Date {
+//   return new Date(new Date(date).setSeconds(0, 0));
+// }
 
 /**
  * Converts a date to UTC timestamp with minute precision
@@ -126,21 +126,20 @@ export const sliceISOStringUptoMinute = (isoString: string): string => {
  * Note: The browser interprets datetime-local values in the local timezone.
  * This function just creates a standard Date object from the input.
  */
-export function parseDateTimeLocal(dateTimeStr: string): Date {
+export function parseDateTimeLocalInput(dateTimeStr: string): Date {
   if (!dateTimeStr) return new Date();
 
   const date = new Date(dateTimeStr);
   return date;
 }
 
-//TODO:: see if we can remove this function
 /**
  * @description Get the local date-time string in YYYY-MM-DDTHH:MM format.
  * Useful for input type="datetime-local"
  * @param date - Date object (default: new Date())
  * @returns Local date-time string in YYYY-MM-DDTHH:MM format
  *
- * @example getDateTimeLocalValue() => "2023-01-01T00:00"
+ * @example getDateTimeLocalValue(new Date("2023-01-01")) => "2023-01-01T00:00"
  * */
 export const getDateTimeLocalValue = (date: Date | null): string => {
   if (date === null) return "";
