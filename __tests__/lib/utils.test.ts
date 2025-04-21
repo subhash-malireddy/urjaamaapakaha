@@ -7,6 +7,7 @@ import {
   getDateTimeLocalValue,
   isDateInFuture,
   isWithinEightHours,
+  isWithinEightHoursFromDate,
   parseDateTimeLocalInput,
   // normalizeToMinute,
   sliceISOStringUptoMinute,
@@ -237,6 +238,38 @@ describe("date utils", () => {
       const nineHoursInFuture = new Date(Date.now() + 9 * oneHour);
 
       expect(isWithinEightHours(nineHoursInFuture)).toBe(false);
+    });
+  });
+
+  describe("isWithinEightHoursFromDate", () => {
+    it("should return true when givenDate is earlier than 8 hours from fromDate", () => {
+      const fromDate = new Date(2024, 0, 1, 12, 0, 0); // Jan 1, 2024, 12:00:00
+      const sixHoursLater = new Date(2024, 0, 1, 18, 0, 0); // Jan 1, 2024, 18:00:00 (6 hours later)
+
+      const result = isWithinEightHoursFromDate(sixHoursLater, fromDate);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true when givenDate is exactly at 8 hours from fromDate", () => {
+      const fromDate = new Date("2024-01-01T10:00:00");
+      const exactlyEightHoursLater = new Date("2024-01-01T18:00:00");
+
+      expect(isWithinEightHoursFromDate(exactlyEightHoursLater, fromDate)).toBe(
+        true,
+      );
+
+      // Also verify with manual calculation
+      const eightHours = 8 * 60 * 60 * 1000;
+      const calculatedDate = new Date(fromDate.getTime() + eightHours);
+      expect(calculatedDate.getTime()).toBe(exactlyEightHoursLater.getTime());
+    });
+
+    it("should return false when givenDate is later than 8 hours from fromDate", () => {
+      const fromDate = new Date(2024, 0, 1, 12, 0); // Jan 1, 2024, 12:00
+      const nineHoursLater = new Date(2024, 0, 1, 21, 1); // Jan 1, 2024, 21:01 (9 hours and 1 minute later)
+
+      expect(isWithinEightHoursFromDate(nineHoursLater, fromDate)).toBe(false);
     });
   });
 
