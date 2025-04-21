@@ -103,14 +103,8 @@ export function areDatesEqualToMinute(date1: Date, date2: Date): boolean {
  * Checks if a date is in the future at minute precision
  * @returns true if the date is in the future
  */
-export function isDateInFuture(
-  date: Date,
-  cb?: (d1: Date, d2: Date) => void,
-): boolean {
+export function isDateInFuture(date: Date): boolean {
   const now = new Date();
-  if (cb) {
-    cb(date, now);
-  }
   return compareToMinutePrecision(date, now) > 0;
 }
 

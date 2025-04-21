@@ -139,13 +139,7 @@ export function InlineTimeEdit({
       return "Invalid date format";
     }
 
-    if (
-      !isDateInFuture(selectedDate, (d1, d2) => {
-        if (deviceId !== "d9df82f94a462befde8d8a7d2a64fabf") return;
-        console.log("🚀 ~ !isDateInFuture ~ d2:", d2);
-        console.log("🚀 ~ !isDateInFuture ~ d1:", d1);
-      })
-    ) {
+    if (!isDateInFuture(selectedDate)) {
       return "Time must be in the future";
     }
 
