@@ -8,6 +8,7 @@ import {
   isWithinEightHours,
   // normalizeToMinute,
   sliceISOStringUptoMinute,
+  toUTCMinutePrecision,
 } from "@/lib/utils";
 
 describe("date utils", () => {
@@ -25,6 +26,34 @@ describe("date utils", () => {
   //     expect(normalized.getHours()).toBe(12);
   //   });
   // });
+
+  describe("toUTCMinutePrecision", () => {
+    it("should correctly convert a local date to UTC timestamp with minute precision", () => {
+      // Create a date with known values in local time
+      const testDate = new Date(2024, 5, 15, 14, 30, 45, 500); // June 15, 2024, 14:30:45.500 local time
+
+      // Calculate the expected UTC timestamp manually for comparison
+      const expectedTimestamp = Date.UTC(2024, 5, 15, 14, 30);
+
+      // Call the function
+      const result = toUTCMinutePrecision(testDate);
+
+      // Verify the result matches our expected timestamp
+      expect(result).toBe(expectedTimestamp);
+
+      // Verify seconds and milliseconds are truncated
+      const resultDate = new Date(result);
+      expect(resultDate.getUTCSeconds()).toBe(0);
+      expect(resultDate.getUTCMilliseconds()).toBe(0);
+
+      // Verify year, month, day, hour, minute are preserved
+      expect(resultDate.getUTCFullYear()).toBe(2024);
+      expect(resultDate.getUTCMonth()).toBe(5); // June (0-indexed)
+      expect(resultDate.getUTCDate()).toBe(15);
+      expect(resultDate.getUTCHours()).toBe(14);
+      expect(resultDate.getUTCMinutes()).toBe(30);
+    });
+  });
 
   describe("dateToLocalISOString", () => {
     // We need to export this function for testing or test it indirectly
