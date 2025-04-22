@@ -25,6 +25,7 @@ interface InlineTimeEditProps {
 export function InlineTimeEdit({
   deviceId,
   estimatedUseUntil,
+  deviceStartDate,
 }: InlineTimeEditProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputDateTimeValue, setInputDateTimeValue] = useState<string>("");
@@ -150,10 +151,8 @@ export function InlineTimeEdit({
     }
 
     // Validate if date is within 8 hours of the original estimated time
-    if (
-      !isWithinEightHoursFromDate(selectedDate, estimatedUseUntil ?? new Date())
-    ) {
-      return "A cannot be blocked for more than 8 hours from the original estimated time";
+    if (!isWithinEightHoursFromDate(selectedDate, deviceStartDate)) {
+      return "Date must be within 8 hours of the start date";
     }
 
     return null; // No error
@@ -215,9 +214,7 @@ export function InlineTimeEdit({
             // min={getDateTimeLocalValue(new Date())}
             min={getDateTimeLocalValue(getCurrentDatePlusOneMin())}
             max={getDateTimeLocalValue(
-              new Date(
-                (displayTime?.getTime() ?? Date.now()) + 8 * 60 * 60 * 1000,
-              ),
+              new Date(deviceStartDate.getTime() + 8 * 60 * 60 * 1000),
             )}
             className={cn(
               "h-8 w-full pr-2",
