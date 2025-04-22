@@ -38,7 +38,11 @@ describe("InlineTimeEdit", () => {
   describe("Rendering", () => {
     it("renders in non-editing mode initially", () => {
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={mockDate} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={mockDate}
+          deviceStartDate={new Date()}
+        />,
       );
 
       // Should show formatted time
@@ -53,7 +57,11 @@ describe("InlineTimeEdit", () => {
 
     it("renders 'Not specified' when estimated time is null", () => {
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={null} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={null}
+          deviceStartDate={new Date()}
+        />,
       );
 
       expect(screen.getByText("Not specified")).toBeInTheDocument();
@@ -61,7 +69,11 @@ describe("InlineTimeEdit", () => {
 
     it("renders input with empty value when estimated time is null", () => {
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={null} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={null}
+          deviceStartDate={new Date()}
+        />,
       );
 
       expect(screen.getByText("Not specified")).toBeInTheDocument();
@@ -83,6 +95,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId={mockDeviceId}
           estimatedUseUntil={new Date(Date.now() + oneHour)}
+          deviceStartDate={new Date()}
         />,
       );
 
@@ -99,7 +112,11 @@ describe("InlineTimeEdit", () => {
     it("enters edit mode when clicking the time text", async () => {
       const user = userEvent.setup();
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={mockDate} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={mockDate}
+          deviceStartDate={new Date()}
+        />,
       );
 
       await user.click(screen.getByText(/Jan 1, 2025/));
@@ -112,7 +129,11 @@ describe("InlineTimeEdit", () => {
     it("exits edit mode when clicking cancel button", async () => {
       const user = userEvent.setup();
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={mockDate} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={mockDate}
+          deviceStartDate={new Date()}
+        />,
       );
 
       // Enter edit mode
@@ -134,7 +155,11 @@ describe("InlineTimeEdit", () => {
     it("exits edit mode when pressing Escape key", async () => {
       const user = userEvent.setup();
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={mockDate} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={mockDate}
+          deviceStartDate={new Date()}
+        />,
       );
 
       // Enter edit mode
@@ -158,6 +183,7 @@ describe("InlineTimeEdit", () => {
           <InlineTimeEdit
             deviceId={mockDeviceId}
             estimatedUseUntil={mockDate}
+            deviceStartDate={new Date()}
           />
         </div>,
       );
@@ -195,7 +221,11 @@ describe("InlineTimeEdit", () => {
       const oneHour = 60 * 60 * 1000;
       const pastDate = new Date(Date.now() - oneHour);
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={mockDate} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={mockDate}
+          deviceStartDate={new Date()}
+        />,
       );
 
       // Enter edit mode
@@ -227,6 +257,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId={mockDeviceId}
           estimatedUseUntil={futureDate}
+          deviceStartDate={new Date()}
         />,
       );
 
@@ -257,7 +288,11 @@ describe("InlineTimeEdit", () => {
     it("shows error for invalid date format", async () => {
       const user = userEvent.setup();
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={mockDate} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={mockDate}
+          deviceStartDate={new Date()}
+        />,
       );
 
       // Enter edit mode
@@ -284,6 +319,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId="test-device"
           estimatedUseUntil={futureDate}
+          deviceStartDate={new Date()}
         />,
       );
 
@@ -316,7 +352,11 @@ describe("InlineTimeEdit", () => {
       const oneHour = 60 * 60 * 1000;
 
       render(
-        <InlineTimeEdit deviceId="test-device" estimatedUseUntil={null} />,
+        <InlineTimeEdit
+          deviceId="test-device"
+          estimatedUseUntil={null}
+          deviceStartDate={new Date()}
+        />,
       );
 
       // Enter edit mode
@@ -361,7 +401,11 @@ describe("InlineTimeEdit", () => {
     it("disables submit button when input is invalid", async () => {
       const user = userEvent.setup();
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={mockDate} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={mockDate}
+          deviceStartDate={new Date()}
+        />,
       );
 
       // Enter edit mode
@@ -395,6 +439,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId={mockDeviceId}
           estimatedUseUntil={futureDate}
+          deviceStartDate={new Date()}
         />,
       );
 
@@ -419,7 +464,7 @@ describe("InlineTimeEdit", () => {
       // Check that the form data contains the correct values
       const formData = mockFormAction.mock.calls[0][0];
       expect(formData.get("deviceId")).toBe(mockDeviceId);
-      expect(formData.get("estimatedTime")).toBe(
+      expect(formData.get("estimatedDateTimeLocal")).toBe(
         newFutureDate.toISOString().slice(0, 16),
       );
     });
@@ -440,6 +485,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId={mockDeviceId}
           estimatedUseUntil={futureDate}
+          deviceStartDate={new Date()}
         />,
       );
 
@@ -477,6 +523,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId={mockDeviceId}
           estimatedUseUntil={futureDate}
+          deviceStartDate={new Date()}
         />,
       );
 
@@ -499,6 +546,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId={mockDeviceId}
           estimatedUseUntil={futureDate}
+          deviceStartDate={new Date()}
         />,
       );
 
@@ -523,6 +571,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId={mockDeviceId}
           estimatedUseUntil={futureDate}
+          deviceStartDate={new Date()}
         />,
       );
 
@@ -561,6 +610,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId={"d9df82f94a462befde8d8a7d2a64fabf"}
           estimatedUseUntil={futureDate}
+          deviceStartDate={new Date()}
         />,
       );
 
@@ -583,7 +633,11 @@ describe("InlineTimeEdit", () => {
     it("cancels editing when pressing Escape", async () => {
       const user = userEvent.setup();
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={mockDate} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={mockDate}
+          deviceStartDate={new Date()}
+        />,
       );
 
       // Enter edit mode
@@ -607,6 +661,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId={mockDeviceId}
           estimatedUseUntil={futureDate}
+          deviceStartDate={new Date()}
         />,
       );
 
@@ -640,7 +695,11 @@ describe("InlineTimeEdit", () => {
   describe("Accessibility", () => {
     it("has appropriate ARIA attributes", () => {
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={mockDate} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={mockDate}
+          deviceStartDate={new Date()}
+        />,
       );
 
       // Enter edit mode
@@ -676,6 +735,7 @@ describe("InlineTimeEdit", () => {
         <InlineTimeEdit
           deviceId={mockDeviceId}
           estimatedUseUntil={futureDate}
+          deviceStartDate={new Date()}
         />,
       );
       // Check edit button has title
@@ -692,7 +752,11 @@ describe("InlineTimeEdit", () => {
     it("maintains focus management during interactions", async () => {
       const user = userEvent.setup();
       render(
-        <InlineTimeEdit deviceId={mockDeviceId} estimatedUseUntil={mockDate} />,
+        <InlineTimeEdit
+          deviceId={mockDeviceId}
+          estimatedUseUntil={mockDate}
+          deviceStartDate={new Date()}
+        />,
       );
 
       // Enter edit mode by clicking edit button

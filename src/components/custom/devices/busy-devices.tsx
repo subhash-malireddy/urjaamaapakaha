@@ -160,7 +160,6 @@ function EstimatedTimeDisplay({
   deviceId,
   estimatedUseUntil,
   isCurrentUser,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   deviceStartDate,
 }: {
   deviceId: string;
@@ -169,7 +168,11 @@ function EstimatedTimeDisplay({
   deviceStartDate: Date;
 }) {
   return isCurrentUser ? (
-    <InlineTimeEdit deviceId={deviceId} estimatedUseUntil={estimatedUseUntil} />
+    <InlineTimeEdit
+      deviceId={deviceId}
+      estimatedUseUntil={estimatedUseUntil}
+      deviceStartDate={deviceStartDate}
+    />
   ) : (
     formatEstimatedTime(estimatedUseUntil)
   );

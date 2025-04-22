@@ -19,6 +19,7 @@ import { updateEstimatedTimeAction } from "@/lib/actions/usage-actions";
 interface InlineTimeEditProps {
   deviceId: string;
   estimatedUseUntil: Date | null;
+  deviceStartDate: Date;
 }
 
 export function InlineTimeEdit({
