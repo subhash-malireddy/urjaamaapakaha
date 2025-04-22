@@ -208,7 +208,7 @@ export function InlineTimeEdit({
           <Input
             ref={inputRef}
             type="datetime-local"
-            name="estimatedTime"
+            name="estimatedDateTimeLocal"
             value={inputDateTimeValue}
             onChange={handleInputChange}
             // min={getDateTimeLocalValue(new Date())}
