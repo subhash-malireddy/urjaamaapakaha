@@ -24,7 +24,7 @@ describe("updateEstimatedTimeAction", () => {
       const formData = new FormData();
       formData.append("deviceId", "test-device");
       formData.append(
-        "estimatedTime",
+        "estimatedDateTimeLocal",
         new Date(Date.now() + 3600000).toISOString(),
       );
 
@@ -45,7 +45,7 @@ describe("updateEstimatedTimeAction", () => {
       const formData = new FormData();
       formData.append("deviceId", "test-device");
       formData.append(
-        "estimatedTime",
+        "estimatedDateTimeLocal",
         new Date(Date.now() + 3600000).toISOString(),
       );
 
@@ -69,7 +69,7 @@ describe("updateEstimatedTimeAction", () => {
     it("should return error when deviceId is missing", async () => {
       const formData = new FormData();
       formData.append(
-        "estimatedTime",
+        "estimatedDateTimeLocal",
         new Date(Date.now() + 3600000).toISOString(),
       );
 
@@ -96,12 +96,12 @@ describe("updateEstimatedTimeAction", () => {
     it("should return error when date is invalid", async () => {
       const formData = new FormData();
       formData.append("deviceId", "test-device");
-      formData.append("estimatedTime", "invalid-date");
+      formData.append("estimatedDateTimeLocal", "invalid-date");
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
       expect(result).toEqual({
-        message: "Time must be in the future",
+        message: "Date must be in the future",
         error: "Validation Error",
       });
     });
@@ -110,14 +110,14 @@ describe("updateEstimatedTimeAction", () => {
       const formData = new FormData();
       formData.append("deviceId", "test-device");
       formData.append(
-        "estimatedTime",
+        "estimatedDateTimeLocal",
         new Date(Date.now() - 3600000).toISOString(),
       );
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
       expect(result).toEqual({
-        message: "Time must be in the future",
+        message: "Date must be in the future",
         error: "Validation Error",
       });
     });
@@ -126,12 +126,12 @@ describe("updateEstimatedTimeAction", () => {
       const now = new Date();
       const formData = new FormData();
       formData.append("deviceId", "test-device");
-      formData.append("estimatedTime", now.toISOString());
+      formData.append("estimatedDateTimeLocal", now.toISOString());
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
       expect(result).toEqual({
-        message: "Time must be in the future",
+        message: "Date must be in the future",
         error: "Validation Error",
       });
     });
@@ -142,7 +142,7 @@ describe("updateEstimatedTimeAction", () => {
 
       const formData = new FormData();
       formData.append("deviceId", "test-device");
-      formData.append("estimatedTime", futureDate.toISOString());
+      formData.append("estimatedDateTimeLocal", futureDate.toISOString());
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
@@ -169,7 +169,7 @@ describe("updateEstimatedTimeAction", () => {
 
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append("estimatedTime", futureTime);
+      formData.append("estimatedDateTimeLocal", futureTime);
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
@@ -185,6 +185,7 @@ describe("updateEstimatedTimeAction", () => {
               id: true,
               user_email: true,
               estimated_use_time: true,
+              start_date: true,
             },
           },
         },
@@ -204,13 +205,37 @@ describe("updateEstimatedTimeAction", () => {
 
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append("estimatedTime", futureTime);
+      formData.append("estimatedDateTimeLocal", futureTime);
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
       expect(result).toEqual({
         message: "You can only update times for your own devices",
         error: "Forbidden",
+      });
+    });
+
+    it("should return error when date is in future but beyond eight hours from start date", async () => {
+      (getActiveDevice as jest.Mock).mockResolvedValue({
+        device_id: testDeviceId,
+        usage: {
+          id: "usage-1",
+          user_email: testEmail,
+          estimated_use_time: null,
+          start_date: new Date(),
+        },
+      });
+      const oneMin = 60 * 1000;
+      const now = new Date(Date.now() + 8 * 60 * (2 * oneMin)); // 8 hours + 2 minutes
+      const formData = new FormData();
+      formData.append("deviceId", "test-device");
+      formData.append("estimatedDateTimeLocal", now.toISOString());
+
+      const result = await updateEstimatedTimeAction({ message: "" }, formData);
+
+      expect(result).toEqual({
+        message: "Date must be within 8 hours of the start date",
+        error: "Validation Error",
       });
     });
 
@@ -222,12 +247,13 @@ describe("updateEstimatedTimeAction", () => {
           id: "usage-1",
           user_email: testEmail,
           estimated_use_time: null,
+          start_date: new Date(),
         },
       });
 
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append("estimatedTime", futureTime);
+      formData.append("estimatedDateTimeLocal", futureTime);
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
@@ -256,6 +282,7 @@ describe("updateEstimatedTimeAction", () => {
           id: usageId,
           user_email: testEmail,
           estimated_use_time: null,
+          start_date: new Date(),
         },
       });
     });
@@ -268,7 +295,7 @@ describe("updateEstimatedTimeAction", () => {
       const newTimeWithDifferentSeconds = new Date(baseTime);
       newTimeWithDifferentSeconds.setSeconds(currentTime.getSeconds() + 30); // Different seconds, same minute
 
-      // Mock device with existing time
+      // Mock device with existing Date
       (getActiveDevice as jest.Mock).mockResolvedValue({
         device_id: testDeviceId,
         usage: {
@@ -281,14 +308,14 @@ describe("updateEstimatedTimeAction", () => {
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
       formData.append(
-        "estimatedTime",
+        "estimatedDateTimeLocal",
         newTimeWithDifferentSeconds.toISOString(),
       );
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
       expect(result).toEqual({
-        message: "No change made to the time",
+        message: "No change made to the date",
         error: "Validation Error",
       });
     });
@@ -298,19 +325,20 @@ describe("updateEstimatedTimeAction", () => {
       const newTime = new Date(currentTime);
       newTime.setMinutes(currentTime.getMinutes() + 1);
 
-      // Mock device with existing time
+      // Mock device with existing Date
       (getActiveDevice as jest.Mock).mockResolvedValue({
         device_id: testDeviceId,
         usage: {
           id: usageId,
           user_email: testEmail,
           estimated_use_time: currentTime,
+          start_date: new Date(),
         },
       });
 
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append("estimatedTime", newTime.toISOString());
+      formData.append("estimatedDateTimeLocal", newTime.toISOString());
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
@@ -327,12 +355,12 @@ describe("updateEstimatedTimeAction", () => {
 
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append("estimatedTime", futureTime.toISOString());
+      formData.append("estimatedDateTimeLocal", futureTime.toISOString());
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
       expect(result).toEqual({
-        message: "Server error updating time",
+        message: "Server error updating date",
         error: "Server Error",
       });
     });

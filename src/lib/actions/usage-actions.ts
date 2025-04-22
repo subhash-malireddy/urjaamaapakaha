@@ -3,7 +3,12 @@
 import { auth } from "@/auth";
 import { getActiveDevice } from "../data/devices";
 import { updateEstimatedTime } from "../data/usage";
-import { areDatesEqualToMinute, isDateInFuture } from "../utils";
+import {
+  areDatesEqualToMinute,
+  isDateInFuture,
+  isWithinEightHoursFromDate,
+  parseDateTimeLocalInput,
+} from "../utils";
 
 // Define the state type
 interface EstimatedTimeState {
@@ -21,7 +26,9 @@ export async function updateEstimatedTimeAction(
 ): Promise<EstimatedTimeState> {
   try {
     const deviceId = formData.get("deviceId") as string;
-    const newTimeStr = formData.get("estimatedTime") as string;
+    const estDateTimeLocalStr = formData.get(
+      "estimatedDateTimeLocal",
+    ) as string;
 
     // Get current user session
     const session = await auth();
@@ -30,14 +37,14 @@ export async function updateEstimatedTimeAction(
     }
 
     // Basic validation
-    if (!newTimeStr || !deviceId) {
+    if (!estDateTimeLocalStr || !deviceId) {
       return { message: "Missing required fields", error: "Validation Error" };
     }
 
-    const newTime = new Date(newTimeStr);
-    if (isNaN(newTime.getTime()) || !isDateInFuture(newTime)) {
+    const estimatedDate = parseDateTimeLocalInput(estDateTimeLocalStr);
+    if (isNaN(estimatedDate.getTime()) || !isDateInFuture(estimatedDate)) {
       return {
-        message: "Time must be in the future",
+        message: "Date must be in the future",
         error: "Validation Error",
       };
     }
@@ -53,6 +60,7 @@ export async function updateEstimatedTimeAction(
             id: true,
             user_email: true,
             estimated_use_time: true,
+            start_date: true,
           },
         },
       },
@@ -73,25 +81,35 @@ export async function updateEstimatedTimeAction(
     // Check if the new time is the same as the current time
     if (activeDevice.usage.estimated_use_time) {
       const currentTime = new Date(activeDevice.usage.estimated_use_time);
-      if (areDatesEqualToMinute(currentTime, newTime)) {
+      if (areDatesEqualToMinute(currentTime, estimatedDate)) {
         return {
-          message: "No change made to the time",
+          message: "No change made to the date",
           error: "Validation Error",
         };
       }
     }
 
-    // Update the usage record with the new estimated time
-    await updateEstimatedTime(activeDevice.usage.id, newTime);
+    // Validate if date is within 8 hours of the original start date
+    if (
+      !isWithinEightHoursFromDate(estimatedDate, activeDevice.usage.start_date)
+    ) {
+      return {
+        message: "Date must be within 8 hours of the start date",
+        error: "Validation Error",
+      };
+    }
+
+    // Update the usage record with the new estimated Date
+    await updateEstimatedTime(activeDevice.usage.id, estimatedDate);
 
     return {
-      message: "Time updated successfully",
-      updatedTime: newTime,
+      message: "Date updated successfully",
+      updatedTime: estimatedDate,
     };
   } catch (error) {
-    console.error("Failed to update time:", error);
+    console.error("Failed to update date:", error);
     return {
-      message: "Server error updating time",
+      message: "Server error updating date",
       error: "Server Error",
     };
   }
