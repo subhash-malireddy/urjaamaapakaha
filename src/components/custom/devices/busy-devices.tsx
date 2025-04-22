@@ -7,15 +7,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyTableContent } from "./empty-table-content";
-import type { device } from "@prisma/client";
 import { BusyDeviceSwitchMobile } from "./busy-device-switch-mobile";
 import styles from "./busy-devices.module.css";
 import { BusyDeviceSwitch } from "./busy-device-switch";
 import { InlineTimeEdit } from "./inline-time-edit";
+import type { device, usage } from "@prisma/client";
 
 interface BusyDevicesProps {
   devices: (device & {
-    usage: { user_email: string; estimated_use_time: Date | null };
+    usage: Pick<usage, "user_email" | "estimated_use_time" | "start_date">;
   })[];
   currentUserEmail: string;
 }
@@ -63,6 +63,7 @@ function DesktopView({ devices, currentUserEmail }: BusyDevicesProps) {
               const userEmail = device.usage?.user_email || "Unknown";
               const estimatedUseUntil = device.usage?.estimated_use_time;
               const isCurrentUser = userEmail === currentUserEmail;
+              const startDate = device.usage?.start_date;
 
               return (
                 <TableRow key={device.id}>
@@ -71,8 +72,9 @@ function DesktopView({ devices, currentUserEmail }: BusyDevicesProps) {
                   <TableCell>
                     <EstimatedTimeDisplay
                       deviceId={device.id}
-                      estimatedTime={estimatedUseUntil}
+                      estimatedUseUntil={estimatedUseUntil}
                       isCurrentUser={isCurrentUser}
+                      deviceStartDate={startDate}
                     />
                   </TableCell>
                   <TableCell>
@@ -138,8 +140,9 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
                   <span>
                     <EstimatedTimeDisplay
                       deviceId={device.id}
-                      estimatedTime={estimatedUseUntil}
+                      estimatedUseUntil={estimatedUseUntil}
                       isCurrentUser={isCurrentUser}
+                      deviceStartDate={device.usage?.start_date}
                     />
                   </span>
                 </div>
@@ -155,17 +158,23 @@ function MobileView({ devices, currentUserEmail }: BusyDevicesProps) {
 // Component to display estimated time (either editable or read-only)
 function EstimatedTimeDisplay({
   deviceId,
-  estimatedTime,
+  estimatedUseUntil,
   isCurrentUser,
+  deviceStartDate,
 }: {
   deviceId: string;
-  estimatedTime: Date | null;
+  estimatedUseUntil: Date | null;
   isCurrentUser: boolean;
+  deviceStartDate: Date;
 }) {
   return isCurrentUser ? (
-    <InlineTimeEdit deviceId={deviceId} estimatedUseUntil={estimatedTime} />
+    <InlineTimeEdit
+      deviceId={deviceId}
+      estimatedUseUntil={estimatedUseUntil}
+      deviceStartDate={deviceStartDate}
+    />
   ) : (
-    formatEstimatedTime(estimatedTime)
+    formatEstimatedTime(estimatedUseUntil)
   );
 }
 

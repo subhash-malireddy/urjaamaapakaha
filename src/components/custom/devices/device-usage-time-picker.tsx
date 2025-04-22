@@ -20,6 +20,7 @@ import {
   getDateTimeLocalValue,
   isDateInFuture,
   isWithinEightHours,
+  parseDateTimeLocalInput,
 } from "@/lib/utils";
 
 interface DeviceUsageTimePickerProps {
@@ -32,14 +33,14 @@ export function DeviceUsageTimePicker({
   deviceIp,
 }: DeviceUsageTimePickerProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [estimatedDateTime, setEstimatedDateTime] = useState<string>("");
+  const [dateTimeInputValue, setDateTimeInputValue] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSwitchOn, setIsSwitchOn] = useState(false);
   const [timeError, setTimeError] = useState<string | null>(null);
 
   // Validate the selected date and return an error message if invalid
   const validateDateTime = (dateTimeStr: string): string | null => {
-    const selectedDate = new Date(dateTimeStr);
+    const selectedDate = parseDateTimeLocalInput(dateTimeStr);
 
     // Validate if date is in the future
     if (!isDateInFuture(selectedDate)) {
@@ -61,7 +62,7 @@ export function DeviceUsageTimePicker({
       setIsSwitchOn(true);
       setIsDialogOpen(true);
       // Update the time to current time + 1 minute whenever dialog opens
-      setEstimatedDateTime(getDateTimeLocalValue(getCurrentDatePlusOneMin()));
+      setDateTimeInputValue(getDateTimeLocalValue(getCurrentDatePlusOneMin()));
       setTimeError(null);
     } else {
       //since the user never manually turns off the switch within the active device list this part is never reached
@@ -77,7 +78,7 @@ export function DeviceUsageTimePicker({
   };
 
   const handleTimeChange = (value: string) => {
-    setEstimatedDateTime(value);
+    setDateTimeInputValue(value);
     setTimeError(validateDateTime(value));
   };
 
@@ -86,7 +87,7 @@ export function DeviceUsageTimePicker({
     if (isLoading || timeError) return;
 
     // Validate time again before proceeding
-    const error = validateDateTime(estimatedDateTime);
+    const error = validateDateTime(dateTimeInputValue);
     if (error) {
       setTimeError(error);
       return;
@@ -94,7 +95,7 @@ export function DeviceUsageTimePicker({
 
     try {
       setIsLoading(true);
-      const selectedDate = new Date(estimatedDateTime);
+      const selectedDate = new Date(dateTimeInputValue);
 
       const result = await turnOnDeviceAction(deviceId, deviceIp, selectedDate);
 
@@ -164,7 +165,7 @@ export function DeviceUsageTimePicker({
               <Input
                 id={`est-time-${deviceId}`}
                 type="datetime-local"
-                value={estimatedDateTime}
+                value={dateTimeInputValue}
                 onChange={(e) => handleTimeChange(e.target.value)}
                 min={getDateTimeLocalValue(getCurrentDatePlusOneMin())}
                 max={getDateTimeLocalValue(getCurrentDatePlusEightHours())}

@@ -66,8 +66,29 @@ function getEnergyValueForDate(date?: string | null): number {
 /**
  * Normalizes a date to minute precision by setting seconds and milliseconds to 0
  */
-export function normalizeToMinute(date: Date): Date {
-  return new Date(new Date(date).setSeconds(0, 0));
+// export function normalizeToMinute(date: Date): Date {
+//   return new Date(new Date(date).setSeconds(0, 0));
+// }
+
+/**
+ * Converts a date to UTC timestamp with minute precision
+ */
+export function toUTCMinutePrecision(date: Date): number {
+  return Date.UTC(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+  );
+}
+
+/**
+ * Compares two dates at minute precision in UTC
+ * @returns negative if date1 < date2, 0 if equal, positive if date1 > date2
+ */
+export function compareToMinutePrecision(date1: Date, date2: Date): number {
+  return toUTCMinutePrecision(date1) - toUTCMinutePrecision(date2);
 }
 
 /**
@@ -75,9 +96,7 @@ export function normalizeToMinute(date: Date): Date {
  * @returns true if dates are equal up to the minute
  */
 export function areDatesEqualToMinute(date1: Date, date2: Date): boolean {
-  const normalized1 = normalizeToMinute(date1);
-  const normalized2 = normalizeToMinute(date2);
-  return normalized1.getTime() === normalized2.getTime();
+  return compareToMinutePrecision(date1, date2) === 0;
 }
 
 /**
@@ -85,9 +104,8 @@ export function areDatesEqualToMinute(date1: Date, date2: Date): boolean {
  * @returns true if the date is in the future
  */
 export function isDateInFuture(date: Date): boolean {
-  const normalized = normalizeToMinute(date);
-  const normalizedNow = normalizeToMinute(new Date());
-  return normalized.getTime() > normalizedNow.getTime();
+  const now = new Date();
+  return compareToMinutePrecision(date, now) > 0;
 }
 
 // Convert Date to timezone-adjusted ISO string
@@ -103,12 +121,25 @@ export const sliceISOStringUptoMinute = (isoString: string): string => {
 };
 
 /**
+ * Creates a Date object from a datetime-local input string value
+ *
+ * Note: The browser interprets datetime-local values in the local timezone.
+ * This function just creates a standard Date object from the input.
+ */
+export function parseDateTimeLocalInput(dateTimeStr: string): Date {
+  if (!dateTimeStr) return new Date();
+
+  const date = new Date(dateTimeStr);
+  return date;
+}
+
+/**
  * @description Get the local date-time string in YYYY-MM-DDTHH:MM format.
  * Useful for input type="datetime-local"
  * @param date - Date object (default: new Date())
  * @returns Local date-time string in YYYY-MM-DDTHH:MM format
  *
- * @example getDateTimeLocalValue() => "2023-01-01T00:00"
+ * @example getDateTimeLocalValue(new Date("2023-01-01")) => "2023-01-01T00:00"
  * */
 export const getDateTimeLocalValue = (date: Date | null): string => {
   if (date === null) return "";
@@ -131,11 +162,18 @@ export const getCurrentDatePlusEightHours = (): Date => {
 
 // Helper function to check if a date is within 8 hours from now
 export const isWithinEightHours = (date: Date): boolean => {
-  const normalizedDate = normalizeToMinute(date);
-  const normalizedEightHoursLater = normalizeToMinute(
-    getCurrentDatePlusEightHours(),
-  );
-  return normalizedDate.getTime() <= normalizedEightHoursLater.getTime();
+  const eightHoursLater = getCurrentDatePlusEightHours();
+  return compareToMinutePrecision(date, eightHoursLater) <= 0;
+};
+
+// Helper function to check if a date is within 8 hours from a specified date
+export const isWithinEightHoursFromDate = (
+  givenDate: Date,
+  fromDate: Date,
+): boolean => {
+  const oneHour = 60 * 60 * 1000;
+  const eightHoursLater = new Date(fromDate.getTime() + 8 * oneHour);
+  return compareToMinutePrecision(givenDate, eightHoursLater) <= 0;
 };
 
 //using this sytax for making istanbul ignore next work.

@@ -4,21 +4,31 @@ import { useRef, useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckIcon, PencilIcon, Loader2, XIcon } from "lucide-react";
-import { cn, getDateTimeLocalValue, isDateInFuture } from "@/lib/utils";
+import {
+  cn,
+  getCurrentDatePlusOneMin,
+  getDateTimeLocalValue,
+  isDateInFuture,
+  isWithinEightHoursFromDate,
+  parseDateTimeLocalInput,
+  areDatesEqualToMinute,
+} from "@/lib/utils";
 import { useActionState } from "react";
 import { updateEstimatedTimeAction } from "@/lib/actions/usage-actions";
 
 interface InlineTimeEditProps {
   deviceId: string;
   estimatedUseUntil: Date | null;
+  deviceStartDate: Date;
 }
 
 export function InlineTimeEdit({
   deviceId,
   estimatedUseUntil,
+  deviceStartDate,
 }: InlineTimeEditProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [inputValue, setInputValue] = useState<string>("");
+  const [inputDateTimeValue, setInputDateTimeValue] = useState<string>("");
   const [hasInteracted, setHasInteracted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -90,7 +100,7 @@ export function InlineTimeEdit({
     e.preventDefault();
     e.stopPropagation();
     const initialValue = getDateTimeLocalValue(displayTime);
-    setInputValue(initialValue);
+    setInputDateTimeValue(initialValue);
     initialInputValueRef.current = initialValue;
     // Reset interaction state not to show error from previous interaction
     // Fresh interaction should show fresh error message if needed
@@ -100,7 +110,7 @@ export function InlineTimeEdit({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    setInputValue(newValue);
+    setInputDateTimeValue(newValue);
 
     // Mark as dirty as soon as the user interacts with the input
     setHasInteracted(true);
@@ -115,31 +125,17 @@ export function InlineTimeEdit({
     if (e.key === "Escape") {
       e.preventDefault();
       setIsEditing(false);
-    } else if (e.key === "Enter" && !e.shiftKey) {
-      const target = e.target;
-
-      // If Enter was pressed on the input, handle validation and submission
-      if (inputRef.current === target) {
-        e.preventDefault(); // Only prevent default for input/submit button
-
-        const clientError = validateTime();
-        const isUnchanged = isInputUnchanged();
-
-        if (!clientError && !isUnchanged && !isPending) {
-          formRef.current?.requestSubmit();
-        }
-      }
-      // Let browser handle Enter on other elements (like cancel button)
     }
   };
 
   // Client side validation
   const validateTime = (): string | null => {
-    if (!inputValue) {
+    if (!inputDateTimeValue) {
       return "Time is required";
     }
 
-    const selectedDate = new Date(inputValue);
+    // Parse the input value using our consistent utility
+    const selectedDate = parseDateTimeLocalInput(inputDateTimeValue);
 
     if (isNaN(selectedDate.getTime())) {
       return "Invalid date format";
@@ -150,8 +146,13 @@ export function InlineTimeEdit({
     }
 
     // Only check for unchanged time if the form is dirty but reverted to initial value
-    if (hasInteracted && inputValue === initialInputValueRef.current) {
+    if (hasInteracted && inputDateTimeValue === initialInputValueRef.current) {
       return "No change made to the time";
+    }
+
+    // Validate if date is within 8 hours of the original estimated time
+    if (!isWithinEightHoursFromDate(selectedDate, deviceStartDate)) {
+      return "Date must be within 8 hours of the start date";
     }
 
     return null; // No error
@@ -162,15 +163,11 @@ export function InlineTimeEdit({
     //istanbul ignore next
     if (!displayTime) return false;
 
-    // Convert datetime-local string to Date for comparison
-    const selectedDateTime = new Date(inputValue);
-    selectedDateTime.setSeconds(0, 0);
+    // Use parseDateTimeLocal to ensure consistent date handling
+    const selectedDateTime = parseDateTimeLocalInput(inputDateTimeValue);
 
-    // Create a normalized version of displayTime for comparison
-    const normalizedDisplayTime = new Date(displayTime);
-    normalizedDisplayTime.setSeconds(0, 0);
-
-    return selectedDateTime.getTime() === normalizedDisplayTime.getTime();
+    // Use areDatesEqualToMinute for consistent UTC comparison
+    return areDatesEqualToMinute(selectedDateTime, displayTime);
   };
 
   if (!isEditing)
@@ -211,10 +208,14 @@ export function InlineTimeEdit({
           <Input
             ref={inputRef}
             type="datetime-local"
-            name="estimatedTime"
-            value={inputValue}
+            name="estimatedDateTimeLocal"
+            value={inputDateTimeValue}
             onChange={handleInputChange}
-            min={getDateTimeLocalValue(new Date())}
+            // min={getDateTimeLocalValue(new Date())}
+            min={getDateTimeLocalValue(getCurrentDatePlusOneMin())}
+            max={getDateTimeLocalValue(
+              new Date(deviceStartDate.getTime() + 8 * 60 * 60 * 1000),
+            )}
             className={cn(
               "h-8 w-full pr-2",
               (serverState.error || clientError) && "border-destructive",

@@ -46,6 +46,7 @@ const mockDevices = [
     usage: {
       user_email: "user1@example.com",
       estimated_use_time: new Date("2024-03-20T15:00:00"),
+      start_date: new Date(),
     },
   },
   {
@@ -60,6 +61,7 @@ const mockDevices = [
     usage: {
       user_email: "user2@example.com",
       estimated_use_time: null,
+      start_date: new Date(),
     },
   },
 ];
