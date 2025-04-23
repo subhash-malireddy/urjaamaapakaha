@@ -238,6 +238,7 @@ describe("DeviceUsageTimePicker Component", () => {
       expect(turnOnDeviceAction).toHaveBeenCalledWith(
         mockDeviceId,
         mockDeviceIp,
+        undefined,
       );
     });
 

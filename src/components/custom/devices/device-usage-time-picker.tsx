@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -32,11 +32,11 @@ export function DeviceUsageTimePicker({
   deviceId,
   deviceIp,
 }: DeviceUsageTimePickerProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const [dateTimeInputValue, setDateTimeInputValue] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSwitchOn, setIsSwitchOn] = useState(false);
   const [timeError, setTimeError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   // Validate the selected date and return an error message if invalid
   const validateDateTime = (dateTimeStr: string): string | null => {
@@ -53,6 +53,30 @@ export function DeviceUsageTimePicker({
     }
 
     return null;
+  };
+
+  const handleDeviceAction = async (estimatedUseTime?: Date) => {
+    try {
+      const result = await turnOnDeviceAction(
+        deviceId,
+        deviceIp,
+        estimatedUseTime,
+      );
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      setIsDialogOpen(false);
+      // Keep the switch in ON state after successful action
+    } catch (error) {
+      console.error(
+        `Error turning on device${estimatedUseTime ? " with estimated time" : " directly"}:`,
+        error,
+      );
+      // If there's an error, reset the switch
+      setIsSwitchOn(false);
+    }
   };
 
   const handleCheckedChange = async (isOn: boolean) => {
@@ -84,7 +108,7 @@ export function DeviceUsageTimePicker({
 
   const handleTurnOn = async () => {
     // istanbul ignore if
-    if (isLoading || timeError) return;
+    if (isPending || timeError) return;
 
     // Validate time again before proceeding
     const error = validateDateTime(dateTimeInputValue);
@@ -93,50 +117,20 @@ export function DeviceUsageTimePicker({
       return;
     }
 
-    try {
-      setIsLoading(true);
+    startTransition(async () => {
       const selectedDate = new Date(dateTimeInputValue);
-
-      const result = await turnOnDeviceAction(deviceId, deviceIp, selectedDate);
-
-      if (!result.success) {
-        throw new Error(result.error);
-      }
-
-      setIsDialogOpen(false);
-      // Keep the switch in ON state after successful action
-    } catch (error) {
-      console.error("Error turning on device with estimated time:", error);
-      // If there's an error, reset the switch
-      setIsSwitchOn(false);
-    } finally {
-      setIsLoading(false);
-    }
+      await handleDeviceAction(selectedDate);
+    });
   };
 
   // Handle direct turn on (without estimated time)
   const handleDirectTurnOn = async () => {
     //istanbul ignore next -- button is disabled when loading so this part is never reached but we keep it to be safe
-    if (isLoading) return;
+    if (isPending) return;
 
-    try {
-      setIsLoading(true);
-
-      const result = await turnOnDeviceAction(deviceId, deviceIp);
-
-      if (!result.success) {
-        throw new Error(result.error);
-      }
-
-      setIsDialogOpen(false);
-      // Keep the switch in ON state after successful action
-    } catch (error) {
-      console.error("Error turning on device directly:", error);
-      // If there's an error, reset the switch
-      setIsSwitchOn(false);
-    } finally {
-      setIsLoading(false);
-    }
+    startTransition(async () => {
+      await handleDeviceAction();
+    });
   };
 
   return (
@@ -144,12 +138,12 @@ export function DeviceUsageTimePicker({
       <FreeDeviceSwitch
         deviceId={deviceId}
         onCheckedChange={handleCheckedChange}
-        disabled={isDialogOpen && isLoading}
+        disabled={isDialogOpen && isPending}
         checked={isSwitchOn}
       />
 
       <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Turn On Device</DialogTitle>
             <DialogDescription>
@@ -157,7 +151,7 @@ export function DeviceUsageTimePicker({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
+          <div className="pt-4">
             <div className="space-y-2">
               <Label htmlFor={`est-time-${deviceId}`}>
                 Estimated use until
@@ -171,21 +165,25 @@ export function DeviceUsageTimePicker({
                 max={getDateTimeLocalValue(getCurrentDatePlusEightHours())}
                 className={timeError ? "border-red-500" : ""}
               />
-              {timeError && <p className="text-sm text-red-500">{timeError}</p>}
+              <p className="h-4 text-sm text-red-500">{timeError}</p>
             </div>
           </div>
 
-          <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2">
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-center sm:space-x-2">
             <Button
               variant="outline"
               onClick={handleDirectTurnOn}
-              disabled={isLoading}
-              className="mb-2 sm:mb-0"
+              disabled={isPending}
+              className="mb-2 flex-1 sm:mb-0"
             >
-              {isLoading ? "Turning On..." : "Turn On Without Timer"}
+              {isPending ? "Turning On..." : "Turn On Without Timer"}
             </Button>
-            <Button onClick={handleTurnOn} disabled={isLoading || !!timeError}>
-              {isLoading ? "Turning On..." : "Turn On With Timer"}
+            <Button
+              onClick={handleTurnOn}
+              disabled={isPending || !!timeError}
+              className="flex-1"
+            >
+              {isPending ? "Turning On..." : "Turn On With Timer"}
             </Button>
           </DialogFooter>
         </DialogContent>
