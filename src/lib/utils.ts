@@ -130,6 +130,7 @@ export function parseDateTimeLocalInput(dateTimeStr: string): Date {
   if (!dateTimeStr) return new Date();
 
   const date = new Date(dateTimeStr);
+  console.log("🚀 ~ parseDateTimeLocalInput ~ date:", date);
   return date;
 }
 
@@ -173,6 +174,8 @@ export const isWithinEightHoursFromDate = (
 ): boolean => {
   const oneHour = 60 * 60 * 1000;
   const eightHoursLater = new Date(fromDate.getTime() + 8 * oneHour);
+  console.log("🚀 ~ givenDate:", givenDate);
+  console.log("🚀 ~ eightHoursLater:", eightHoursLater);
   return compareToMinutePrecision(givenDate, eightHoursLater) <= 0;
 };
 
