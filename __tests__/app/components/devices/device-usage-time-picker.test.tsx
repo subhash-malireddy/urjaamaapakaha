@@ -285,11 +285,12 @@ describe("DeviceUsageTimePicker Component", () => {
     });
   });
 
-  it("resets switch when direct turn on action fails", async () => {
+  it("displays error message when turnOnDeviceAction fails without estimated time", async () => {
     const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+    const errorMock = "test error";
     (turnOnDeviceAction as jest.Mock).mockResolvedValue({
       success: false,
-      error: "Failed to turn on device",
+      error: errorMock,
     });
 
     render(
@@ -313,18 +314,17 @@ describe("DeviceUsageTimePicker Component", () => {
       expect.any(Error),
     );
 
-    // Switch should be reset to OFF when action fails
-    expect(switchElement).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByText(errorMock)).toBeInTheDocument();
 
     consoleErrorSpy.mockRestore();
   });
 
-  it("resets switch when turn on with timer fails", async () => {
-    (utils.getCurrentDatePlusOneMin as jest.Mock).mockReturnValue(futureDate);
+  it("displays error message when turnOnDeviceAction fails with estimated time", async () => {
     const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+    const errorMock = "test error";
     (turnOnDeviceAction as jest.Mock).mockResolvedValue({
       success: false,
-      error: "Failed to turn on device",
+      error: errorMock,
     });
 
     render(
@@ -336,19 +336,49 @@ describe("DeviceUsageTimePicker Component", () => {
     await userEvent.click(switchElement);
 
     expect(switchElement).toHaveAttribute("aria-checked", "true");
-    // Click the With Timer button
-    const timerButton = await screen.findByRole("button", {
+    const dateTimeInput = await screen.findByLabelText(/Estimated use until/i);
+    await userEvent.clear(dateTimeInput);
+    await userEvent.type(dateTimeInput, futureDateLocalValue);
+    // Click the Turn On Without Timer button
+    const turnOnButton = await screen.findByRole("button", {
       name: /turn on with timer/i,
     });
-    await userEvent.click(timerButton);
+
+    await userEvent.click(turnOnButton);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining("Error turning on device with estimated time:"),
       expect.any(Error),
     );
 
-    // Switch should be reset to OFF when action fails
-    expect(switchElement).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByText(errorMock)).toBeInTheDocument();
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("displays generic error message when turnOnDeviceAction fails", async () => {
+    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+    (turnOnDeviceAction as jest.Mock).mockRejectedValue("test error");
+
+    render(
+      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+    );
+
+    const switchElement = screen.getByRole("switch");
+    await userEvent.click(switchElement);
+
+    const turnOnButton = await screen.findByRole("button", {
+      name: /turn on without timer/i,
+    });
+
+    await userEvent.click(turnOnButton);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Error turning on device directly:"),
+      "test error",
+    );
+
+    expect(screen.getByText("Failed to turn on device")).toBeInTheDocument();
 
     consoleErrorSpy.mockRestore();
   });

@@ -35,7 +35,9 @@ export function DeviceUsageTimePicker({
   const [dateTimeInputValue, setDateTimeInputValue] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSwitchOn, setIsSwitchOn] = useState(false);
-  const [timeError, setTimeError] = useState<string | null>(null);
+  const [validationOrActionError, setValidationOrActionError] = useState<
+    string | null
+  >(null);
   const [isPending, startTransition] = useTransition();
 
   // Validate the selected date and return an error message if invalid
@@ -74,8 +76,11 @@ export function DeviceUsageTimePicker({
         `Error turning on device${estimatedUseTime ? " with estimated time" : " directly"}:`,
         error,
       );
+      setValidationOrActionError(
+        error instanceof Error ? error.message : "Failed to turn on device",
+      );
       // If there's an error, reset the switch
-      setIsSwitchOn(false);
+      // setIsSwitchOn(false);
     }
   };
 
@@ -87,7 +92,7 @@ export function DeviceUsageTimePicker({
       setIsDialogOpen(true);
       // Update the time to current time + 1 minute whenever dialog opens
       setDateTimeInputValue(getDateTimeLocalValue(getCurrentDatePlusOneMin()));
-      setTimeError(null);
+      setValidationOrActionError(null);
     } else {
       //since the user never manually turns off the switch within the active device list this part is never reached
       setIsSwitchOn(false);
@@ -98,22 +103,22 @@ export function DeviceUsageTimePicker({
     // When dialog is closed without action, reset the switch
     setIsDialogOpen(false);
     setIsSwitchOn(false);
-    setTimeError(null);
+    setValidationOrActionError(null);
   };
 
   const handleTimeChange = (value: string) => {
     setDateTimeInputValue(value);
-    setTimeError(validateDateTime(value));
+    setValidationOrActionError(validateDateTime(value));
   };
 
   const handleTurnOn = async () => {
     // istanbul ignore if
-    if (isPending || timeError) return;
+    if (isPending || validationOrActionError) return;
 
     // Validate time again before proceeding
     const error = validateDateTime(dateTimeInputValue);
     if (error) {
-      setTimeError(error);
+      setValidationOrActionError(error);
       return;
     }
 
@@ -163,9 +168,11 @@ export function DeviceUsageTimePicker({
                 onChange={(e) => handleTimeChange(e.target.value)}
                 min={getDateTimeLocalValue(getCurrentDatePlusOneMin())}
                 max={getDateTimeLocalValue(getCurrentDatePlusEightHours())}
-                className={timeError ? "border-red-500" : ""}
+                className={validationOrActionError ? "border-red-500" : ""}
               />
-              <p className="h-4 text-sm text-red-500">{timeError}</p>
+              <p className="h-4 text-sm text-red-500">
+                {validationOrActionError}
+              </p>
             </div>
           </div>
 
@@ -180,7 +187,7 @@ export function DeviceUsageTimePicker({
             </Button>
             <Button
               onClick={handleTurnOn}
-              disabled={isPending || !!timeError}
+              disabled={isPending || !!validationOrActionError}
               className="flex-1"
             >
               {isPending ? "Turning On..." : "Turn On With Timer"}
