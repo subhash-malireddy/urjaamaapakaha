@@ -7,7 +7,7 @@ import {
   areDatesEqualToMinute,
   isDateInFuture,
   isWithinEightHoursFromDate,
-  parseDateTimeLocalInput,
+  parseDateTimeLocalInputClient,
 } from "../utils";
 
 // Define the state type
@@ -41,7 +41,7 @@ export async function updateEstimatedTimeAction(
       return { message: "Missing required fields", error: "Validation Error" };
     }
 
-    const estimatedDate = parseDateTimeLocalInput(estDateTimeLocalStr);
+    const estimatedDate = parseDateTimeLocalInputClient(estDateTimeLocalStr);
     if (isNaN(estimatedDate.getTime()) || !isDateInFuture(estimatedDate)) {
       return {
         message: "Date must be in the future",

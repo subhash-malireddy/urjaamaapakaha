@@ -20,7 +20,7 @@ import {
   getDateTimeLocalValue,
   isDateInFuture,
   isWithinEightHours,
-  parseDateTimeLocalInput,
+  parseDateTimeLocalInputClient,
 } from "@/lib/utils";
 
 interface DeviceUsageTimePickerProps {
@@ -42,7 +42,7 @@ export function DeviceUsageTimePicker({
 
   // Validate the selected date and return an error message if invalid
   const validateDateTime = (dateTimeStr: string): string | null => {
-    const selectedDate = parseDateTimeLocalInput(dateTimeStr);
+    const selectedDate = parseDateTimeLocalInputClient(dateTimeStr);
 
     // Validate if date is in the future
     if (!isDateInFuture(selectedDate)) {
@@ -123,7 +123,7 @@ export function DeviceUsageTimePicker({
     }
 
     startTransition(async () => {
-      const selectedDate = new Date(dateTimeInputValue);
+      const selectedDate = parseDateTimeLocalInputClient(dateTimeInputValue);
       await handleDeviceAction(selectedDate);
     });
   };

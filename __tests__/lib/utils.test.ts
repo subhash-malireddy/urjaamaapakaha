@@ -8,7 +8,7 @@ import {
   isDateInFuture,
   isWithinEightHours,
   isWithinEightHoursFromDate,
-  parseDateTimeLocalInput,
+  parseDateTimeLocalInputClient,
   // normalizeToMinute,
   sliceISOStringUptoMinute,
   toUTCMinutePrecision,
@@ -130,7 +130,7 @@ describe("date utils", () => {
         .spyOn(global, "Date")
         .mockImplementationOnce(() => mockCurrentDate);
 
-      const result = parseDateTimeLocalInput("");
+      const result = parseDateTimeLocalInputClient("");
 
       expect(result).toEqual(mockCurrentDate);
 
@@ -145,7 +145,7 @@ describe("date utils", () => {
       const expectedDate = new Date("2024-06-15T14:30");
 
       // Call the function
-      const result = parseDateTimeLocalInput(dateTimeStr);
+      const result = parseDateTimeLocalInputClient(dateTimeStr);
 
       // Verify the result is a Date object
       expect(result).toBeInstanceOf(Date);

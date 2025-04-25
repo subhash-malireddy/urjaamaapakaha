@@ -126,11 +126,11 @@ export const sliceISOStringUptoMinute = (isoString: string): string => {
  * Note: The browser interprets datetime-local values in the local timezone.
  * This function just creates a standard Date object from the input.
  */
-export function parseDateTimeLocalInput(dateTimeStr: string): Date {
+export function parseDateTimeLocalInputClient(dateTimeStr: string): Date {
   if (!dateTimeStr) return new Date();
 
   const date = new Date(dateTimeStr);
-  console.log("🚀 ~ parseDateTimeLocalInput ~ date:", date);
+  console.log("🚀 ~ parseDateTimeLocalInputClient ~ date:", date);
   return date;
 }
 
