@@ -147,8 +147,11 @@ export function convertDateTimeLocalToUTC(
   clientTimezoneOffset: number,
 ) {
   const serverDate = new Date(dateString);
+  console.log("🚀 ~ serverDate:", serverDate);
 
   const serverTimezoneOffset = serverDate.getTimezoneOffset();
+  console.log("🚀 ~ serverTimezoneOffset:", serverTimezoneOffset);
+  console.log("🚀 ~ clientTimezoneOffset:", clientTimezoneOffset);
 
   const offsetDifference = serverTimezoneOffset - clientTimezoneOffset;
   const oneMinute = 60 * 1000;
@@ -156,6 +159,7 @@ export function convertDateTimeLocalToUTC(
     serverDate.getTime() + offsetDifference * oneMinute,
   );
   console.log("🚀 ~ adjustedDate:", adjustedDate);
+  console.log("🚀 ~ adjustedDate:tz", adjustedDate.getTimezoneOffset());
 
   return adjustedDate;
 }
@@ -201,6 +205,7 @@ export const isWithinEightHoursFromDate = (
   const oneHour = 60 * 60 * 1000;
   const eightHoursLater = new Date(fromDate.getTime() + 8 * oneHour);
   console.log("🚀 ~ givenDate:", givenDate);
+  console.log("🚀 ~ fromDate:", fromDate);
   console.log("🚀 ~ eightHoursLater:", eightHoursLater);
   return compareToMinutePrecision(givenDate, eightHoursLater) <= 0;
 };
