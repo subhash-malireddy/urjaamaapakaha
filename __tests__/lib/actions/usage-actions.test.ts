@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { updateEstimatedTimeAction } from "@/lib/actions/usage-actions";
 import { getActiveDevice } from "@/lib/data/devices";
 import { updateEstimatedTime } from "@/lib/data/usage";
+import { getDateTimeLocalValue } from "@/lib/utils";
 
 // Mock dependencies
 jest.mock("@/auth", () => ({
@@ -139,13 +140,22 @@ describe("updateEstimatedTimeAction", () => {
     it("should accept time that is at least one minute in the future", async () => {
       const futureDate = new Date();
       futureDate.setMinutes(futureDate.getMinutes() + 1);
+      const futureUtcDate = new Date(
+        futureDate.getTime() - futureDate.getTimezoneOffset() * 60000,
+      );
 
       const formData = new FormData();
       formData.append("deviceId", "test-device");
-      formData.append("estimatedDateTimeLocal", futureDate.toISOString());
+      formData.append(
+        "timezoneOffset",
+        futureDate.getTimezoneOffset().toString(),
+      );
+      formData.append(
+        "estimatedDateTimeLocal",
+        futureUtcDate.toISOString().slice(0, 16),
+      );
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
-
       // We expect a different error than validation error (like device not found)
       expect(result.error).not.toBe("Validation Error");
     });
@@ -154,7 +164,10 @@ describe("updateEstimatedTimeAction", () => {
   describe("device access", () => {
     const testEmail = "test@example.com";
     const testDeviceId = "test-device";
-    const futureTime = new Date(Date.now() + 3600000).toISOString();
+    const futureDate = new Date(Date.now() + 3600000);
+    const dateTimeLocalValue = getDateTimeLocalValue(futureDate);
+
+    const tzOffsetString = futureDate.getTimezoneOffset().toString();
 
     beforeEach(() => {
       // Mock authenticated user
@@ -169,7 +182,8 @@ describe("updateEstimatedTimeAction", () => {
 
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append("estimatedDateTimeLocal", futureTime);
+      formData.append("estimatedDateTimeLocal", dateTimeLocalValue);
+      formData.append("timezoneOffset", tzOffsetString);
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
@@ -205,7 +219,8 @@ describe("updateEstimatedTimeAction", () => {
 
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append("estimatedDateTimeLocal", futureTime);
+      formData.append("estimatedDateTimeLocal", dateTimeLocalValue);
+      formData.append("timezoneOffset", tzOffsetString);
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
@@ -230,6 +245,7 @@ describe("updateEstimatedTimeAction", () => {
       const formData = new FormData();
       formData.append("deviceId", "test-device");
       formData.append("estimatedDateTimeLocal", now.toISOString());
+      formData.append("timezoneOffset", now.getTimezoneOffset().toString());
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
@@ -253,7 +269,8 @@ describe("updateEstimatedTimeAction", () => {
 
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append("estimatedDateTimeLocal", futureTime);
+      formData.append("estimatedDateTimeLocal", dateTimeLocalValue);
+      formData.append("timezoneOffset", tzOffsetString);
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
@@ -294,7 +311,12 @@ describe("updateEstimatedTimeAction", () => {
       const currentTime = new Date(baseTime);
       const newTimeWithDifferentSeconds = new Date(baseTime);
       newTimeWithDifferentSeconds.setSeconds(currentTime.getSeconds() + 30); // Different seconds, same minute
-
+      const dateTimeLocalValue = getDateTimeLocalValue(
+        newTimeWithDifferentSeconds,
+      );
+      const tzOffsetString = newTimeWithDifferentSeconds
+        .getTimezoneOffset()
+        .toString();
       // Mock device with existing Date
       (getActiveDevice as jest.Mock).mockResolvedValue({
         device_id: testDeviceId,
@@ -307,10 +329,8 @@ describe("updateEstimatedTimeAction", () => {
 
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append(
-        "estimatedDateTimeLocal",
-        newTimeWithDifferentSeconds.toISOString(),
-      );
+      formData.append("estimatedDateTimeLocal", dateTimeLocalValue);
+      formData.append("timezoneOffset", tzOffsetString);
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
@@ -324,6 +344,9 @@ describe("updateEstimatedTimeAction", () => {
       const currentTime = new Date(Date.now() + 3600000);
       const newTime = new Date(currentTime);
       newTime.setMinutes(currentTime.getMinutes() + 1);
+      newTime.setSeconds(0, 0); // date comparison does not consider seconds & milliseconds.
+      const dateTimeLocalValue = getDateTimeLocalValue(newTime);
+      const tzOffsetString = newTime.getTimezoneOffset().toString();
 
       // Mock device with existing Date
       (getActiveDevice as jest.Mock).mockResolvedValue({
@@ -338,7 +361,8 @@ describe("updateEstimatedTimeAction", () => {
 
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append("estimatedDateTimeLocal", newTime.toISOString());
+      formData.append("estimatedDateTimeLocal", dateTimeLocalValue);
+      formData.append("timezoneOffset", tzOffsetString);
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
@@ -353,9 +377,13 @@ describe("updateEstimatedTimeAction", () => {
       );
       jest.spyOn(console, "error").mockImplementation(() => {}); // Suppress console error
 
+      const dateTimeLocalValue = getDateTimeLocalValue(futureTime);
+      const tzOffsetString = futureTime.getTimezoneOffset().toString();
+
       const formData = new FormData();
       formData.append("deviceId", testDeviceId);
-      formData.append("estimatedDateTimeLocal", futureTime.toISOString());
+      formData.append("estimatedDateTimeLocal", dateTimeLocalValue);
+      formData.append("timezoneOffset", tzOffsetString);
 
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
