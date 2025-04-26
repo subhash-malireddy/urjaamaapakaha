@@ -204,6 +204,11 @@ export function InlineTimeEdit({
     >
       <div className="flex items-center gap-2">
         <input type="hidden" name="deviceId" value={deviceId} />
+        <input
+          type="hidden"
+          name="timezoneOffset"
+          value={new Date().getTimezoneOffset()}
+        />
         <div className="relative">
           <Input
             ref={inputRef}

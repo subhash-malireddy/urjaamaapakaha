@@ -135,6 +135,32 @@ export function parseDateTimeLocalInputClient(dateTimeStr: string): Date {
 }
 
 /**
+ * Converts a datetime-local input value to the correct UTC time,
+ * accounting for the difference between client and server timezones.
+ *
+ * @param {string} dateString - The datetime string from datetime-local input (format: "YYYY-MM-DDThh:mm")
+ * @param {number} clientTimezoneOffset - The client's timezone offset in minutes (from getTimezoneOffset())
+ * @returns {Date} - Date object correctly adjusted for timezone differences
+ */
+export function convertDateTimeLocalToUTC(
+  dateString: string,
+  clientTimezoneOffset: number,
+) {
+  const serverDate = new Date(dateString);
+
+  const serverTimezoneOffset = serverDate.getTimezoneOffset();
+
+  const offsetDifference = serverTimezoneOffset - clientTimezoneOffset;
+  const oneMinute = 60 * 1000;
+  const adjustedDate = new Date(
+    serverDate.getTime() + offsetDifference * oneMinute,
+  );
+  console.log("🚀 ~ adjustedDate:", adjustedDate);
+
+  return adjustedDate;
+}
+
+/**
  * @description Get the local date-time string in YYYY-MM-DDTHH:MM format.
  * Useful for input type="datetime-local"
  * @param date - Date object (default: new Date())

@@ -5,9 +5,9 @@ import { getActiveDevice } from "../data/devices";
 import { updateEstimatedTime } from "../data/usage";
 import {
   areDatesEqualToMinute,
+  convertDateTimeLocalToUTC,
   isDateInFuture,
   isWithinEightHoursFromDate,
-  parseDateTimeLocalInputClient,
 } from "../utils";
 
 // Define the state type
@@ -29,6 +29,10 @@ export async function updateEstimatedTimeAction(
     const estDateTimeLocalStr = formData.get(
       "estimatedDateTimeLocal",
     ) as string;
+    const clientTimezoneOffset = parseInt(
+      formData.get("timezoneOffset") as string,
+      10,
+    );
 
     // Get current user session
     const session = await auth();
@@ -41,7 +45,10 @@ export async function updateEstimatedTimeAction(
       return { message: "Missing required fields", error: "Validation Error" };
     }
 
-    const estimatedDate = parseDateTimeLocalInputClient(estDateTimeLocalStr);
+    const estimatedDate = convertDateTimeLocalToUTC(
+      estDateTimeLocalStr,
+      clientTimezoneOffset,
+    );
     if (isNaN(estimatedDate.getTime()) || !isDateInFuture(estimatedDate)) {
       return {
         message: "Date must be in the future",
