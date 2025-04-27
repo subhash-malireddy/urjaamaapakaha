@@ -205,7 +205,9 @@ export const isWithinEightHoursFromDate = (
   const oneHour = 60 * 60 * 1000;
   const eightHoursLater = new Date(fromDate.getTime() + 8 * oneHour);
   console.log("🚀 ~ givenDate:", givenDate);
+  console.log("🚀 ~ givenDate:", givenDate.getTimezoneOffset);
   console.log("🚀 ~ fromDate:", fromDate);
+  console.log("🚀 ~ fromDate:", fromDate.getTimezoneOffset);
   console.log("🚀 ~ eightHoursLater:", eightHoursLater);
   return compareToMinutePrecision(givenDate, eightHoursLater) <= 0;
 };
