@@ -25,14 +25,21 @@ export async function updateEstimatedTimeAction(
   formData: FormData,
 ): Promise<EstimatedTimeState> {
   try {
-    const deviceId = formData.get("deviceId") as string;
-    const estDateTimeLocalStr = formData.get(
-      "estimatedDateTimeLocal",
-    ) as string;
-    const clientTimezoneOffset = parseInt(
-      formData.get("timezoneOffset") as string,
-      10,
-    );
+    const deviceId = formData.get("deviceId");
+    const estDateTimeLocalStr = formData.get("estimatedDateTimeLocal");
+    const clientTzOffset = formData.get("timezoneOffset");
+
+    const areRequiredFieldsValid =
+      typeof deviceId === "string" &&
+      typeof estDateTimeLocalStr === "string" &&
+      typeof clientTzOffset === "string";
+
+    if (!areRequiredFieldsValid) {
+      return {
+        message: "Invalid form data",
+        error: "Validation Error",
+      };
+    }
 
     // Get current user session
     const session = await auth();
@@ -40,16 +47,19 @@ export async function updateEstimatedTimeAction(
       return { message: "You must be logged in", error: "Unauthorized" };
     }
 
-    // Basic validation
-    if (!estDateTimeLocalStr || !deviceId) {
-      return { message: "Missing required fields", error: "Validation Error" };
-    }
-
     const estimatedDate = convertDateTimeLocalToUTC(
       estDateTimeLocalStr,
-      clientTimezoneOffset,
+      clientTzOffset,
     );
-    if (isNaN(estimatedDate.getTime()) || !isDateInFuture(estimatedDate)) {
+
+    if (isNaN(estimatedDate.getTime())) {
+      return {
+        message: "Invalid date format",
+        error: "Validation Error",
+      };
+    }
+
+    if (!isDateInFuture(estimatedDate)) {
       return {
         message: "Date must be in the future",
         error: "Validation Error",
@@ -115,8 +125,14 @@ export async function updateEstimatedTimeAction(
     };
   } catch (error) {
     console.error("Failed to update date:", error);
+    if (error instanceof Error) {
+      return {
+        message: error.message,
+        error: "Server Error",
+      };
+    }
     return {
-      message: "Server error updating date",
+      message: "Error updating date",
       error: "Server Error",
     };
   }
