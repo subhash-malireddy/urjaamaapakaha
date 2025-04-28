@@ -27,14 +27,6 @@ export function InlineTimeEdit({
   estimatedUseUntil,
   deviceStartDate,
 }: InlineTimeEditProps) {
-  console.log(
-    "🚀 ~ estimatedUseUntil?.getTimezoneOffset():",
-    estimatedUseUntil?.getTimezoneOffset(),
-  );
-  console.log(
-    "🚀 ~ deviceStartDate?.getTimezoneOffset():",
-    deviceStartDate?.getTimezoneOffset(),
-  );
   const [isEditing, setIsEditing] = useState(false);
   const [inputDateTimeValue, setInputDateTimeValue] = useState<string>("");
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -202,12 +194,7 @@ export function InlineTimeEdit({
 
   const clientError = validateTime();
   const isUnchanged = isInputUnchanged();
-  console.log(
-    "📅",
-    isNaN(new Date(inputDateTimeValue).getTime())
-      ? "invalid"
-      : new Date(inputDateTimeValue).toISOString(),
-  );
+
   return (
     <form
       ref={formRef}

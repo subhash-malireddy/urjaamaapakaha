@@ -130,39 +130,8 @@ export function parseDateTimeLocalInputClient(dateTimeStr: string): Date {
   if (!dateTimeStr) return new Date();
 
   const date = new Date(dateTimeStr);
-  console.log("🚀 ~ parseDateTimeLocalInputClient ~ date:", date);
   return date;
 }
-
-// /**
-//  * Converts a datetime-local input value to the correct UTC time,
-//  * accounting for the difference between client and server timezones.
-//  *
-//  * @param {string} dateString - The datetime string from datetime-local input (format: "YYYY-MM-DDThh:mm")
-//  * @param {number} clientTimezoneOffset - The client's timezone offset in minutes (from getTimezoneOffset())
-//  * @returns {Date} - Date object correctly adjusted for timezone differences
-//  */
-// export function convertDateTimeLocalToUTC(
-//   dateString: string,
-//   clientTimezoneOffset: number,
-// ) {
-//   const serverDate = new Date(dateString);
-//   console.log("🚀 ~ serverDate:", serverDate);
-
-//   const serverTimezoneOffset = serverDate.getTimezoneOffset();
-//   console.log("🚀 ~ serverTimezoneOffset:", serverTimezoneOffset);
-//   console.log("🚀 ~ clientTimezoneOffset:", clientTimezoneOffset);
-
-//   const offsetDifference = serverTimezoneOffset - clientTimezoneOffset;
-//   const oneMinute = 60 * 1000;
-//   const adjustedDate = new Date(
-//     serverDate.getTime() + offsetDifference * oneMinute,
-//   );
-//   console.log("🚀 ~ adjustedDate:", adjustedDate);
-//   console.log("🚀 ~ adjustedDate:tz", adjustedDate.getTimezoneOffset());
-
-//   return adjustedDate;
-// }
 
 /**
  * @description Get the local date-time string in YYYY-MM-DDTHH:MM format.
@@ -204,11 +173,6 @@ export const isWithinEightHoursFromDate = (
 ): boolean => {
   const oneHour = 60 * 60 * 1000;
   const eightHoursLater = new Date(fromDate.getTime() + 8 * oneHour);
-  console.log("🚀 ~ givenDate:", givenDate);
-  console.log("🚀 ~ givenDate:", givenDate.getTimezoneOffset());
-  console.log("🚀 ~ fromDate:", fromDate);
-  console.log("🚀 ~ fromDate:", fromDate.getTimezoneOffset());
-  console.log("🚀 ~ eightHoursLater:", eightHoursLater);
   return compareToMinutePrecision(givenDate, eightHoursLater) <= 0;
 };
 
