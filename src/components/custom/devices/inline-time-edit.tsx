@@ -202,7 +202,12 @@ export function InlineTimeEdit({
 
   const clientError = validateTime();
   const isUnchanged = isInputUnchanged();
-  console.log("📅", new Date(inputDateTimeValue).toISOString());
+  console.log(
+    "📅",
+    isNaN(new Date(inputDateTimeValue).getTime())
+      ? "invalid"
+      : new Date(inputDateTimeValue).toISOString(),
+  );
   return (
     <form
       ref={formRef}
