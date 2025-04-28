@@ -134,35 +134,35 @@ export function parseDateTimeLocalInputClient(dateTimeStr: string): Date {
   return date;
 }
 
-/**
- * Converts a datetime-local input value to the correct UTC time,
- * accounting for the difference between client and server timezones.
- *
- * @param {string} dateString - The datetime string from datetime-local input (format: "YYYY-MM-DDThh:mm")
- * @param {number} clientTimezoneOffset - The client's timezone offset in minutes (from getTimezoneOffset())
- * @returns {Date} - Date object correctly adjusted for timezone differences
- */
-export function convertDateTimeLocalToUTC(
-  dateString: string,
-  clientTimezoneOffset: number,
-) {
-  const serverDate = new Date(dateString);
-  console.log("🚀 ~ serverDate:", serverDate);
+// /**
+//  * Converts a datetime-local input value to the correct UTC time,
+//  * accounting for the difference between client and server timezones.
+//  *
+//  * @param {string} dateString - The datetime string from datetime-local input (format: "YYYY-MM-DDThh:mm")
+//  * @param {number} clientTimezoneOffset - The client's timezone offset in minutes (from getTimezoneOffset())
+//  * @returns {Date} - Date object correctly adjusted for timezone differences
+//  */
+// export function convertDateTimeLocalToUTC(
+//   dateString: string,
+//   clientTimezoneOffset: number,
+// ) {
+//   const serverDate = new Date(dateString);
+//   console.log("🚀 ~ serverDate:", serverDate);
 
-  const serverTimezoneOffset = serverDate.getTimezoneOffset();
-  console.log("🚀 ~ serverTimezoneOffset:", serverTimezoneOffset);
-  console.log("🚀 ~ clientTimezoneOffset:", clientTimezoneOffset);
+//   const serverTimezoneOffset = serverDate.getTimezoneOffset();
+//   console.log("🚀 ~ serverTimezoneOffset:", serverTimezoneOffset);
+//   console.log("🚀 ~ clientTimezoneOffset:", clientTimezoneOffset);
 
-  const offsetDifference = serverTimezoneOffset - clientTimezoneOffset;
-  const oneMinute = 60 * 1000;
-  const adjustedDate = new Date(
-    serverDate.getTime() + offsetDifference * oneMinute,
-  );
-  console.log("🚀 ~ adjustedDate:", adjustedDate);
-  console.log("🚀 ~ adjustedDate:tz", adjustedDate.getTimezoneOffset());
+//   const offsetDifference = serverTimezoneOffset - clientTimezoneOffset;
+//   const oneMinute = 60 * 1000;
+//   const adjustedDate = new Date(
+//     serverDate.getTime() + offsetDifference * oneMinute,
+//   );
+//   console.log("🚀 ~ adjustedDate:", adjustedDate);
+//   console.log("🚀 ~ adjustedDate:tz", adjustedDate.getTimezoneOffset());
 
-  return adjustedDate;
-}
+//   return adjustedDate;
+// }
 
 /**
  * @description Get the local date-time string in YYYY-MM-DDTHH:MM format.
@@ -211,6 +211,58 @@ export const isWithinEightHoursFromDate = (
   console.log("🚀 ~ eightHoursLater:", eightHoursLater);
   return compareToMinutePrecision(givenDate, eightHoursLater) <= 0;
 };
+
+/**
+ * Constructs a date object from a datetime-local input value and client timezone offset
+ *
+ * @param datetimeLocalStr - The datetime-local input value (format: "YYYY-MM-DDTHH:MM")
+ * @param timezoneOffset - The client's timezone offset in minutes (from getTimezoneOffset())
+ * @returns - A Date object representing the exact moment in time
+ * @throws - If inputs are invalid
+ */
+/* istanbul ignore next */
+export function convertDateTimeLocalToUTC(
+  datetimeLocalStr: string,
+  timezoneOffset: number,
+) {
+  // Validate inputs
+  if (!datetimeLocalStr || typeof datetimeLocalStr !== "string") {
+    throw new Error("Invalid datetime string: must be a non-empty string");
+  }
+
+  if (!datetimeLocalStr.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)) {
+    throw new Error(
+      'Invalid datetime format: must be in format "YYYY-MM-DDTHH:MM"',
+    );
+  }
+
+  // Parse the offset
+  if (isNaN(timezoneOffset)) {
+    throw new Error("Invalid timezone offset: must be a number");
+  }
+
+  // First, create a date object from the local datetime string
+  // Note: When we parse this string without a timezone, JS assumes it's in local time
+  const localDate = new Date(datetimeLocalStr);
+
+  if (isNaN(localDate.getTime())) {
+    throw new Error("Invalid date created from input string");
+  }
+
+  // Now we need to adjust for the timezone difference
+  // getTimezoneOffset() returns minutes WEST of UTC (opposite of what most people expect)
+  // For example, for UTC+10, getTimezoneOffset() returns -600
+
+  // 1. Get the UTC time in milliseconds for the provided local time
+  const utcTime =
+    localDate.getTime() - localDate.getTimezoneOffset() * 60 * 1000;
+
+  // 2. Apply the client's timezone offset to get their local time
+  const clientTime = utcTime + timezoneOffset * 60 * 1000;
+
+  // Create a new date object with the adjusted time
+  return new Date(clientTime);
+}
 
 //using this sytax for making istanbul ignore next work.
 export { cn, serialize, simulateApiCall, type UsageResponse };

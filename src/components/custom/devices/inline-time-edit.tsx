@@ -27,6 +27,14 @@ export function InlineTimeEdit({
   estimatedUseUntil,
   deviceStartDate,
 }: InlineTimeEditProps) {
+  console.log(
+    "🚀 ~ estimatedUseUntil?.getTimezoneOffset():",
+    estimatedUseUntil?.getTimezoneOffset(),
+  );
+  console.log(
+    "🚀 ~ deviceStartDate?.getTimezoneOffset():",
+    deviceStartDate?.getTimezoneOffset(),
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [inputDateTimeValue, setInputDateTimeValue] = useState<string>("");
   const [hasInteracted, setHasInteracted] = useState(false);

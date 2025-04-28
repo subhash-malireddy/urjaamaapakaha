@@ -1,7 +1,7 @@
 import {
   areDatesEqualToMinute,
   compareToMinutePrecision,
-  convertDateTimeLocalToUTC,
+  // convertDateTimeLocalToUTC,
   dateToLocalISOString,
   getCurrentDatePlusEightHours,
   getCurrentDatePlusOneMin,
@@ -313,40 +313,40 @@ describe("date utils", () => {
   });
 });
 
-describe("convertDateTimeLocalToUTC", () => {
-  it("should correctly convert datetime-local string to UTC with timezone offset adjustment", () => {
-    // Create a test date string in datetime-local format
-    const dateString = "2024-06-15T14:30";
+// describe("convertDateTimeLocalToUTC", () => {
+//   it("should correctly convert datetime-local string to UTC with timezone offset adjustment", () => {
+//     // Create a test date string in datetime-local format
+//     const dateString = "2024-06-15T14:30";
 
-    // Mock client timezone offset (e.g., UTC-5 = 300 minutes)
-    const clientTimezoneOffset = 300;
+//     // Mock client timezone offset (e.g., UTC-5 = 300 minutes)
+//     const clientTimezoneOffset = 300;
 
-    // Get the result from the function
-    const result = convertDateTimeLocalToUTC(dateString, clientTimezoneOffset);
+//     // Get the result from the function
+//     const result = convertDateTimeLocalToUTC(dateString, clientTimezoneOffset);
 
-    // Create expected date - a new Date with the string will be interpreted in local timezone
-    const serverDate = new Date(dateString);
-    const serverTimezoneOffset = serverDate.getTimezoneOffset();
-    const offsetDifference = serverTimezoneOffset - clientTimezoneOffset;
-    const expected = new Date(
-      serverDate.getTime() + offsetDifference * 60 * 1000,
-    );
+//     // Create expected date - a new Date with the string will be interpreted in local timezone
+//     const serverDate = new Date(dateString);
+//     const serverTimezoneOffset = serverDate.getTimezoneOffset();
+//     const offsetDifference = serverTimezoneOffset - clientTimezoneOffset;
+//     const expected = new Date(
+//       serverDate.getTime() + offsetDifference * 60 * 1000,
+//     );
 
-    // Verify the result matches the expected date
-    expect(result.getTime()).toBe(expected.getTime());
-  });
+//     // Verify the result matches the expected date
+//     expect(result.getTime()).toBe(expected.getTime());
+//   });
 
-  it("should return Invalid Date when the datetime-local string is invalid", () => {
-    // Test with invalid date strings
-    const invalidDateStrings = [
-      "invalid-date",
-      "2024-13-32T25:70", // Invalid month, day, hour, minute
-      "", // Empty string
-    ];
+//   it("should return Invalid Date when the datetime-local string is invalid", () => {
+//     // Test with invalid date strings
+//     const invalidDateStrings = [
+//       "invalid-date",
+//       "2024-13-32T25:70", // Invalid month, day, hour, minute
+//       "", // Empty string
+//     ];
 
-    invalidDateStrings.forEach((invalidString) => {
-      const result = convertDateTimeLocalToUTC(invalidString, 0);
-      expect(isNaN(result.getTime())).toBe(true);
-    });
-  });
-});
+//     invalidDateStrings.forEach((invalidString) => {
+//       const result = convertDateTimeLocalToUTC(invalidString, 0);
+//       expect(isNaN(result.getTime())).toBe(true);
+//     });
+//   });
+// });

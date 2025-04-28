@@ -64,7 +64,12 @@ function DesktopView({ devices, currentUserEmail }: BusyDevicesProps) {
               const estimatedUseUntil = device.usage?.estimated_use_time;
               const isCurrentUser = userEmail === currentUserEmail;
               const startDate = device.usage?.start_date;
-
+              if (device.id === "f7694bf31e215714ba13edfa2650cb68") {
+                console.log(
+                  "device.usage.start_date.getTimezoneOffset(): ",
+                  device.usage.start_date.getTimezoneOffset(),
+                );
+              }
               return (
                 <TableRow key={device.id}>
                   <TableCell className="font-normal">{device.alias}</TableCell>
