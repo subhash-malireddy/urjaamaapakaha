@@ -1,7 +1,7 @@
 import {
   areDatesEqualToMinute,
   compareToMinutePrecision,
-  // convertDateTimeLocalToUTC,
+  convertDateTimeLocalToUTC,
   dateToLocalISOString,
   getCurrentDatePlusEightHours,
   getCurrentDatePlusOneMin,
@@ -311,42 +311,120 @@ describe("date utils", () => {
       expect(isDateInFuture(pastDate)).toBe(false);
     });
   });
+
+  describe("convertDateTimeLocalToUTC", () => {
+    it("should correctly convert a datetime-local string to UTC with positive timezone offset", () => {
+      // Test with a positive timezone offset (e.g., UTC+2)
+      const datetimeLocalStr = "2024-06-15T14:30";
+      const timezoneOffset = -120; // -120 minutes = UTC+2
+
+      const result = convertDateTimeLocalToUTC(
+        datetimeLocalStr,
+        timezoneOffset,
+      );
+
+      // Verify the result is correct
+      expect(result).toBeInstanceOf(Date);
+
+      // For UTC+2, when local time is 14:30, UTC time should be 12:30
+      expect(result.getUTCHours()).toBe(12);
+      expect(result.getUTCMinutes()).toBe(30);
+      expect(result.getUTCDate()).toBe(15);
+      expect(result.getUTCMonth()).toBe(5); // June
+      expect(result.getUTCFullYear()).toBe(2024);
+    });
+
+    it("should correctly convert a datetime-local string to UTC with negative timezone offset", () => {
+      // Test with a negative timezone offset (e.g., UTC-5)
+      const datetimeLocalStr = "2024-06-15T10:00";
+      const timezoneOffset = 300; // 300 minutes = UTC-5
+
+      const result = convertDateTimeLocalToUTC(
+        datetimeLocalStr,
+        timezoneOffset,
+      );
+
+      // Verify the result is correct
+      expect(result).toBeInstanceOf(Date);
+
+      // For UTC-5, when local time is 10:00, UTC time should be 15:00
+      expect(result.getUTCHours()).toBe(15);
+      expect(result.getUTCMinutes()).toBe(0);
+      expect(result.getUTCDate()).toBe(15);
+      expect(result.getUTCMonth()).toBe(5); // June
+      expect(result.getUTCFullYear()).toBe(2024);
+    });
+
+    it("should handle timezone offset provided as a string", () => {
+      const datetimeLocalStr = "2024-06-15T12:00";
+      const timezoneOffset = "-60"; // UTC+1 as a string
+
+      const result = convertDateTimeLocalToUTC(
+        datetimeLocalStr,
+        timezoneOffset,
+      );
+
+      // Verify the result is correct
+      expect(result).toBeInstanceOf(Date);
+      expect(result.getUTCHours()).toBe(11); // UTC+1: 12:00 local → 11:00 UTC
+      expect(result.getUTCMinutes()).toBe(0);
+    });
+
+    it("should throw an error for invalid datetime string format", () => {
+      // Test with an invalid format
+      const invalidDateStr = "2024/06/15 14:30";
+      const timezoneOffset = -120;
+
+      expect(() => {
+        convertDateTimeLocalToUTC(invalidDateStr, timezoneOffset);
+      }).toThrow(
+        'Invalid datetime format: must be in format "YYYY-MM-DDTHH:MM"',
+      );
+    });
+
+    it("should throw an error for empty datetime string", () => {
+      // Test with an empty string
+      const emptyDateStr = "";
+      const timezoneOffset = -120;
+
+      expect(() => {
+        convertDateTimeLocalToUTC(emptyDateStr, timezoneOffset);
+      }).toThrow("Invalid datetime string: must be a non-empty string");
+    });
+
+    it("should throw an error for NaN timezone offset", () => {
+      // Test with a non-numeric timezone offset
+      const datetimeLocalStr = "2024-06-15T14:30";
+      const invalidOffset = "not-a-number";
+
+      expect(() => {
+        convertDateTimeLocalToUTC(datetimeLocalStr, invalidOffset);
+      }).toThrow("Invalid timezone offset: must be a number");
+    });
+
+    it("should throw an error when date creation results in an invalid date", () => {
+      // This test mocks the Date constructor to return an invalid date
+      const datetimeLocalStr = "2024-06-15T14:30";
+      const timezoneOffset = -120;
+
+      // Create a spy on the Date constructor that creates an invalid date
+      const originalDate = global.Date;
+      const mockDateInstance = new Date("Invalid Date");
+
+      // Use a more targeted mock that only affects specific constructor calls
+      jest.spyOn(global, "Date").mockImplementationOnce((...args) => {
+        if (args.length === 1 && args[0] === datetimeLocalStr) {
+          return mockDateInstance;
+        }
+        return new originalDate(...args);
+      });
+
+      expect(() => {
+        convertDateTimeLocalToUTC(datetimeLocalStr, timezoneOffset);
+      }).toThrow("Invalid date created from input string");
+
+      // Restore the original Date constructor
+      jest.restoreAllMocks();
+    });
+  });
 });
-
-// describe("convertDateTimeLocalToUTC", () => {
-//   it("should correctly convert datetime-local string to UTC with timezone offset adjustment", () => {
-//     // Create a test date string in datetime-local format
-//     const dateString = "2024-06-15T14:30";
-
-//     // Mock client timezone offset (e.g., UTC-5 = 300 minutes)
-//     const clientTimezoneOffset = 300;
-
-//     // Get the result from the function
-//     const result = convertDateTimeLocalToUTC(dateString, clientTimezoneOffset);
-
-//     // Create expected date - a new Date with the string will be interpreted in local timezone
-//     const serverDate = new Date(dateString);
-//     const serverTimezoneOffset = serverDate.getTimezoneOffset();
-//     const offsetDifference = serverTimezoneOffset - clientTimezoneOffset;
-//     const expected = new Date(
-//       serverDate.getTime() + offsetDifference * 60 * 1000,
-//     );
-
-//     // Verify the result matches the expected date
-//     expect(result.getTime()).toBe(expected.getTime());
-//   });
-
-//   it("should return Invalid Date when the datetime-local string is invalid", () => {
-//     // Test with invalid date strings
-//     const invalidDateStrings = [
-//       "invalid-date",
-//       "2024-13-32T25:70", // Invalid month, day, hour, minute
-//       "", // Empty string
-//     ];
-
-//     invalidDateStrings.forEach((invalidString) => {
-//       const result = convertDateTimeLocalToUTC(invalidString, 0);
-//       expect(isNaN(result.getTime())).toBe(true);
-//     });
-//   });
-// });

@@ -220,10 +220,9 @@ export const isWithinEightHoursFromDate = (
  * @returns - A Date object representing the exact moment in time
  * @throws - If inputs are invalid
  */
-/* istanbul ignore next */
 export function convertDateTimeLocalToUTC(
   datetimeLocalStr: string,
-  timezoneOffset: number,
+  timezoneOffset: string | number,
 ) {
   // Validate inputs
   if (!datetimeLocalStr || typeof datetimeLocalStr !== "string") {
@@ -236,8 +235,13 @@ export function convertDateTimeLocalToUTC(
     );
   }
 
+  const timezoneOffsetNumber =
+    typeof timezoneOffset === "string"
+      ? parseInt(timezoneOffset, 10)
+      : timezoneOffset;
+
   // Parse the offset
-  if (isNaN(timezoneOffset)) {
+  if (isNaN(timezoneOffsetNumber)) {
     throw new Error("Invalid timezone offset: must be a number");
   }
 
@@ -258,11 +262,11 @@ export function convertDateTimeLocalToUTC(
     localDate.getTime() - localDate.getTimezoneOffset() * 60 * 1000;
 
   // 2. Apply the client's timezone offset to get their local time
-  const clientTime = utcTime + timezoneOffset * 60 * 1000;
+  const clientTime = utcTime + timezoneOffsetNumber * 60 * 1000;
 
   // Create a new date object with the adjusted time
   return new Date(clientTime);
 }
 
-//using this sytax for making istanbul ignore next work.
+//using this syntax for making istanbul ignore next work.
 export { cn, serialize, simulateApiCall, type UsageResponse };
