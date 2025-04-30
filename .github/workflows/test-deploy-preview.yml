@@ -106,7 +106,7 @@ jobs:
       # Deploy to Vercel (only on push to main)
       - name: Install Vercel CLI
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: npm install --global vercel@latest
+        run: pnpm install --global vercel@latest
 
       - name: Pull Vercel Environment Information
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
