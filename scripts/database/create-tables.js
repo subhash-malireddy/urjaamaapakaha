@@ -1,5 +1,5 @@
 import { neon } from "@neondatabase/serverless";
-
+import { fileURLToPath } from "url";
 const DATABASE_URL = process.env.DATABASE_URL;
 
 async function createTables() {
@@ -59,10 +59,11 @@ async function createTables() {
   }
 }
 
-if (require.main === module) {
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
   createTables()
     .then(() => console.log("Script completed!"))
     .catch((err) => console.error("Script failed:", err));
 }
 
-module.exports = { createTables };
+export { createTables };

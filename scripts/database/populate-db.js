@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { faker } from "@faker-js/faker";
 import crypto from "crypto";
+import { fileURLToPath } from "url";
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -318,21 +319,20 @@ async function generateAndInsertData(
   await insertData(devices, usageLogs, activeDevices);
 }
 
-if (require.main === module) {
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
   const args = process.argv.slice(2);
+  const today = new Date();
+  const startDate = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+  const endDate = new Date(today.getFullYear(), today.getMonth(), 1);
   generateAndInsertData(
     parseInt(args[0]) || 10,
     parseInt(args[1]) || 50,
-    args[2] || "2025-01-01",
-    args[3] || "2025-02-28",
+    startDate,
+    endDate,
   )
     .then(() => console.log("Script completed!"))
     .catch((err) => console.error("Script failed:", err));
 }
 
-module.exports = {
-  generateDevices,
-  generateUsage,
-  insertData,
-  generateAndInsertData,
-};
+export { generateDevices, generateUsage, insertData, generateAndInsertData };
