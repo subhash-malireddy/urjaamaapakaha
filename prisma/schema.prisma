@@ -22,7 +22,7 @@ model device {
   mac_address      String         @unique @db.VarChar(17)
   ip_address       String         @unique @db.Inet
   alias            String         @unique @db.VarChar(60)
-  is_archived      Boolean?       @default(false)
+  is_archived      Boolean        @default(false)
   previous_aliases String[]       @db.VarChar(60)
   active_device    active_device?
   usage            usage[]

@@ -250,10 +250,13 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
     // Calculate final consumption and update records in a transaction
     return await db.$transaction(async (tx) => {
       // Calculate final consumption (current - initial)
-      //TODO:: I think we are subtracting initial from current consumption.
-      const finalConsumption =
-        Number(apiResponse.usage.today_energy) -
-        Number(activeDevice.usage.consumption);
+      const finalConsumption = shouldCallRealApi
+        ? Number(apiResponse.usage.today_energy) -
+          Number(activeDevice.usage.consumption)
+        : Math.abs(
+            Number(apiResponse.usage.today_energy) -
+              Number(activeDevice.usage.consumption),
+          );
 
       // Update usage record with end time and final consumption
       const updatedUsage = await tx.usage.update({
