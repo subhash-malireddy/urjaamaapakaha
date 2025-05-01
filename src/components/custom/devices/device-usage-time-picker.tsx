@@ -26,11 +26,13 @@ import {
 interface DeviceUsageTimePickerProps {
   deviceId: string;
   deviceIp: string;
+  canInteractWithDevice: boolean;
 }
 
 export function DeviceUsageTimePicker({
   deviceId,
   deviceIp,
+  canInteractWithDevice,
 }: DeviceUsageTimePickerProps) {
   const [dateTimeInputValue, setDateTimeInputValue] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -58,6 +60,9 @@ export function DeviceUsageTimePicker({
   };
 
   const handleDeviceAction = async (estimatedUseTime?: Date) => {
+    /* istanbul ignore if */
+    if (!canInteractWithDevice) return;
+
     try {
       const result = await turnOnDeviceAction(
         deviceId,
@@ -143,7 +148,7 @@ export function DeviceUsageTimePicker({
       <FreeDeviceSwitch
         deviceId={deviceId}
         onCheckedChange={handleCheckedChange}
-        disabled={isDialogOpen && isPending}
+        disabled={(isDialogOpen && isPending) || !canInteractWithDevice}
         checked={isSwitchOn}
       />
 

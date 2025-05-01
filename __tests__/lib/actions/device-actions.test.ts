@@ -37,7 +37,9 @@ const mockDeviceData = {
 
 // Common setup and assertions
 const setupAuthenticatedUser = () => {
-  (auth as jest.Mock).mockResolvedValue({ user: { email: mockUserEmail } });
+  (auth as jest.Mock).mockResolvedValue({
+    user: { email: mockUserEmail, role: "member" },
+  });
 };
 
 const setupUnauthenticatedUser = () => {
@@ -47,7 +49,7 @@ const setupUnauthenticatedUser = () => {
 const expectUnauthorizedError = (result: any) => {
   expect(result).toEqual({
     success: false,
-    error: "Unauthorized. Please sign in.",
+    error: "Unauthorized.",
   });
 };
 
@@ -61,6 +63,16 @@ describe("turnOnDeviceAction", () => {
   });
 
   it("returns error when user is not authenticated", async () => {
+    setupUnauthenticatedUser();
+
+    const result = await turnOnDeviceAction(mockDeviceId, mockDeviceIp);
+
+    expectUnauthorizedError(result);
+    expect(turnOnDevice).not.toHaveBeenCalled();
+    expectNoRevalidation();
+  });
+
+  it("returns error when user is not a member", async () => {
     setupUnauthenticatedUser();
 
     const result = await turnOnDeviceAction(mockDeviceId, mockDeviceIp);

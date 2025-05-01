@@ -12,23 +12,33 @@ import { DeviceUsageTimePicker } from "./device-usage-time-picker";
 
 interface FreeDevicesProps {
   devices: device[];
+  canInteractWithDevice: boolean;
 }
 
-export function FreeDevices({ devices }: FreeDevicesProps) {
+export function FreeDevices({
+  devices,
+  canInteractWithDevice,
+}: FreeDevicesProps) {
   return (
     <div className="mb-12">
       <h2 className="mb-4 text-2xl font-semibold">Available Devices</h2>
 
       {/* Desktop view */}
-      <DesktopView devices={devices} />
+      <DesktopView
+        devices={devices}
+        canInteractWithDevice={canInteractWithDevice}
+      />
 
       {/* Mobile view */}
-      <MobileView devices={devices} />
+      <MobileView
+        devices={devices}
+        canInteractWithDevice={canInteractWithDevice}
+      />
     </div>
   );
 }
 
-function DesktopView({ devices }: FreeDevicesProps) {
+function DesktopView({ devices, canInteractWithDevice }: FreeDevicesProps) {
   return (
     <div
       className="hidden rounded-md border md:block"
@@ -55,6 +65,7 @@ function DesktopView({ devices }: FreeDevicesProps) {
                   <DeviceUsageTimePicker
                     deviceId={device.id}
                     deviceIp={device.ip_address}
+                    canInteractWithDevice={canInteractWithDevice}
                   />
                 </TableCell>
               </TableRow>
@@ -66,7 +77,7 @@ function DesktopView({ devices }: FreeDevicesProps) {
   );
 }
 
-function MobileView({ devices }: FreeDevicesProps) {
+function MobileView({ devices, canInteractWithDevice }: FreeDevicesProps) {
   return (
     <div className="space-y-4 md:hidden" data-testid="mobile-view">
       {devices.length === 0 ? (
@@ -84,6 +95,7 @@ function MobileView({ devices }: FreeDevicesProps) {
               <DeviceUsageTimePicker
                 deviceId={device.id}
                 deviceIp={device.ip_address}
+                canInteractWithDevice={canInteractWithDevice}
               />
             </div>
           </div>

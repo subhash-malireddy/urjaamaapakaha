@@ -19,8 +19,13 @@ export async function turnOnDeviceAction(
   try {
     // Get the current user session
     const session = await auth();
-    if (!session?.user?.email) {
-      return { success: false, error: "Unauthorized. Please sign in." };
+    const userEmail = session?.user?.email;
+    const role = session?.user?.role;
+    const isMember = role === "member";
+    const canInteractWithDevice = !!userEmail && isMember;
+
+    if (!canInteractWithDevice) {
+      return { success: false, error: "Unauthorized." };
     }
 
     if (!deviceId) {
@@ -35,7 +40,7 @@ export async function turnOnDeviceAction(
     const result = await turnOnDevice(
       deviceId,
       deviceIp,
-      session.user.email,
+      userEmail,
       estimatedUseTime,
     );
     revalidatePath("/");
@@ -56,7 +61,7 @@ export async function turnOffDeviceAction(deviceId: string, deviceIp: string) {
     // Get the current user session
     const session = await auth();
     if (!session?.user?.email) {
-      return { success: false, error: "Unauthorized. Please sign in." };
+      return { success: false, error: "Unauthorized." };
     }
 
     if (!deviceId) {
