@@ -60,7 +60,12 @@ export async function turnOffDeviceAction(deviceId: string, deviceIp: string) {
   try {
     // Get the current user session
     const session = await auth();
-    if (!session?.user?.email) {
+    const userEmail = session?.user?.email;
+    const role = session?.user?.role;
+    const isMember = role === "member";
+    const canInteractWithDevice = !!userEmail && isMember;
+
+    if (!canInteractWithDevice) {
       return { success: false, error: "Unauthorized." };
     }
 
