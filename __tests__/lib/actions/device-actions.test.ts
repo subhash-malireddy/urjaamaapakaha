@@ -194,6 +194,16 @@ describe("turnOffDeviceAction", () => {
     expectNoRevalidation();
   });
 
+  it("returns error when user is not a member", async () => {
+    setupUnauthenticatedUser();
+
+    const result = await turnOnDeviceAction(mockDeviceId, mockDeviceIp);
+
+    expectUnauthorizedError(result);
+    expect(turnOnDevice).not.toHaveBeenCalled();
+    expectNoRevalidation();
+  });
+
   it("returns error when deviceId is not provided", async () => {
     setupAuthenticatedUser();
 
