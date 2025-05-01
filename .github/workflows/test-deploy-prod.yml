@@ -165,9 +165,6 @@ jobs:
               # Get the deployment URL from stdout for the next step
               deploymentUrl=$(cat deployment-url.txt)
               echo "Deployed to $deploymentUrl"
-              
-              # Set the custom domain alias for the deployment
-              vercel alias $deploymentUrl app-urjaamaapakaha.subbi.fyi --token=${{ secrets.VERCEL_TOKEN }}
           else
               # Handle the error
               errorMessage=$(cat error.txt)
