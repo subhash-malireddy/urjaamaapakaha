@@ -45,7 +45,11 @@ describe("DeviceUsageTimePicker Component", () => {
 
   it("renders the component with a switch", () => {
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     const switchElement = screen.getByRole("switch");
@@ -61,7 +65,11 @@ describe("DeviceUsageTimePicker Component", () => {
     );
 
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Click the switch to toggle it ON
@@ -82,7 +90,11 @@ describe("DeviceUsageTimePicker Component", () => {
 
   it("shows error when time is set to past time", async () => {
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Click the switch to toggle it ON
@@ -109,7 +121,11 @@ describe("DeviceUsageTimePicker Component", () => {
       new Date(Date.now() + nineHours),
     );
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Click the switch to toggle it ON
@@ -141,7 +157,11 @@ describe("DeviceUsageTimePicker Component", () => {
     const turnOnActionSpy = turnOnDeviceAction as jest.Mock;
 
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
     // Open the dialog
     const switchElement = screen.getByRole("switch");
@@ -169,7 +189,11 @@ describe("DeviceUsageTimePicker Component", () => {
 
   it("allows valid future times", async () => {
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Click the switch to toggle it ON
@@ -195,7 +219,11 @@ describe("DeviceUsageTimePicker Component", () => {
 
   it("resets switch state when dialog is closed", async () => {
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Toggle the switch ON to open dialog
@@ -221,7 +249,11 @@ describe("DeviceUsageTimePicker Component", () => {
     (turnOnDeviceAction as jest.Mock).mockResolvedValue({ success: true });
 
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Open the dialog by toggling the switch
@@ -256,7 +288,11 @@ describe("DeviceUsageTimePicker Component", () => {
     (utils.getCurrentDatePlusOneMin as jest.Mock).mockReturnValue(futureDate);
 
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Open the dialog by toggling the switch
@@ -294,7 +330,11 @@ describe("DeviceUsageTimePicker Component", () => {
     });
 
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Open the dialog by toggling the switch
@@ -328,7 +368,11 @@ describe("DeviceUsageTimePicker Component", () => {
     });
 
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Open the dialog by toggling the switch
@@ -361,7 +405,11 @@ describe("DeviceUsageTimePicker Component", () => {
     (turnOnDeviceAction as jest.Mock).mockRejectedValue("test error");
 
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     const switchElement = screen.getByRole("switch");
@@ -385,7 +433,11 @@ describe("DeviceUsageTimePicker Component", () => {
 
   it("resets switch to OFF state when dialog is closed using the X button", async () => {
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Find and click the switch
@@ -407,7 +459,11 @@ describe("DeviceUsageTimePicker Component", () => {
       success: true,
     });
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Find and click the switch
@@ -427,7 +483,11 @@ describe("DeviceUsageTimePicker Component", () => {
 
   it("resets switch to OFF state when dialog is closed using the Escape key", async () => {
     render(
-      <DeviceUsageTimePicker deviceId={mockDeviceId} deviceIp={mockDeviceIp} />,
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={true}
+      />,
     );
 
     // Find and click the switch
@@ -444,5 +504,33 @@ describe("DeviceUsageTimePicker Component", () => {
     await waitFor(() => {
       expect(switchElement).toHaveAttribute("aria-checked", "false");
     });
+  });
+
+  it("disables the switch when canInteractWithDevice is false", () => {
+    render(
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={false}
+      />,
+    );
+
+    const switchElement = screen.getByRole("switch");
+    expect(switchElement).toBeDisabled();
+  });
+
+  it("does not open dialog when switch is clicked if canInteractWithDevice is false", async () => {
+    render(
+      <DeviceUsageTimePicker
+        deviceId={mockDeviceId}
+        deviceIp={mockDeviceIp}
+        canInteractWithDevice={false}
+      />,
+    );
+
+    const switchElement = screen.getByRole("switch");
+    await userEvent.click(switchElement);
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

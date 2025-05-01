@@ -21,7 +21,7 @@ export function FreeDeviceSwitch({
       disabled={disabled}
       checked={checked}
       className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-red-600 dark:data-[state=checked]:bg-green-600 dark:data-[state=unchecked]:bg-red-600"
-      title="Click to turn on this device"
+      title={!disabled ? "Click to turn on this device" : ""}
       onCheckedChange={onCheckedChange}
     />
   );
