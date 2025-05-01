@@ -43,15 +43,59 @@ describe("updateEstimatedTimeAction", () => {
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
       expect(result).toEqual({
-        message: "You must be logged in",
+        message: "Unauthorized",
         error: "Unauthorized",
       });
     });
 
-    it("should proceed when user is logged in", async () => {
-      // Mock auth to return valid session
+    it("should return unauthorized error when user is not a member", async () => {
+      // Mock auth to return valid session but with guest role
       (auth as jest.Mock).mockResolvedValue({
-        user: { email: "test@example.com" },
+        user: { email: "test@example.com", role: "guest" },
+      });
+
+      const formData = new FormData();
+      formData.append("deviceId", "test-device");
+      formData.append(
+        "estimatedDateTimeLocal",
+        new Date(Date.now() + 3600000).toISOString(),
+      );
+      formData.append("timezoneOffset", "120");
+
+      const result = await updateEstimatedTimeAction({ message: "" }, formData);
+
+      expect(result).toEqual({
+        message: "Unauthorized",
+        error: "Unauthorized",
+      });
+    });
+
+    it("should return unauthorized error when user is admin but not member", async () => {
+      // Mock auth to return valid session but with admin role
+      (auth as jest.Mock).mockResolvedValue({
+        user: { email: "test@example.com", role: "admin" },
+      });
+
+      const formData = new FormData();
+      formData.append("deviceId", "test-device");
+      formData.append(
+        "estimatedDateTimeLocal",
+        new Date(Date.now() + 3600000).toISOString(),
+      );
+      formData.append("timezoneOffset", "120");
+
+      const result = await updateEstimatedTimeAction({ message: "" }, formData);
+
+      expect(result).toEqual({
+        message: "Unauthorized",
+        error: "Unauthorized",
+      });
+    });
+
+    it("should proceed when user is logged in with member role", async () => {
+      // Mock auth to return valid session with member role
+      (auth as jest.Mock).mockResolvedValue({
+        user: { email: "test@example.com", role: "member" },
       });
 
       const formData = new FormData();
@@ -74,7 +118,7 @@ describe("updateEstimatedTimeAction", () => {
     beforeEach(() => {
       // Mock authenticated user for all validation tests
       (auth as jest.Mock).mockResolvedValue({
-        user: { email: "test@example.com" },
+        user: { email: "test@example.com", role: "member" },
       });
     });
 
@@ -191,7 +235,7 @@ describe("updateEstimatedTimeAction", () => {
     beforeEach(() => {
       // Mock authenticated user
       (auth as jest.Mock).mockResolvedValue({
-        user: { email: testEmail },
+        user: { email: testEmail, role: "member" },
       });
 
       convertDateTimeLocalToUTCMock.mockReturnValue(futureDate);
@@ -249,6 +293,8 @@ describe("updateEstimatedTimeAction", () => {
         message: "You can only update times for your own devices",
         error: "Forbidden",
       });
+      // Verify that the expected check was made
+      expect(auth).toHaveBeenCalled();
     });
 
     it("should return error when date is in future but beyond eight hours from start date", async () => {
@@ -322,7 +368,7 @@ describe("updateEstimatedTimeAction", () => {
     beforeEach(() => {
       // Mock authenticated user
       (auth as jest.Mock).mockResolvedValue({
-        user: { email: testEmail },
+        user: { email: testEmail, role: "member" },
       });
 
       convertDateTimeLocalToUTCMock.mockReturnValue(futureTime);
@@ -440,7 +486,9 @@ describe("updateEstimatedTimeAction", () => {
       formData.append("estimatedDateTimeLocal", "invalid-date");
       formData.append("timezoneOffset", "120");
 
+      // Mock authentication failure to trigger server error
       (auth as jest.Mock).mockRejectedValue("Runtime error");
+
       const result = await updateEstimatedTimeAction({ message: "" }, formData);
 
       expect(result).toEqual({
