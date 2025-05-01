@@ -1,0 +1,176 @@
+name: Run Tests and Deploy to Production on Vercel
+
+on:
+  push:
+    branches: [prod]
+
+# This workflow runs tests and deploys to production when merging from main to prod
+# Note: Linting is intentionally excluded as it's handled by pre-commit hooks locally
+
+jobs:
+  test-and-deploy-prod:
+    runs-on: ubuntu-latest
+    if: github.actor == 'subhash-malireddy'
+    environment: prod
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # Add OAuth environment variables
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      NEXTAUTH_URL: https://app-urjaamaapakaha.subbi.fyi
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install pnpm first without caching
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+          run_install: false
+
+      # Then set up Node.js with pnpm caching
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+          cache: "pnpm"
+          cache-dependency-path: "**/pnpm-lock.yaml"
+
+      # Now we can use pnpm to install dependencies
+      - name: Install dependencies
+        run: pnpm install
+
+      # Determine Jest cache directory
+      - name: Get Jest cache directory
+        id: jest-cache-dir
+        run: |
+          JEST_CONFIG=$(pnpm jest --showConfig 2>/dev/null)
+          CACHE_DIR=$(echo "$JEST_CONFIG" | jq -r '.configs.[0].cacheDirectory' 2>/dev/null)
+
+          if [[ -z "$CACHE_DIR" ]]; then
+            echo "Error: Could not determine Jest cache directory." >&2
+            exit 1
+          fi
+
+          echo "dir=$CACHE_DIR" >> "$GITHUB_OUTPUT"
+
+      # Restore Jest cache to speed up tests
+      - name: Restore Jest cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.jest-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-${{ hashFiles('**/*.{js,jsx,ts,tsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-
+            ${{ runner.os }}-jest-
+
+      # Run tests with coverage
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+
+      # Upload coverage reports as artifacts
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+      # Prisma migration for production
+      - name: Prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: pnpm prisma migrate deploy
+
+      # Deploy to Vercel Production
+      - name: Install Vercel CLI
+        run: pnpm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: |
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+          # Remove existing environment variables first
+          vercel env rm GOOGLE_CLIENT_ID production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm GOOGLE_CLIENT_SECRET production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm NEXTAUTH_URL production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm NEXTAUTH_SECRET production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm ADMIN_EMAILS production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm MEMBER_EMAILS production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm DATABASE_URL production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm URJ_FSFY_API production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm URJ_FSFY_API_USER production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm URJ_FSFY_API_PWD production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm SHOULD_CALL_REAL_API production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+
+          # Add environment variables using Vercel CLI without newlines
+          printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
+          vercel env add GOOGLE_CLIENT_ID production < google_client_id.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm google_client_id.txt
+
+          printf "%s" "${{ secrets.GOOGLE_CLIENT_SECRET }}" > google_client_secret.txt
+          vercel env add GOOGLE_CLIENT_SECRET production < google_client_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm google_client_secret.txt
+
+          printf "%s" "https://app-urjaamaapakaha.subbi.fyi" > nextauth_url.txt
+          vercel env add NEXTAUTH_URL production < nextauth_url.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm nextauth_url.txt
+
+          printf "%s" "${{ secrets.NEXTAUTH_SECRET }}" > nextauth_secret.txt
+          vercel env add NEXTAUTH_SECRET production < nextauth_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm nextauth_secret.txt
+
+          printf "%s" "${{ secrets.ADMIN_EMAILS }}" > admin_emails.txt
+          vercel env add ADMIN_EMAILS production < admin_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm admin_emails.txt
+
+          printf "%s" "${{ secrets.MEMBER_EMAILS }}" > member_emails.txt
+          vercel env add MEMBER_EMAILS production < member_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm member_emails.txt
+
+          printf "%s" "${{ secrets.DATABASE_URL }}" > database_url.txt
+          vercel env add DATABASE_URL production < database_url.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm database_url.txt
+
+          printf "%s" "${{ secrets.URJ_FSFY_API }}" > urj_fsfy_api.txt
+          vercel env add URJ_FSFY_API production < urj_fsfy_api.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm urj_fsfy_api.txt
+
+          printf "%s" "${{ secrets.URJ_FSFY_API_USER }}" > urj_fsfy_api_user.txt
+          vercel env add URJ_FSFY_API_USER production < urj_fsfy_api_user.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm urj_fsfy_api_user.txt
+
+          printf "%s" "${{ secrets.URJ_FSFY_API_PWD }}" > urj_fsfy_api_pwd.txt
+          vercel env add URJ_FSFY_API_PWD production < urj_fsfy_api_pwd.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm urj_fsfy_api_pwd.txt
+
+          printf "%s" "${{ secrets.SHOULD_CALL_REAL_API }}" > should_call_real_api.txt
+          vercel env add SHOULD_CALL_REAL_API production < should_call_real_api.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm should_call_real_api.txt
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel Production
+        run: |
+          # Save stdout and stderr to files
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} >deployment-url.txt 2>error.txt
+
+          # Check the exit code
+          code=$?
+          if [ $code -eq 0 ]; then
+              # Get the deployment URL from stdout for the next step
+              deploymentUrl=$(cat deployment-url.txt)
+              echo "Deployed to $deploymentUrl"
+              
+              # Set the custom domain alias for the deployment
+              vercel alias $deploymentUrl app-urjaamaapakaha.subbi.fyi --token=${{ secrets.VERCEL_TOKEN }}
+          else
+              # Handle the error
+              errorMessage=$(cat error.txt)
+              echo "There was an error: $errorMessage"
+              exit 1
+          fi
