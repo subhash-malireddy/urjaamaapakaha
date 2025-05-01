@@ -52,6 +52,7 @@ describe("FreeDeviceSwitch", () => {
 
     const switchElement = screen.getByRole("switch");
     expect(switchElement).toBeDisabled();
+    expect(switchElement).toHaveAttribute("title", "");
   });
 
   it("calls onToggle when toggled", async () => {

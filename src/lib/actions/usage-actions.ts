@@ -43,8 +43,13 @@ export async function updateEstimatedTimeAction(
 
     // Get current user session
     const session = await auth();
-    if (!session?.user?.email) {
-      return { message: "You must be logged in", error: "Unauthorized" };
+    const userEmail = session?.user?.email;
+    const role = session?.user?.role;
+    const isMember = role === "member";
+    const canInteractWithDevice = !!userEmail && isMember;
+
+    if (!canInteractWithDevice) {
+      return { message: "Unauthorized", error: "Unauthorized" };
     }
 
     const estimatedDate = convertDateTimeLocalToUTC(
