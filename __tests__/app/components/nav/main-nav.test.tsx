@@ -15,8 +15,10 @@ jest.mock("@/components/custom/nav/nav-links", () => ({
   )),
 }));
 
-jest.mock("@/components/custom/nav/logo", () => ({
-  Logo: jest.fn(() => <div data-testid="logo-mock">Logo Component</div>),
+jest.mock("@/components/custom/nav/logo-title", () => ({
+  LogoAndTitle: jest.fn(() => (
+    <div data-testid="logo-title-mock">Logo and App Title Component</div>
+  )),
 }));
 
 jest.mock("@/components/custom/nav/user-profile", () => ({
@@ -66,7 +68,7 @@ describe("MainNav", () => {
     render(<MainNav session={mockSession} />);
 
     // Check if all child components are rendered
-    expect(screen.getByTestId("logo-mock")).toBeInTheDocument();
+    expect(screen.getByTestId("logo-title-mock")).toBeInTheDocument();
     expect(screen.getByTestId("nav-links-mock")).toBeInTheDocument();
     expect(screen.getByTestId("user-profile-mock")).toBeInTheDocument();
     expect(screen.getByTestId("mobile-nav-mock")).toBeInTheDocument();

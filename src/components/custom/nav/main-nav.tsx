@@ -1,5 +1,5 @@
 import { NavLinks } from "@/components/custom/nav/nav-links";
-import { Logo } from "@/components/custom/nav/logo";
+import { LogoAndTitle } from "@/components/custom/nav/logo-title";
 import { UserProfile } from "@/components/custom/nav/user-profile";
 import { MobileNav } from "@/components/custom/nav/mobile-nav-bottom";
 import { ThemeToggle } from "@/components/custom/nav/floating-theme-toggle";
@@ -13,7 +13,7 @@ export function MainNav({ session }: { session: Session | null }) {
       <header className="bg-background sticky top-0 z-50 w-full border-b">
         <div className="flex h-14 items-center justify-between px-3 md:h-16 md:px-4">
           {/* Logo */}
-          <Logo />
+          <LogoAndTitle />
 
           {/* Navigation and Profile */}
           <nav className="flex items-center space-x-4 md:space-x-6">
