@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { Logo } from "../../../../src/components/custom/nav/logo";
+import { LogoAndTitle } from "../../../../src/components/custom/nav/logo";
 
 describe("Logo Component", () => {
   test("renders the logo correctly", () => {
-    render(<Logo />);
+    render(<LogoAndTitle />);
 
     // Check if the logo is in the document
     const logoElement = screen.getByText(/Urjaamapakaha/i);
