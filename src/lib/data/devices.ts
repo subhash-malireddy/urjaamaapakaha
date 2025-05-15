@@ -2,14 +2,17 @@ import { db } from "@/lib/db";
 import { UsageResponse } from "@/lib/utils";
 import type { device, usage } from "@prisma/client";
 
-/* istanbul ignore next */
-async function getAllDevices() {
+export async function getAllDevicesOnlyIdAndAlias() {
   return db.device.findMany({
     where: {
       is_archived: false,
     },
     orderBy: {
       alias: "asc",
+    },
+    select: {
+      id: true,
+      alias: true,
     },
   });
 }
@@ -286,9 +289,4 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
 }
 
 //using this sytax for making istanbul ignore next work.
-export {
-  getAllDevices,
-  getDeviceById,
-  getDeviceUsage,
-  getDevicesWithActiveStatus,
-};
+export { getDeviceById, getDeviceUsage, getDevicesWithActiveStatus };

@@ -1,4 +1,12 @@
-export default function Usage() {
+import { getAllDevicesOnlyIdAndAlias } from "@/lib/data/devices";
+import { deviceListResponseSchema } from "@/lib/zod/usage";
+
+export default async function Usage() {
+  // get all devices
+  const devices = await getAllDevicesOnlyIdAndAlias();
+  // we only need the device id and name
+  const devicesWithIdAndName = deviceListResponseSchema.parse(devices);
+  console.log("devicesWithIdAndName:: ", devicesWithIdAndName);
   return (
     <div className="container mx-auto py-6">
       <h1 className="mb-8 text-3xl font-bold">Usage Dashboard</h1>
