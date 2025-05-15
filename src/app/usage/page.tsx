@@ -1,3 +1,4 @@
+import ChartWithFilters from "@/components/custom/usage/chart-with-filters";
 import { getAllDevicesOnlyIdAndAlias } from "@/lib/data/devices";
 import { deviceListResponseSchema } from "@/lib/zod/usage";
 
@@ -10,6 +11,9 @@ export default async function Usage() {
   return (
     <div className="container mx-auto py-6">
       <h1 className="mb-8 text-3xl font-bold">Usage Dashboard</h1>
+      <div className="flex">
+        <ChartWithFilters />
+      </div>
     </div>
   );
 }
