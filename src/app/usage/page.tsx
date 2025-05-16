@@ -7,7 +7,6 @@ export default async function Usage() {
   const devices = await getAllDevicesOnlyIdAndAlias();
   // we only need the device id and name
   const devicesWithIdAndName = deviceSelectListResponseSchema.parse(devices);
-  console.log("devicesWithIdAndName:: ", devicesWithIdAndName);
   return (
     <div className="container mx-auto py-6">
       <h1 className="mb-8 text-3xl font-bold">Usage Dashboard</h1>
