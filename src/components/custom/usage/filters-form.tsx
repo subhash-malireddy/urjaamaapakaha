@@ -48,7 +48,10 @@ export default function FiltersForm({
         </div>
       </form>
       <p className="text-center text-lg">
-        Showing usage for <em>{selectedDeviceAlias}</em>
+        Showing usage for{" "}
+        <em>
+          {selectedDeviceAlias === "All" ? "All Devices" : selectedDeviceAlias}
+        </em>
       </p>
     </div>
   );
