@@ -4,6 +4,7 @@ import {
   turnOffDevice,
   getActiveDevice,
   getDevicesWithStatus,
+  getAllDevicesOnlyIdAndAlias,
 } from "@/lib/data/devices";
 import { PrismaClient } from "@prisma/client";
 import { DeepMockProxy } from "jest-mock-extended";
@@ -22,6 +23,22 @@ describe("Device data functions", () => {
     jest.clearAllMocks();
   });
 
+  describe("getAllDevicesOnlyIdAndAlias", () => {
+    it("should return an array of devices with only the id and alias", async () => {
+      mockDB.device.findMany.mockResolvedValueOnce(mockDevices as any);
+
+      const result = await getAllDevicesOnlyIdAndAlias();
+
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            alias: expect.any(String),
+          }),
+        ]),
+      );
+    });
+  });
   describe("getActiveDevice", () => {
     it("should successfully retrieve an active device", async () => {
       const mockActiveDevice = createMockActiveDeviceRecord();
@@ -587,6 +604,17 @@ const TEST_DATA = {
   specialIp: "192.168.0.190",
   apiEndpoint: "http://api.example.com",
 };
+
+const mockDevices = [
+  {
+    id: "device-1",
+    alias: "Device 1",
+  },
+  {
+    id: "device-2",
+    alias: "Device 2",
+  },
+];
 
 // Helper function to create mock usage record
 const createMockUsageRecord = (
