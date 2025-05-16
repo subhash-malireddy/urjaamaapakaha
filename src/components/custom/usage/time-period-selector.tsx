@@ -6,12 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-export type TimePeriod =
-  // | "previous week"
-  // | "previous month"
-  // | "previous billing period" // TODO:: this could be a stretch goal
-  "current week" | "current month" | "current billing period";
+import { type TimePeriod } from "@/lib/usage-utils";
 
 export default function TimePeriodSelector({
   onSelect,

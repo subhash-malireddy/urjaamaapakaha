@@ -1,10 +1,11 @@
 "use client";
 
-import { DeviceSelectionList } from "@/lib/zod/usage";
-import TimePeriodSelector, { TimePeriod } from "./time-period-selector";
+import { type DeviceSelectionList } from "@/lib/zod/usage";
+import TimePeriodSelector from "./time-period-selector";
 import DeviceSelector from "./device-selector";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { getDateRangeForTimePeriod, type TimePeriod } from "@/lib/usage-utils";
 
 export default function FiltersForm({
   devices,
@@ -34,7 +35,10 @@ export default function FiltersForm({
   const selectedDeviceAlias =
     devices.find((device) => device.id === selectedDeviceId)?.alias || "All";
 
-  console.log("selectedTimePeriod:: ", selectedTimePeriod);
+  const dateRange = getDateRangeForTimePeriod(selectedTimePeriod);
+  console.log("Selected time period:", selectedTimePeriod);
+  console.log("Date range:", dateRange);
+
   return (
     <div data-testid="filters-form" className="flex w-full flex-col gap-2">
       <form className="flex w-full justify-between">
@@ -59,10 +63,14 @@ export default function FiltersForm({
         </div>
       </form>
       <p className="text-center text-lg">
-        Showing usage for{" "}
+        Showing usage for&nbsp;
         <em>
           {selectedDeviceAlias === "All" ? "All Devices" : selectedDeviceAlias}
         </em>
+        &nbsp;from&nbsp;
+        <em>{dateRange.formatted.start}</em>
+        &nbsp;to&nbsp;
+        <em>{dateRange.formatted.end}</em>
       </p>
     </div>
   );
