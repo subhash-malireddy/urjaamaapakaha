@@ -1,10 +1,11 @@
 "use client";
 
-import { DeviceSelectionList } from "@/lib/zod/usage";
+import { type DeviceSelectionList } from "@/lib/zod/usage";
 import TimePeriodSelector from "./time-period-selector";
 import DeviceSelector from "./device-selector";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { getDateRangeForTimePeriod, type TimePeriod } from "@/lib/usage-utils";
 
 export default function FiltersForm({
   devices,
@@ -12,6 +13,8 @@ export default function FiltersForm({
   devices: DeviceSelectionList;
 }) {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [selectedTimePeriod, setSelectedTimePeriod] =
+    useState<TimePeriod>("current week");
 
   const handleDeviceSelect = (deviceId: string) => {
     console.log("deviceId:: ", deviceId);
@@ -22,11 +25,20 @@ export default function FiltersForm({
     }
   };
 
+  const handleTimePeriodSelect = (period: TimePeriod) => {
+    setSelectedTimePeriod(period);
+  };
+
   const selectedDeviceValue = selectedDeviceId || "All";
   console.log("selectedDeviceValue:: ", selectedDeviceValue);
 
   const selectedDeviceAlias =
     devices.find((device) => device.id === selectedDeviceId)?.alias || "All";
+
+  const dateRange = getDateRangeForTimePeriod(selectedTimePeriod);
+  console.log("Selected time period:", selectedTimePeriod);
+  console.log("Date range:", dateRange);
+
   return (
     <div data-testid="filters-form" className="flex w-full flex-col gap-2">
       <form className="flex w-full justify-between">
@@ -44,14 +56,21 @@ export default function FiltersForm({
           <Label htmlFor="time-period-selector" className="text-lg">
             Time Period
           </Label>
-          <TimePeriodSelector />
+          <TimePeriodSelector
+            onSelect={handleTimePeriodSelect}
+            selectedValue={selectedTimePeriod}
+          />
         </div>
       </form>
       <p className="text-center text-lg">
-        Showing usage for{" "}
+        Showing usage for&nbsp;
         <em>
           {selectedDeviceAlias === "All" ? "All Devices" : selectedDeviceAlias}
         </em>
+        &nbsp;from&nbsp;
+        <em>{dateRange.formatted.start}</em>
+        &nbsp;to&nbsp;
+        <em>{dateRange.formatted.end}</em>
       </p>
     </div>
   );
