@@ -17,7 +17,6 @@ export default function FiltersForm({
     useState<TimePeriod>("current week");
 
   const handleDeviceSelect = (deviceId: string) => {
-    console.log("deviceId:: ", deviceId);
     if (deviceId === "All") {
       setSelectedDeviceId(null);
     } else {
@@ -30,14 +29,11 @@ export default function FiltersForm({
   };
 
   const selectedDeviceValue = selectedDeviceId || "All";
-  console.log("selectedDeviceValue:: ", selectedDeviceValue);
 
   const selectedDeviceAlias =
     devices.find((device) => device.id === selectedDeviceId)?.alias || "All";
 
   const dateRange = getDateRangeForTimePeriod(selectedTimePeriod);
-  console.log("Selected time period:", selectedTimePeriod);
-  console.log("Date range:", dateRange);
 
   return (
     <div data-testid="filters-form" className="flex w-full flex-col gap-2">
@@ -50,6 +46,7 @@ export default function FiltersForm({
             devices={devices}
             onSelect={handleDeviceSelect}
             selectedDeviceValue={selectedDeviceValue}
+            selectedDeviceAlias={selectedDeviceAlias}
           />
         </div>
         <div className="flex flex-col justify-around gap-2">
