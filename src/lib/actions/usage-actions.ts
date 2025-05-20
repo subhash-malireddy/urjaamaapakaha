@@ -2,19 +2,41 @@
 
 import { auth } from "@/auth";
 import { getActiveDevice } from "../data/devices";
-import { updateEstimatedTime } from "../data/usage";
+import { updateEstimatedTime, getUsageData } from "../data/usage";
 import {
   areDatesEqualToMinute,
   convertDateTimeLocalToUTC,
   isDateInFuture,
   isWithinEightHoursFromDate,
 } from "../utils";
+import {
+  getDateRangeForTimePeriod,
+  getGroupByForTimePeriod,
+  TimePeriod,
+} from "../usage-utils";
 
 // Define the state type
 interface EstimatedTimeState {
   message: string;
   error?: string;
   updatedTime?: Date | null;
+}
+
+interface UsageDataResponse {
+  message: string;
+  error?: string;
+  data?: {
+    userConsumption: {
+      date: Date;
+      deviceId: string;
+      consumption: number;
+    }[];
+    totalConsumption: {
+      date: Date;
+      deviceId: string;
+      consumption: number;
+    }[];
+  };
 }
 
 /**
@@ -139,6 +161,77 @@ export async function updateEstimatedTimeAction(
     return {
       message: "Error updating date",
       error: "Server Error",
+    };
+  }
+}
+/**
+ * Get the usage data for a given time period and deviceId
+ * @param timePeriod - The time period to get the usage data for (e.g. "current week", "current month", "current year")
+ * @param dateRange - The date range to get the usage data for. It must come from the client to account for timezone differences
+ * @param deviceId - The deviceId to get the usage data for
+ * @returns The usage data for the given time period and deviceId
+ */
+export async function getUsageDataAction(
+  timePeriod: TimePeriod,
+  dateRange: ReturnType<typeof getDateRangeForTimePeriod>,
+  deviceId?: string,
+): Promise<UsageDataResponse> {
+  try {
+    const session = await auth();
+    const userEmail = session?.user?.email;
+
+    if (!userEmail) {
+      return {
+        message: "Unauthorized",
+        error: "Unauthorized",
+      };
+    }
+
+    const groupBy = getGroupByForTimePeriod(timePeriod);
+
+    const usageData = await getUsageData({
+      deviceId,
+      startDate: dateRange.start,
+      endDate: dateRange.end,
+      groupBy,
+    });
+
+    // Separate user consumption and total consumption
+    const userConsumption = usageData
+      .filter((data) => data.userEmail === userEmail)
+      .map(({ period, deviceId, consumption }) => ({
+        date: period,
+        deviceId,
+        consumption: consumption.toNumber(),
+      }));
+
+    const totalConsumption = usageData.reduce(
+      (acc, { period, deviceId, consumption }) => {
+        const key = `${period}-${deviceId}`;
+        if (!acc[key]) {
+          acc[key] = { date: period, deviceId, consumption: 0 };
+        }
+        acc[key].consumption += consumption.toNumber();
+        return acc;
+      },
+      {} as Record<
+        string,
+        { date: Date; deviceId: string; consumption: number }
+      >,
+    );
+
+    return {
+      message: "Usage data fetched successfully",
+      data: {
+        userConsumption,
+        totalConsumption: Object.values(totalConsumption),
+      },
+    };
+  } catch (error) {
+    console.error("Failed to fetch usage data:", error);
+    return {
+      message: "Failed to fetch usage data",
+      error: error instanceof Error ? error.message : "Unknown error occurred",
     };
   }
 }
