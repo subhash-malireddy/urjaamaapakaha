@@ -92,22 +92,24 @@ export async function getUsageData({
   // Date_Trunc might not be the one we need, becasue given a start date at the beginning of the month,
   // the grouping might happen from a date in the previous month especially if the beginning date is in a week that started in the previous month
   // so we need to use the start date to determine the grouping
+  // TODO:: do we need device_id???
+  //TODO:: Should this be endDate or do we need to use only startDate?
   const result = await db.$queryRaw<UsageData[]>`
     SELECT 
       DATE_TRUNC('day', start_date) as period,
-      device_id as "deviceId", // TODO:: do we need this?
+      device_id as "deviceId",
       SUM(consumption) as consumption,
       user_email as "userEmail"
     FROM 
       usage
     WHERE 
       start_date >= ${startDate}
-      AND end_date <= ${endDate} //TODO:: Should this be endDate or do we need to use only startDate?
+      AND end_date <= ${endDate}
       ${deviceId ? Prisma.sql`AND device_id = ${deviceId}` : Prisma.sql``}
     GROUP BY 
-      period, user_email
+      period, device_id, user_email
     ORDER BY 
-      period, user_email
+      period, user_email, device_id
   `;
   console.log("📜result:: ", result[0].consumption instanceof Prisma.Decimal);
   return result;

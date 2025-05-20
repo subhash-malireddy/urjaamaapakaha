@@ -42,25 +42,27 @@ export default function FiltersForm({
 
   const dateRange = getDateRangeForTimePeriod(selectedTimePeriod);
 
-  const fetchUsageData = (deviceId: string | null, timePeriod: TimePeriod) => {
-    startTransition(async () => {
-      const result = await getUsageDataAction(
-        timePeriod,
-        dateRange,
-        deviceId || undefined,
-      );
-      onDataFetched(result);
-    });
-  };
-
   const selectedDeviceValue = selectedDeviceId ?? "All";
   const selectedDeviceAlias =
     devices.find((device) => device.id === selectedDeviceId)?.alias || "All";
 
   useEffect(() => {
     console.log("initializing usage data");
+    const fetchUsageData = (
+      deviceId: string | null,
+      timePeriod: TimePeriod,
+    ) => {
+      startTransition(async () => {
+        const result = await getUsageDataAction(
+          timePeriod,
+          dateRange,
+          deviceId || undefined,
+        );
+        onDataFetched(result);
+      });
+    };
     fetchUsageData(selectedDeviceId, selectedTimePeriod);
-  }, [selectedDeviceId, selectedTimePeriod, fetchUsageData]);
+  }, [selectedDeviceId, selectedTimePeriod]);
 
   return (
     <div data-testid="filters-form" className="flex w-full flex-col gap-2">
