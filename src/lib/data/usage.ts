@@ -63,8 +63,6 @@ export async function updateEstimatedTime(usageId: bigint, newTime: Date) {
   });
 }
 
-type GroupBy = "day" | "week" | "month";
-
 interface UsageData {
   period: Date;
   deviceId: string;
@@ -79,25 +77,14 @@ export async function getUsageData({
   deviceId,
   startDate,
   endDate,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  groupBy = "day", // TODO:: DO we need this arg?
 }: {
   deviceId?: string;
   startDate: Date;
   endDate: Date;
-  groupBy?: GroupBy;
 }): Promise<UsageData[]> {
-  // For now, we'll need to use raw SQL as Prisma's groupBy doesn't support
-  // date truncation and complex grouping operations
-  // Date_Trunc might not be the one we need, becasue given a start date at the beginning of the month,
-  // the grouping might happen from a date in the previous month especially if the beginning date is in a week that started in the previous month
-  // so we need to use the start date to determine the grouping
-  // TODO:: do we need device_id???
-  //TODO:: Should this be endDate or do we need to use only startDate?
   const result = await db.$queryRaw<UsageData[]>`
     SELECT 
       DATE_TRUNC('day', start_date) as period,
-      device_id as "deviceId",
       SUM(consumption) as consumption,
       user_email as "userEmail"
     FROM 
@@ -107,11 +94,11 @@ export async function getUsageData({
       AND end_date <= ${endDate}
       ${deviceId ? Prisma.sql`AND device_id = ${deviceId}` : Prisma.sql``}
     GROUP BY 
-      period, device_id, user_email
+      period, user_email
     ORDER BY 
-      period, user_email, device_id
+      period
   `;
-  console.log("📜result:: ", result[0].consumption instanceof Prisma.Decimal);
+
   return result;
 }
 
