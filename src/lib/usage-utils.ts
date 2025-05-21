@@ -78,16 +78,3 @@ export const getDateRangeForTimePeriod = (timePeriod: TimePeriod) => {
   }
   return dateRange;
 };
-
-export function getGroupByForTimePeriod(
-  timePeriod: TimePeriod,
-): "day" | "week" | "month" {
-  switch (timePeriod) {
-    case "current week":
-      return "day";
-    case "current month":
-      return "week";
-    case "current billing period":
-      return "month";
-  }
-}
