@@ -9,11 +9,7 @@ import {
   isDateInFuture,
   isWithinEightHoursFromDate,
 } from "../utils";
-import {
-  getDateRangeForTimePeriod,
-  getGroupByForTimePeriod,
-  TimePeriod,
-} from "../usage-utils";
+import { getDateRangeForTimePeriod, TimePeriod } from "../usage-utils";
 
 // Define the state type
 interface EstimatedTimeState {
@@ -187,13 +183,10 @@ export async function getUsageDataAction(
       };
     }
 
-    const groupBy = getGroupByForTimePeriod(timePeriod);
-
     const usageData = await getUsageData({
       deviceId,
       startDate: dateRange.start,
       endDate: dateRange.end,
-      groupBy,
     });
 
     // Separate user consumption and total consumption
