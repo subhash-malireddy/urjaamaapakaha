@@ -78,3 +78,46 @@ export const getDateRangeForTimePeriod = (timePeriod: TimePeriod) => {
   }
   return dateRange;
 };
+
+interface WeeklyGroupedUsageData {
+  period: Date;
+  consumption: number;
+  userEmail: string;
+}
+
+/**
+ * Groups daily usage data into weeks
+ * @param data Array of daily usage data
+ * @param startDate The start date of the period
+ * @returns Array of weekly usage data
+ */
+export function groupByWeek(
+  data: {
+    period: Date;
+    consumption: number;
+    userEmail: string;
+  }[],
+  startDate: Date,
+): WeeklyGroupedUsageData[] {
+  const grouped = data.reduce(
+    (acc, curr) => {
+      // Use the later date between week start and period start
+      const weekStart = startOfWeek(curr.period);
+      const periodStart = weekStart < startDate ? startDate : weekStart;
+      const key = `${periodStart.toISOString()}-${curr.userEmail}`;
+
+      if (!acc[key]) {
+        acc[key] = {
+          period: periodStart,
+          consumption: 0,
+          userEmail: curr.userEmail,
+        };
+      }
+      acc[key].consumption += curr.consumption;
+      return acc;
+    },
+    {} as Record<string, WeeklyGroupedUsageData>,
+  );
+
+  return Object.values(grouped);
+}
