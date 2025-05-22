@@ -65,7 +65,6 @@ export async function updateEstimatedTime(usageId: bigint, newTime: Date) {
 
 interface UsageData {
   period: Date;
-  deviceId: string;
   consumption: Prisma.Decimal;
   userEmail: string;
 }
@@ -81,7 +80,7 @@ export async function getUsageData({
   deviceId?: string;
   startDate: Date;
   endDate: Date;
-}): Promise<UsageData[]> {
+}) {
   const result = await db.$queryRaw<UsageData[]>`
     SELECT 
       DATE_TRUNC('day', start_date) as period,
