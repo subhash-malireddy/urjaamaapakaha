@@ -5,6 +5,7 @@ import TimePeriodSelector from "./time-period-selector";
 import DeviceSelector from "./device-selector";
 import { Label } from "@/components/ui/label";
 import { type TimePeriod } from "@/lib/usage-utils";
+
 interface FiltersFormProps {
   devices: DeviceSelectionList;
   selectedDeviceValue: string;

@@ -84,7 +84,6 @@ export default function ChartWithFilters({
             <p>
               {usageData.data?.userConsumption.reduce((acc, curr) => {
                 const result = acc + curr.consumption;
-                console.log("📜result:: ", result);
                 return result;
               }, 0)}
               &nbsp;vs&nbsp;
