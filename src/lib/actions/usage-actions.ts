@@ -9,7 +9,11 @@ import {
   isDateInFuture,
   isWithinEightHoursFromDate,
 } from "../utils";
-import { getDateRangeForTimePeriod, TimePeriod } from "../usage-utils";
+import {
+  getDateRangeForTimePeriod,
+  TimePeriod,
+  groupByWeek,
+} from "../usage-utils";
 
 // Define the state type
 interface EstimatedTimeState {
@@ -24,12 +28,10 @@ interface UsageDataResponse {
   data?: {
     userConsumption: {
       date: Date;
-      deviceId: string;
       consumption: number;
     }[];
     totalConsumption: {
       date: Date;
-      deviceId: string;
       consumption: number;
     }[];
   };
@@ -160,6 +162,7 @@ export async function updateEstimatedTimeAction(
     };
   }
 }
+
 /**
  * Get the usage data for a given time period and deviceId
  * @param timePeriod - The time period to get the usage data for (e.g. "current week", "current month", "current year")
@@ -169,7 +172,7 @@ export async function updateEstimatedTimeAction(
  */
 export async function getUsageDataAction(
   timePeriod: TimePeriod,
-  dateRange: ReturnType<typeof getDateRangeForTimePeriod>,
+  dateRange: Omit<ReturnType<typeof getDateRangeForTimePeriod>, "formatted">,
   deviceId?: string,
 ): Promise<UsageDataResponse> {
   try {
@@ -189,28 +192,36 @@ export async function getUsageDataAction(
       endDate: dateRange.end,
     });
 
+    // Convert Prisma.Decimal to number
+    const processedData = usageData.map((data) => ({
+      ...data,
+      consumption: data.consumption.toNumber(),
+    }));
+
+    // Group data based on time period
+    const groupedData =
+      timePeriod === "current month"
+        ? groupByWeek(processedData, dateRange.start)
+        : processedData;
+
     // Separate user consumption and total consumption
-    const userConsumption = usageData
+    const userConsumption = groupedData
       .filter((data) => data.userEmail === userEmail)
-      .map(({ period, deviceId, consumption }) => ({
+      .map(({ period, consumption }) => ({
         date: period,
-        deviceId,
-        consumption: consumption.toNumber(),
+        consumption,
       }));
 
-    const totalConsumption = usageData.reduce(
-      (acc, { period, deviceId, consumption }) => {
-        const key = `${period}-${deviceId}`;
+    const totalConsumption = groupedData.reduce(
+      (acc, { period, consumption }) => {
+        const key = period.toISOString();
         if (!acc[key]) {
-          acc[key] = { date: period, deviceId, consumption: 0 };
+          acc[key] = { date: period, consumption: 0 };
         }
-        acc[key].consumption += consumption.toNumber();
+        acc[key].consumption += consumption;
         return acc;
       },
-      {} as Record<
-        string,
-        { date: Date; deviceId: string; consumption: number }
-      >,
+      {} as Record<string, { date: Date; consumption: number }>,
     );
 
     return {
