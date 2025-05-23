@@ -121,3 +121,46 @@ export function groupByWeek(
 
   return Object.values(grouped);
 }
+
+interface MonthlyGroupedUsageData {
+  period: Date;
+  consumption: number;
+  userEmail: string;
+}
+
+/**
+ * Groups daily usage data into months
+ * @param data Array of daily usage data
+ * @param startDate The start date of the period
+ * @returns Array of monthly usage data
+ */
+export function groupByMonth(
+  data: {
+    period: Date;
+    consumption: number;
+    userEmail: string;
+  }[],
+  startDate: Date,
+): MonthlyGroupedUsageData[] {
+  const grouped = data.reduce(
+    (acc, curr) => {
+      // Use the later date between month start and period start
+      const monthStart = startOfMonth(curr.period);
+      const periodStart = monthStart < startDate ? startDate : monthStart;
+      const key = `${periodStart.toISOString()}-${curr.userEmail}`;
+
+      if (!acc[key]) {
+        acc[key] = {
+          period: periodStart,
+          consumption: 0,
+          userEmail: curr.userEmail,
+        };
+      }
+      acc[key].consumption += curr.consumption;
+      return acc;
+    },
+    {} as Record<string, MonthlyGroupedUsageData>,
+  );
+
+  return Object.values(grouped);
+}

@@ -13,6 +13,7 @@ import {
   getDateRangeForTimePeriod,
   TimePeriod,
   groupByWeek,
+  groupByMonth,
 } from "../usage-utils";
 
 // Define the state type
@@ -201,8 +202,10 @@ export async function getUsageDataAction(
     // Group data based on time period
     const groupedData =
       timePeriod === "current month"
-        ? groupByWeek(processedData, dateRange.start)
-        : processedData;
+        ? groupByMonth(processedData, dateRange.start)
+        : timePeriod === "current week"
+          ? groupByWeek(processedData, dateRange.start)
+          : processedData;
 
     // Separate user consumption and total consumption
     const userConsumption = groupedData
