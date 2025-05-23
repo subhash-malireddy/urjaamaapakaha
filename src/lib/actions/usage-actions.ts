@@ -201,9 +201,9 @@ export async function getUsageDataAction(
 
     // Group data based on time period
     const groupedData =
-      timePeriod === "current month"
+      timePeriod === "current billing period"
         ? groupByMonth(processedData, dateRange.start)
-        : timePeriod === "current week"
+        : timePeriod === "current month"
           ? groupByWeek(processedData, dateRange.start)
           : processedData;
 
