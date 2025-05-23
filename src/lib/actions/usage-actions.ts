@@ -12,8 +12,7 @@ import {
 import {
   getDateRangeForTimePeriod,
   TimePeriod,
-  groupByWeek,
-  groupByMonth,
+  processUsageData,
 } from "../usage-utils";
 
 // Define the state type
@@ -193,45 +192,18 @@ export async function getUsageDataAction(
       endDate: dateRange.end,
     });
 
-    // Convert Prisma.Decimal to number
-    const processedData = usageData.map((data) => ({
-      ...data,
-      consumption: data.consumption.toNumber(),
-    }));
-
-    // Group data based on time period
-    const groupedData =
-      timePeriod === "current billing period"
-        ? groupByMonth(processedData, dateRange.start)
-        : timePeriod === "current month"
-          ? groupByWeek(processedData, dateRange.start)
-          : processedData;
-
-    // Separate user consumption and total consumption
-    const userConsumption = groupedData
-      .filter((data) => data.userEmail === userEmail)
-      .map(({ period, consumption }) => ({
-        date: period,
-        consumption,
-      }));
-
-    const totalConsumption = groupedData.reduce(
-      (acc, { period, consumption }) => {
-        const key = period.toISOString();
-        if (!acc[key]) {
-          acc[key] = { date: period, consumption: 0 };
-        }
-        acc[key].consumption += consumption;
-        return acc;
-      },
-      {} as Record<string, { date: Date; consumption: number }>,
+    const { userConsumption, totalConsumption } = processUsageData(
+      usageData,
+      timePeriod,
+      dateRange.start,
+      userEmail,
     );
 
     return {
       message: "Usage data fetched successfully",
       data: {
         userConsumption,
-        totalConsumption: Object.values(totalConsumption),
+        totalConsumption,
       },
     };
   } catch (error) {

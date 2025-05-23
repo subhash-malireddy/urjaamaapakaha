@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import {
   startOfWeek,
   endOfWeek,
@@ -163,4 +164,89 @@ export function groupByMonth(
   );
 
   return Object.values(grouped);
+}
+
+interface ProcessedUsageData {
+  userConsumption: { date: Date; consumption: number }[];
+  totalConsumption: { date: Date; consumption: number }[];
+}
+
+/**
+ * Further groups the usage data by user and total consumption by aggregating the consumption values by time period. Used in the getUsageDataAction function.
+ * @param data - The usage data to process
+ * @param timePeriod - The time period to process the data for
+ * @param startDate - The start date of the period
+ * @param userEmail - The email of the user to process the data for
+ * @returns The processed usage data
+ */
+export function processUsageData(
+  data: { period: Date; consumption: Prisma.Decimal; userEmail: string }[],
+  timePeriod: TimePeriod,
+  startDate: Date,
+  userEmail: string,
+): ProcessedUsageData {
+  const userConsumptionMap = new Map<
+    string,
+    { date: Date; consumption: number }
+  >();
+  const totalConsumptionMap = new Map<
+    string,
+    { date: Date; consumption: number }
+  >();
+
+  data.forEach(({ period, consumption, userEmail: dataUserEmail }) => {
+    const consumptionValue = Number(
+      (Math.ceil(consumption.toNumber() * 100) / 100).toFixed(2),
+    );
+    const periodStart = getPeriodStart(period, timePeriod, startDate);
+    const periodKey = periodStart.toISOString();
+
+    // Update total consumption
+    const totalEntry = totalConsumptionMap.get(periodKey) || {
+      date: periodStart,
+      consumption: 0,
+    };
+    totalEntry.consumption = Number(
+      (
+        Math.ceil((totalEntry.consumption + consumptionValue) * 100) / 100
+      ).toFixed(2),
+    );
+    totalConsumptionMap.set(periodKey, totalEntry);
+
+    // Update user consumption if it matches the current user
+    if (dataUserEmail === userEmail) {
+      const userEntry = userConsumptionMap.get(periodKey) || {
+        date: periodStart,
+        consumption: 0,
+      };
+      userEntry.consumption = Number(
+        (
+          Math.ceil((userEntry.consumption + consumptionValue) * 100) / 100
+        ).toFixed(2),
+      );
+      userConsumptionMap.set(periodKey, userEntry);
+    }
+  });
+
+  return {
+    userConsumption: Array.from(userConsumptionMap.values()),
+    totalConsumption: Array.from(totalConsumptionMap.values()),
+  };
+}
+
+function getPeriodStart(
+  date: Date,
+  timePeriod: TimePeriod,
+  startDate: Date,
+): Date {
+  switch (timePeriod) {
+    case "current month":
+      return startOfMonth(date) < startDate ? startDate : startOfMonth(date);
+    case "current week":
+      return startOfWeek(date) < startDate ? startDate : startOfWeek(date);
+    case "current billing period":
+      return startOfMonth(date) < startDate ? startDate : startOfMonth(date);
+    default:
+      return date;
+  }
 }
