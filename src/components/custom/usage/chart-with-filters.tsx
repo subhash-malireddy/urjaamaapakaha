@@ -94,25 +94,21 @@ export default function ChartWithFilters({
             </p>
             <div className="flex flex-col gap-2">
               <h4>User Consumption</h4>
-              <p>
-                {usageData.data?.userConsumption.map((item) => (
-                  <div key={item.date.toISOString()}>
-                    <p>
-                      {item.date.toLocaleDateString()} - {item.consumption}
-                    </p>
-                  </div>
-                ))}
-              </p>
+              {usageData.data?.userConsumption.map((item) => (
+                <div key={item.date.toISOString()} className="animate-fade-in">
+                  <p>
+                    {item.date.toLocaleDateString()} - {item.consumption}
+                  </p>
+                </div>
+              ))}
               <h4>Total Consumption</h4>
-              <p>
-                {usageData.data?.totalConsumption.map((item) => (
-                  <div key={item.date.toISOString()}>
-                    <p>
-                      {item.date.toLocaleDateString()} - {item.consumption}
-                    </p>
-                  </div>
-                ))}
-              </p>
+              {usageData.data?.totalConsumption.map((item) => (
+                <div key={item.date.toISOString()} className="animate-fade-in">
+                  <p>
+                    {item.date.toLocaleDateString()} - {item.consumption}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         )}
