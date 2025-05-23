@@ -92,6 +92,28 @@ export default function ChartWithFilters({
                 0,
               )}
             </p>
+            <div className="flex flex-col gap-2">
+              <h4>User Consumption</h4>
+              <p>
+                {usageData.data?.userConsumption.map((item) => (
+                  <div key={item.date.toISOString()}>
+                    <p>
+                      {item.date.toLocaleDateString()} - {item.consumption}
+                    </p>
+                  </div>
+                ))}
+              </p>
+              <h4>Total Consumption</h4>
+              <p>
+                {usageData.data?.totalConsumption.map((item) => (
+                  <div key={item.date.toISOString()}>
+                    <p>
+                      {item.date.toLocaleDateString()} - {item.consumption}
+                    </p>
+                  </div>
+                ))}
+              </p>
+            </div>
           </div>
         )}
       </div>
