@@ -4,41 +4,25 @@ import { type DeviceSelectionList } from "@/lib/zod/usage";
 import TimePeriodSelector from "./time-period-selector";
 import DeviceSelector from "./device-selector";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { getDateRangeForTimePeriod, type TimePeriod } from "@/lib/usage-utils";
+import { type TimePeriod } from "@/lib/usage-utils";
+
+interface FiltersFormProps {
+  devices: DeviceSelectionList;
+  selectedDeviceValue: string;
+  selectedDeviceAlias: string;
+  selectedTimePeriod: TimePeriod;
+  handleDeviceSelect: (deviceId: string) => void;
+  handleTimePeriodSelect: (timePeriod: TimePeriod) => void;
+}
 
 export default function FiltersForm({
   devices,
-}: {
-  devices: DeviceSelectionList;
-}) {
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
-  const [selectedTimePeriod, setSelectedTimePeriod] =
-    useState<TimePeriod>("current week");
-
-  const handleDeviceSelect = (deviceId: string) => {
-    console.log("deviceId:: ", deviceId);
-    if (deviceId === "All") {
-      setSelectedDeviceId(null);
-    } else {
-      setSelectedDeviceId(deviceId);
-    }
-  };
-
-  const handleTimePeriodSelect = (period: TimePeriod) => {
-    setSelectedTimePeriod(period);
-  };
-
-  const selectedDeviceValue = selectedDeviceId || "All";
-  console.log("selectedDeviceValue:: ", selectedDeviceValue);
-
-  const selectedDeviceAlias =
-    devices.find((device) => device.id === selectedDeviceId)?.alias || "All";
-
-  const dateRange = getDateRangeForTimePeriod(selectedTimePeriod);
-  console.log("Selected time period:", selectedTimePeriod);
-  console.log("Date range:", dateRange);
-
+  selectedDeviceValue,
+  selectedDeviceAlias,
+  selectedTimePeriod,
+  handleDeviceSelect,
+  handleTimePeriodSelect,
+}: FiltersFormProps) {
   return (
     <div data-testid="filters-form" className="flex w-full flex-col gap-2">
       <form className="flex w-full justify-between">
@@ -50,6 +34,7 @@ export default function FiltersForm({
             devices={devices}
             onSelect={handleDeviceSelect}
             selectedDeviceValue={selectedDeviceValue}
+            selectedDeviceAlias={selectedDeviceAlias}
           />
         </div>
         <div className="flex flex-col justify-around gap-2">
@@ -62,16 +47,6 @@ export default function FiltersForm({
           />
         </div>
       </form>
-      <p className="text-center text-lg">
-        Showing usage for&nbsp;
-        <em>
-          {selectedDeviceAlias === "All" ? "All Devices" : selectedDeviceAlias}
-        </em>
-        &nbsp;from&nbsp;
-        <em>{dateRange.formatted.start}</em>
-        &nbsp;to&nbsp;
-        <em>{dateRange.formatted.end}</em>
-      </p>
     </div>
   );
 }

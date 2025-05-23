@@ -12,10 +12,12 @@ export default function DeviceSelector({
   devices,
   onSelect,
   selectedDeviceValue,
+  selectedDeviceAlias,
 }: {
   devices: DeviceSelectionList;
   onSelect: (deviceId: string) => void;
   selectedDeviceValue: string;
+  selectedDeviceAlias: string;
 }) {
   return (
     <Select
@@ -24,11 +26,13 @@ export default function DeviceSelector({
       name="deviceId"
     >
       <SelectTrigger className="w-[150px] md:w-[200px]">
-        <SelectValue placeholder="Select a device" />
+        <SelectValue placeholder="Select a device">
+          {selectedDeviceAlias}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent position="popper">
         <SelectGroup>
-          <SelectItem value={"All"}>All</SelectItem>
+          <SelectItem value="All">All</SelectItem>
           {devices.map((device) => (
             <SelectItem key={device.id} value={device.id}>
               {device.alias}

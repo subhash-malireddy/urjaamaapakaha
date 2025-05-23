@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 /* istanbul ignore next */
 async function getRecentUsage(limit = 10) {
@@ -60,6 +61,44 @@ export async function updateEstimatedTime(usageId: bigint, newTime: Date) {
     where: { id: usageId },
     data: { estimated_use_time: newTime },
   });
+}
+
+interface UsageData {
+  period: Date;
+  consumption: Prisma.Decimal;
+  userEmail: string;
+}
+
+/**
+ * @description Aggregates usage records by day, calculating total consumption between the specified start and end dates. When a deviceId is provided, returns data for that specific device; otherwise, includes consumption data for all devices.
+ */
+export async function getUsageData({
+  deviceId,
+  startDate,
+  endDate,
+}: {
+  deviceId?: string;
+  startDate: Date;
+  endDate: Date;
+}) {
+  const result = await db.$queryRaw<UsageData[]>`
+    SELECT 
+      DATE_TRUNC('day', start_date) as period,
+      SUM(consumption) as consumption,
+      user_email as "userEmail"
+    FROM 
+      usage
+    WHERE 
+      start_date >= ${startDate}
+      AND end_date <= ${endDate}
+      ${deviceId ? Prisma.sql`AND device_id = ${deviceId}` : Prisma.sql``}
+    GROUP BY 
+      period, user_email
+    ORDER BY 
+      period
+  `;
+
+  return result;
 }
 
 //using this sytax for making istanbul ignore next work.
