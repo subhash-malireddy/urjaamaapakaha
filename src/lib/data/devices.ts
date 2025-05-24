@@ -1,9 +1,10 @@
 import { db } from "@/lib/db";
 import { UsageResponse } from "@/lib/utils";
 import type { device, usage } from "@prisma/client";
+import { deviceSelectListResponseSchema } from "../zod/usage";
 
 export async function getAllDevicesOnlyIdAndAlias() {
-  return db.device.findMany({
+  const devices = await db.device.findMany({
     where: {
       is_archived: false,
     },
@@ -15,6 +16,8 @@ export async function getAllDevicesOnlyIdAndAlias() {
       alias: true,
     },
   });
+
+  return deviceSelectListResponseSchema.parse(devices);
 }
 
 /* istanbul ignore next */
