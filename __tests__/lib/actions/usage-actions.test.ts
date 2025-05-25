@@ -3,6 +3,10 @@ import { updateEstimatedTimeAction } from "@/lib/actions/usage-actions";
 import { getActiveDevice } from "@/lib/data/devices";
 import { updateEstimatedTime } from "@/lib/data/usage";
 import { getDateTimeLocalValue, convertDateTimeLocalToUTC } from "@/lib/utils";
+import { getUsageDataAction } from "@/lib/actions/usage-actions";
+import { getUsageData } from "@/lib/data/usage";
+import { getPeriodStart, TimePeriod } from "@/lib/usage-utils";
+import { Prisma } from "@prisma/client";
 
 // Mock dependencies
 jest.mock("@/auth", () => ({
@@ -494,6 +498,334 @@ describe("updateEstimatedTimeAction", () => {
       expect(result).toEqual({
         message: "Error updating date",
         error: "Server Error",
+      });
+    });
+  });
+});
+
+describe("getUsageDataAction", () => {
+  const mockUserEmail = "test@example.com";
+  const mockTimePeriod: TimePeriod = "current week";
+  const mockDateRange = {
+    start: new Date("2024-03-19T00:00:00Z"),
+    end: new Date("2024-03-22T00:00:00Z"),
+  };
+  const mockDeviceId = "device-123";
+
+  const mockUsageData = [
+    {
+      period: new Date("2024-03-20T00:00:00Z"),
+      consumption: new Prisma.Decimal(10.12),
+      userEmail: mockUserEmail,
+    },
+    {
+      period: new Date("2024-03-21T00:00:00Z"),
+      consumption: new Prisma.Decimal(20.23),
+      userEmail: "other@example.com",
+    },
+  ];
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe("authentication", () => {
+    it("should return unauthorized error when no user session", async () => {
+      (auth as jest.Mock).mockResolvedValueOnce({ user: null });
+
+      const result = await getUsageDataAction(
+        mockTimePeriod,
+        mockDateRange,
+        mockDeviceId,
+      );
+
+      expect(result).toEqual({
+        message: "Unauthorized",
+        error: "Unauthorized",
+      });
+      expect(getUsageData).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("data fetching and processing", () => {
+    beforeEach(() => {
+      (auth as jest.Mock).mockResolvedValue({
+        user: { email: mockUserEmail },
+      });
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should fetch and process usage data with device ID for current week", async () => {
+      (getUsageData as jest.Mock).mockResolvedValueOnce(mockUsageData);
+
+      const result = await getUsageDataAction(
+        "current week",
+        mockDateRange,
+        mockDeviceId,
+      );
+
+      expect(getUsageData).toHaveBeenCalledWith({
+        deviceId: mockDeviceId,
+        startDate: mockDateRange.start,
+        endDate: mockDateRange.end,
+      });
+
+      expect(result).toEqual({
+        message: "Usage data fetched successfully",
+        data: {
+          userConsumption: [
+            {
+              date: getPeriodStart(
+                mockUsageData[0].period,
+                "current week",
+                mockDateRange.start,
+              ), // asserting that the date is the start of the day
+              consumption: 10.12,
+            },
+          ],
+          totalConsumption: [
+            {
+              date: getPeriodStart(
+                mockUsageData[0].period,
+                "current week",
+                mockDateRange.start,
+              ),
+              consumption: 10.12,
+            },
+            {
+              date: getPeriodStart(
+                mockUsageData[1].period,
+                "current week",
+                mockDateRange.start,
+              ),
+              consumption: 20.23,
+            },
+          ],
+        },
+      });
+    });
+
+    it("should fetch and process usage data for current month", async () => {
+      (getUsageData as jest.Mock).mockResolvedValueOnce(mockUsageData);
+
+      const result = await getUsageDataAction(
+        "current month",
+        mockDateRange,
+        mockDeviceId,
+      );
+
+      expect(getUsageData).toHaveBeenCalledWith({
+        deviceId: mockDeviceId,
+        startDate: mockDateRange.start,
+        endDate: mockDateRange.end,
+      });
+
+      expect(result).toEqual({
+        message: "Usage data fetched successfully",
+        data: {
+          userConsumption: [
+            {
+              date: getPeriodStart(
+                mockUsageData[0].period,
+                "current month",
+                mockDateRange.start,
+              ),
+              consumption: 10.12,
+            },
+          ],
+          totalConsumption: [
+            {
+              date: getPeriodStart(
+                mockUsageData[0].period,
+                "current month",
+                mockDateRange.start,
+              ),
+              consumption: 30.35, // Aggregated: 10.12 + 20.23
+            },
+          ],
+        },
+      });
+    });
+
+    it("should fetch and process usage data for current billing period", async () => {
+      (getUsageData as jest.Mock).mockResolvedValueOnce(mockUsageData);
+
+      const result = await getUsageDataAction(
+        "current billing period",
+        mockDateRange,
+        mockDeviceId,
+      );
+
+      expect(getUsageData).toHaveBeenCalledWith({
+        deviceId: mockDeviceId,
+        startDate: mockDateRange.start,
+        endDate: mockDateRange.end,
+      });
+
+      expect(result).toEqual({
+        message: "Usage data fetched successfully",
+        data: {
+          userConsumption: [
+            {
+              date: getPeriodStart(
+                mockUsageData[0].period,
+                "current billing period",
+                mockDateRange.start,
+              ),
+              consumption: 10.12,
+            },
+          ],
+          totalConsumption: [
+            {
+              date: getPeriodStart(
+                mockUsageData[0].period,
+                "current billing period",
+                mockDateRange.start,
+              ),
+              consumption: 30.35, // Aggregated: 10.12 + 20.23
+            },
+          ],
+        },
+      });
+    });
+
+    it("should fetch and process usage data without device ID", async () => {
+      (getUsageData as jest.Mock).mockResolvedValueOnce(mockUsageData);
+
+      const result = await getUsageDataAction(mockTimePeriod, mockDateRange);
+
+      expect(getUsageData).toHaveBeenCalledWith({
+        deviceId: undefined,
+        startDate: mockDateRange.start,
+        endDate: mockDateRange.end,
+      });
+
+      expect(result).toEqual({
+        message: "Usage data fetched successfully",
+        data: {
+          userConsumption: [
+            {
+              date: getPeriodStart(
+                mockUsageData[0].period,
+                mockTimePeriod,
+                mockDateRange.start,
+              ),
+              consumption: 10.12,
+            },
+          ],
+          totalConsumption: [
+            {
+              date: getPeriodStart(
+                mockUsageData[0].period,
+                mockTimePeriod,
+                mockDateRange.start,
+              ),
+              consumption: 10.12,
+            },
+            {
+              date: getPeriodStart(
+                mockUsageData[1].period,
+                mockTimePeriod,
+                mockDateRange.start,
+              ),
+              consumption: 20.23,
+            },
+          ],
+        },
+      });
+    });
+
+    it("should handle empty usage data", async () => {
+      (getUsageData as jest.Mock).mockResolvedValueOnce([]);
+
+      const result = await getUsageDataAction(
+        mockTimePeriod,
+        mockDateRange,
+        mockDeviceId,
+      );
+
+      expect(result).toEqual({
+        message: "Usage data fetched successfully",
+        data: {
+          userConsumption: [],
+          totalConsumption: [],
+        },
+      });
+    });
+
+    it("should handle usage data with only other users", async () => {
+      const otherUserData = [
+        {
+          period: new Date("2024-03-20T00:00:00Z"),
+          consumption: new Prisma.Decimal(15.5),
+          userEmail: "other@example.com",
+        },
+      ];
+      (getUsageData as jest.Mock).mockResolvedValueOnce(otherUserData);
+
+      const result = await getUsageDataAction(
+        mockTimePeriod,
+        mockDateRange,
+        mockDeviceId,
+      );
+
+      expect(result).toEqual({
+        message: "Usage data fetched successfully",
+        data: {
+          userConsumption: [], // No data for current user
+          totalConsumption: [
+            {
+              date: getPeriodStart(
+                otherUserData[0].period,
+                mockTimePeriod,
+                mockDateRange.start,
+              ),
+              consumption: 15.5,
+            },
+          ],
+        },
+      });
+    });
+  });
+
+  describe("error handling", () => {
+    beforeEach(() => {
+      (auth as jest.Mock).mockResolvedValue({
+        user: { email: mockUserEmail },
+      });
+    });
+
+    it("should handle database errors during data fetching", async () => {
+      const mockError = new Error("Database error");
+      (getUsageData as jest.Mock).mockRejectedValueOnce(mockError);
+
+      const result = await getUsageDataAction(
+        mockTimePeriod,
+        mockDateRange,
+        mockDeviceId,
+      );
+
+      expect(result).toEqual({
+        message: "Failed to fetch usage data",
+        error: "Database error",
+      });
+    });
+
+    it("should handle unknown errors during data fetching", async () => {
+      (getUsageData as jest.Mock).mockRejectedValueOnce("Unknown error");
+
+      const result = await getUsageDataAction(
+        mockTimePeriod,
+        mockDateRange,
+        mockDeviceId,
+      );
+
+      expect(result).toEqual({
+        message: "Failed to fetch usage data",
+        error: "Unknown error occurred",
       });
     });
   });

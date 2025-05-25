@@ -1,6 +1,18 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+/**
+ * Rounds up a number to 2 decimal places and returns it as a number
+ * @param value - The number to round up
+ * @returns The rounded up number with 2 decimal places
+ * @example roundUpTwoDecimals(10.1234) => 10.13
+ * @example roundUpTwoDecimals(10.126) => 10.13
+ * @example roundUpTwoDecimals(10.121) => 10.13
+ */
+export function roundUpTwoDecimals(value: number): number {
+  return Number((Math.ceil(value * 100) / 100).toFixed(2));
+}
+
 /* istanbul ignore next */
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
