@@ -5,6 +5,7 @@ import {
   startOfMonth,
   endOfMonth,
   format,
+  startOfDay,
 } from "date-fns";
 
 export type TimePeriod =
@@ -241,9 +242,9 @@ function getPeriodStart(
 ): Date {
   switch (timePeriod) {
     case "current month":
-      return startOfMonth(date) < startDate ? startDate : startOfMonth(date);
-    case "current week":
       return startOfWeek(date) < startDate ? startDate : startOfWeek(date);
+    case "current week":
+      return startOfDay(date) < startDate ? startDate : startOfDay(date);
     case "current billing period":
       return startOfMonth(date) < startDate ? startDate : startOfMonth(date);
     default:
