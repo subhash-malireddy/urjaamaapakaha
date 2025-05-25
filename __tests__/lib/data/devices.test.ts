@@ -11,11 +11,15 @@ import { DeepMockProxy } from "jest-mock-extended";
 import * as utils from "@/lib/utils";
 
 // Mock the utils module to mock the simulateApiCall function
-jest.mock("@/lib/utils", () => ({
-  simulateApiCall: jest.fn().mockResolvedValue({
-    usage: { today_energy: 42 },
-  }),
-}));
+jest.mock("@/lib/utils", () => {
+  const original = jest.requireActual("@/lib/utils");
+  return {
+    ...original,
+    simulateApiCall: jest.fn().mockResolvedValue({
+      usage: { today_energy: 42 },
+    }),
+  };
+});
 
 describe("Device data functions", () => {
   // Reset all mocks before each test
