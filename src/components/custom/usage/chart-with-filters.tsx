@@ -4,6 +4,7 @@ import FiltersForm from "./filters-form";
 import { useEffect, useState, useTransition } from "react";
 import { getUsageDataAction } from "@/lib/actions/usage-actions";
 import { getDateRangeForTimePeriod, type TimePeriod } from "@/lib/usage-utils";
+import { roundUpTwoDecimals } from "@/lib/utils";
 
 export default function ChartWithFilters({
   devices,
@@ -83,12 +84,11 @@ export default function ChartWithFilters({
             <h3>User vs Total Usage</h3>
             <p>
               {usageData.data?.userConsumption.reduce((acc, curr) => {
-                const result = acc + curr.consumption;
-                return result;
+                return roundUpTwoDecimals(acc + curr.consumption);
               }, 0)}
               &nbsp;vs&nbsp;
               {usageData.data?.totalConsumption.reduce(
-                (acc, curr) => acc + curr.consumption,
+                (acc, curr) => roundUpTwoDecimals(acc + curr.consumption),
                 0,
               )}
             </p>

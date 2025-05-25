@@ -7,6 +7,7 @@ import {
   format,
   startOfDay,
 } from "date-fns";
+import { roundUpTwoDecimals } from "./utils";
 
 export type TimePeriod =
   // | "previous week"
@@ -196,9 +197,7 @@ export function processUsageData(
   >();
 
   data.forEach(({ period, consumption, userEmail: dataUserEmail }) => {
-    const consumptionValue = Number(
-      (Math.ceil(consumption.toNumber() * 100) / 100).toFixed(2),
-    );
+    const consumptionValue = roundUpTwoDecimals(consumption.toNumber());
     const periodStart = getPeriodStart(period, timePeriod, startDate);
     const periodKey = periodStart.toISOString();
 
@@ -207,10 +206,8 @@ export function processUsageData(
       date: periodStart,
       consumption: 0,
     };
-    totalEntry.consumption = Number(
-      (
-        Math.ceil((totalEntry.consumption + consumptionValue) * 100) / 100
-      ).toFixed(2),
+    totalEntry.consumption = roundUpTwoDecimals(
+      totalEntry.consumption + consumptionValue,
     );
     totalConsumptionMap.set(periodKey, totalEntry);
 
@@ -220,10 +217,8 @@ export function processUsageData(
         date: periodStart,
         consumption: 0,
       };
-      userEntry.consumption = Number(
-        (
-          Math.ceil((userEntry.consumption + consumptionValue) * 100) / 100
-        ).toFixed(2),
+      userEntry.consumption = roundUpTwoDecimals(
+        userEntry.consumption + consumptionValue,
       );
       userConsumptionMap.set(periodKey, userEntry);
     }
