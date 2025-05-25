@@ -146,7 +146,7 @@ export function processUsageData(
 }
 
 // * Tested along with getUsageDataAction
-function getPeriodStart(
+export function getPeriodStart(
   date: Date,
   timePeriod: TimePeriod,
   startDate: Date,
