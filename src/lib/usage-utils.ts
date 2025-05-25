@@ -82,92 +82,6 @@ export const getDateRangeForTimePeriod = (timePeriod: TimePeriod) => {
   return dateRange;
 };
 
-interface WeeklyGroupedUsageData {
-  period: Date;
-  consumption: number;
-  userEmail: string;
-}
-
-/**
- * Groups daily usage data into weeks
- * @param data Array of daily usage data
- * @param startDate The start date of the period
- * @returns Array of weekly usage data
- */
-export function groupByWeek(
-  data: {
-    period: Date;
-    consumption: number;
-    userEmail: string;
-  }[],
-  startDate: Date,
-): WeeklyGroupedUsageData[] {
-  const grouped = data.reduce(
-    (acc, curr) => {
-      // Use the later date between week start and period start
-      const weekStart = startOfWeek(curr.period);
-      const periodStart = weekStart < startDate ? startDate : weekStart;
-      const key = `${periodStart.toISOString()}-${curr.userEmail}`;
-
-      if (!acc[key]) {
-        acc[key] = {
-          period: periodStart,
-          consumption: 0,
-          userEmail: curr.userEmail,
-        };
-      }
-      acc[key].consumption += curr.consumption;
-      return acc;
-    },
-    {} as Record<string, WeeklyGroupedUsageData>,
-  );
-
-  return Object.values(grouped);
-}
-
-interface MonthlyGroupedUsageData {
-  period: Date;
-  consumption: number;
-  userEmail: string;
-}
-
-/**
- * Groups daily usage data into months
- * @param data Array of daily usage data
- * @param startDate The start date of the period
- * @returns Array of monthly usage data
- */
-export function groupByMonth(
-  data: {
-    period: Date;
-    consumption: number;
-    userEmail: string;
-  }[],
-  startDate: Date,
-): MonthlyGroupedUsageData[] {
-  const grouped = data.reduce(
-    (acc, curr) => {
-      // Use the later date between month start and period start
-      const monthStart = startOfMonth(curr.period);
-      const periodStart = monthStart < startDate ? startDate : monthStart;
-      const key = `${periodStart.toISOString()}-${curr.userEmail}`;
-
-      if (!acc[key]) {
-        acc[key] = {
-          period: periodStart,
-          consumption: 0,
-          userEmail: curr.userEmail,
-        };
-      }
-      acc[key].consumption += curr.consumption;
-      return acc;
-    },
-    {} as Record<string, MonthlyGroupedUsageData>,
-  );
-
-  return Object.values(grouped);
-}
-
 interface ProcessedUsageData {
   userConsumption: { date: Date; consumption: number }[];
   totalConsumption: { date: Date; consumption: number }[];
@@ -181,6 +95,7 @@ interface ProcessedUsageData {
  * @param userEmail - The email of the user to process the data for
  * @returns The processed usage data
  */
+// * Tested along with getUsageDataAction
 export function processUsageData(
   data: { period: Date; consumption: Prisma.Decimal; userEmail: string }[],
   timePeriod: TimePeriod,
@@ -230,6 +145,7 @@ export function processUsageData(
   };
 }
 
+// * Tested along with getUsageDataAction
 function getPeriodStart(
   date: Date,
   timePeriod: TimePeriod,
