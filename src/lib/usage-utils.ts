@@ -1,10 +1,13 @@
+import { Prisma } from "@prisma/client";
 import {
   startOfWeek,
   endOfWeek,
   startOfMonth,
   endOfMonth,
   format,
+  startOfDay,
 } from "date-fns";
+import { roundUpTwoDecimals } from "./utils";
 
 export type TimePeriod =
   // | "previous week"
@@ -78,3 +81,84 @@ export const getDateRangeForTimePeriod = (timePeriod: TimePeriod) => {
   }
   return dateRange;
 };
+
+interface ProcessedUsageData {
+  userConsumption: { date: Date; consumption: number }[];
+  totalConsumption: { date: Date; consumption: number }[];
+}
+
+/**
+ * Further groups the usage data by user and total consumption by aggregating the consumption values by time period. Used in the getUsageDataAction function.
+ * @param data - The usage data to process
+ * @param timePeriod - The time period to process the data for
+ * @param startDate - The start date of the period
+ * @param userEmail - The email of the user to process the data for
+ * @returns The processed usage data
+ */
+// * Tested along with getUsageDataAction
+export function processUsageData(
+  data: { period: Date; consumption: Prisma.Decimal; userEmail: string }[],
+  timePeriod: TimePeriod,
+  startDate: Date,
+  userEmail: string,
+): ProcessedUsageData {
+  const userConsumptionMap = new Map<
+    string,
+    { date: Date; consumption: number }
+  >();
+  const totalConsumptionMap = new Map<
+    string,
+    { date: Date; consumption: number }
+  >();
+
+  data.forEach(({ period, consumption, userEmail: dataUserEmail }) => {
+    const consumptionValue = roundUpTwoDecimals(consumption.toNumber());
+    const periodStart = getPeriodStart(period, timePeriod, startDate);
+    const periodKey = periodStart.toISOString();
+
+    // Update total consumption
+    const totalEntry = totalConsumptionMap.get(periodKey) || {
+      date: periodStart,
+      consumption: 0,
+    };
+    totalEntry.consumption = roundUpTwoDecimals(
+      totalEntry.consumption + consumptionValue,
+    );
+    totalConsumptionMap.set(periodKey, totalEntry);
+
+    // Update user consumption if it matches the current user
+    if (dataUserEmail === userEmail) {
+      const userEntry = userConsumptionMap.get(periodKey) || {
+        date: periodStart,
+        consumption: 0,
+      };
+      userEntry.consumption = roundUpTwoDecimals(
+        userEntry.consumption + consumptionValue,
+      );
+      userConsumptionMap.set(periodKey, userEntry);
+    }
+  });
+
+  return {
+    userConsumption: Array.from(userConsumptionMap.values()),
+    totalConsumption: Array.from(totalConsumptionMap.values()),
+  };
+}
+
+// * Tested along with getUsageDataAction
+export function getPeriodStart(
+  date: Date,
+  timePeriod: TimePeriod,
+  startDate: Date,
+): Date {
+  switch (timePeriod) {
+    case "current month":
+      return startOfWeek(date) < startDate ? startDate : startOfWeek(date);
+    case "current week":
+      return startOfDay(date) < startDate ? startDate : startOfDay(date);
+    case "current billing period":
+      return startOfMonth(date) < startDate ? startDate : startOfMonth(date);
+    default:
+      return date;
+  }
+}

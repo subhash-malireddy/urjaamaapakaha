@@ -22,7 +22,9 @@ export default function TimePeriodSelector({
       name="timePeriod"
     >
       <SelectTrigger className="w-[150px] md:w-[200px]">
-        <SelectValue placeholder="Select time period" />
+        <SelectValue placeholder="Select time period">
+          {selectedValue}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent position="popper">
         <SelectGroup>
