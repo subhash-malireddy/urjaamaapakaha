@@ -109,6 +109,7 @@ jobs:
           vercel env rm URJ_FSFY_API_USER production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm URJ_FSFY_API_PWD production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm SHOULD_CALL_REAL_API production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm NEXT_PUBLIC_BILLING_START_DATE production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
 
           # Add environment variables using Vercel CLI without newlines
           printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
@@ -154,6 +155,10 @@ jobs:
           printf "%s" "${{ secrets.SHOULD_CALL_REAL_API }}" > should_call_real_api.txt
           vercel env add SHOULD_CALL_REAL_API production < should_call_real_api.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm should_call_real_api.txt
+
+          printf "%s" "${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}" > next_public_billing_start_date.txt
+          vercel env add NEXT_PUBLIC_BILLING_START_DATE production < next_public_billing_start_date.txt --token=${{ secrets.VERCEL_TOKEN }}
+          rm next_public_billing_start_date.txt
 
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
