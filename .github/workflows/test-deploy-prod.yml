@@ -67,6 +67,10 @@ jobs:
             ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-
             ${{ runner.os }}-jest-
 
+      # Generate Prisma client
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
       # Run tests with coverage
       - name: Run tests with coverage
         run: pnpm test:coverage

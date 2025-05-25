@@ -10,6 +10,7 @@ import {
   isWithinEightHours,
   isWithinEightHoursFromDate,
   parseDateTimeLocalInputClient,
+  roundUpTwoDecimals,
   // normalizeToMinute,
   sliceISOStringUptoMinute,
   toUTCMinutePrecision,
@@ -30,6 +31,18 @@ describe("date utils", () => {
   //     expect(normalized.getHours()).toBe(12);
   //   });
   // });
+
+  describe("roundUpTwoDecimals", () => {
+    it("should round up a number to 2 decimal places", () => {
+      const result = roundUpTwoDecimals(10.1234);
+      expect(result).toBe(10.13);
+    });
+
+    it("should round up a number to 2 decimal places", () => {
+      const result = roundUpTwoDecimals(10.0006);
+      expect(result).toBe(10.01);
+    });
+  });
 
   describe("toUTCMinutePrecision", () => {
     it("should correctly convert a local date to UTC timestamp with minute precision", () => {

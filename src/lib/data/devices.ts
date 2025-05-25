@@ -1,17 +1,23 @@
 import { db } from "@/lib/db";
-import { UsageResponse } from "@/lib/utils";
+import { roundUpTwoDecimals, UsageResponse } from "@/lib/utils";
 import type { device, usage } from "@prisma/client";
+import { deviceSelectListResponseSchema } from "../zod/usage";
 
-/* istanbul ignore next */
-async function getAllDevices() {
-  return db.device.findMany({
+export async function getAllDevicesOnlyIdAndAlias() {
+  const devices = await db.device.findMany({
     where: {
       is_archived: false,
     },
     orderBy: {
       alias: "asc",
     },
+    select: {
+      id: true,
+      alias: true,
+    },
   });
+
+  return deviceSelectListResponseSchema.parse(devices);
 }
 
 /* istanbul ignore next */
@@ -251,11 +257,20 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
     return await db.$transaction(async (tx) => {
       // Calculate final consumption (current - initial)
       const finalConsumption = shouldCallRealApi
-        ? Number(apiResponse.usage.today_energy) -
-          Number(activeDevice.usage.consumption)
-        : Math.abs(
+        ? roundUpTwoDecimals(
             Number(apiResponse.usage.today_energy) -
               Number(activeDevice.usage.consumption),
+          )
+        : Number(
+            (
+              Math.ceil(
+                Math.abs(
+                  // Math.abs is used to ensure the result is positive
+                  Number(apiResponse.usage.today_energy) -
+                    Number(activeDevice.usage.consumption),
+                ) * 100,
+              ) / 100
+            ).toFixed(2),
           );
 
       // Update usage record with end time and final consumption
@@ -286,9 +301,4 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
 }
 
 //using this sytax for making istanbul ignore next work.
-export {
-  getAllDevices,
-  getDeviceById,
-  getDeviceUsage,
-  getDevicesWithActiveStatus,
-};
+export { getDeviceById, getDeviceUsage, getDevicesWithActiveStatus };

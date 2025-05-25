@@ -28,14 +28,9 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
-    <html
-      lang="en"
-      style={{ scrollbarGutter: "stable both-edges" }}
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} grid min-h-[100svh] grid-cols-1 grid-rows-[auto_1fr] antialiased`}
-        style={{ scrollbarGutter: "stable both-edges" }}
+        className={`${geistSans.variable} ${geistMono.variable} mr-3.5 ml-3.5 grid min-h-[100svh] grid-cols-1 grid-rows-[auto_1fr] antialiased`}
       >
         <ThemeProvider
           attribute="class"
