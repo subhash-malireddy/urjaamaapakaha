@@ -117,6 +117,15 @@ jobs:
         run: |
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Print Billing Start Date and env file
+        run: |
+          echo "Billing Start Date: ${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}"
+          if find . -name "*env*" -type f -print -quit | grep -q .; then
+            find . -name "*env*" -type f -exec echo "=== {} ===" \; -exec cat {} \;
+          else
+            echo "No env files found"
+          fi
+
           # Remove existing environment variables first
           vercel env rm GOOGLE_CLIENT_ID preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
           vercel env rm GOOGLE_CLIENT_SECRET preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
@@ -185,11 +194,6 @@ jobs:
           vercel env add NEXT_PUBLIC_BILLING_START_DATE preview < next_public_billing_start_date.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm next_public_billing_start_date.txt
 
-      - name: Print Billing Start Date and env file
-        run: |
-          echo "Billing Start Date: ${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}"
-          cat .vercel/.env
-
       - name: Pull Vercel Environment Information
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -198,7 +202,11 @@ jobs:
       - name: Print Billing Start Date and env file 2
         run: |
           echo "Billing Start Date: ${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}"
-          cat .vercel/.env
+          if find . -name "*env*" -type f -print -quit | grep -q .; then
+            find . -name "*env*" -type f -exec echo "=== {} ===" \; -exec cat {} \;
+          else
+            echo "No env files found"
+          fi
 
       - name: Build Project Artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
