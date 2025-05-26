@@ -112,7 +112,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: pnpm install --global vercel@latest
 
-      - name: Pull Vercel Environment Information
+      - name: Pull and refresh Vercel Environment Information
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
@@ -184,6 +184,11 @@ jobs:
           printf "%s" "${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}" > next_public_billing_start_date.txt
           vercel env add NEXT_PUBLIC_BILLING_START_DATE preview < next_public_billing_start_date.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm next_public_billing_start_date.txt
+
+      - name: Pull Latest Vercel Environment Information
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

@@ -93,7 +93,7 @@ jobs:
       - name: Install Vercel CLI
         run: pnpm install --global vercel@latest
 
-      - name: Pull Vercel Environment Information
+      - name: Pull and refresh Vercel Environment Information
         run: |
           vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
@@ -159,6 +159,10 @@ jobs:
           printf "%s" "${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}" > next_public_billing_start_date.txt
           vercel env add NEXT_PUBLIC_BILLING_START_DATE production < next_public_billing_start_date.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm next_public_billing_start_date.txt
+
+      - name: Pull Latest Vercel Environment Information
+        run: |
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
