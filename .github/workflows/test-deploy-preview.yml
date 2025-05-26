@@ -117,13 +117,12 @@ jobs:
         run: |
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Print Billing Start Date and env file
+      - name: Print env file
         run: |
-          echo "Billing Start Date: ${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}"
-          if find . -name "*env*" -type f -print -quit | grep -q .; then
-            find . -name "*env*" -type f -exec echo "=== {} ===" \; -exec cat {} \;
+          if find .vercel -name "*env*" -type f -print -quit 2>/dev/null | grep -q .; then
+            find .vercel -name "*env*" -type f -exec echo "=== {} ===" \; -exec cat {} \;
           else
-            echo "No env files found"
+            echo "No env files found in .vercel folder"
           fi
 
           # Remove existing environment variables first
@@ -194,18 +193,17 @@ jobs:
           vercel env add NEXT_PUBLIC_BILLING_START_DATE preview < next_public_billing_start_date.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm next_public_billing_start_date.txt
 
-      - name: Pull Vercel Environment Information
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      # - name: Pull Vercel Environment Information
+      #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      #   run: |
+      #     vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Print Billing Start Date and env file 2
+      - name: Print env file 2
         run: |
-          echo "Billing Start Date: ${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}"
-          if find . -name "*env*" -type f -print -quit | grep -q .; then
-            find . -name "*env*" -type f -exec echo "=== {} ===" \; -exec cat {} \;
+          if find .vercel -name "*env*" -type f -print -quit 2>/dev/null | grep -q .; then
+            find .vercel -name "*env*" -type f -exec echo "=== {} ===" \; -exec cat {} \;
           else
-            echo "No env files found"
+            echo "No env files found in .vercel folder"
           fi
 
       - name: Build Project Artifacts
