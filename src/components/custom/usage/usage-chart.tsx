@@ -45,6 +45,8 @@ interface UsageChartProps {
   data: UsageData;
   timePeriod: string;
   isLoading?: boolean;
+  totalUserConsumption: number;
+  totalOverallConsumption: number;
 }
 
 type ChartType = "line" | "bar" | "area";
@@ -64,55 +66,14 @@ export default function UsageChart({
   data,
   timePeriod,
   isLoading,
+  totalUserConsumption,
+  totalOverallConsumption,
 }: UsageChartProps) {
   const [chartType, setChartType] = useState<ChartType>("bar");
 
   // Transform and merge data for chart consumption
-  const chartData = React.useMemo(() => {
-    const dateMap = new Map<
-      string,
-      { date: string; userConsumption: number; totalConsumption: number }
-    >();
+  const chartData = React.useMemo(buildChartData(), [data]);
 
-    // Add user consumption data
-    data.userConsumption.forEach(({ date, consumption }) => {
-      const dateKey = format(date, "yyyy-MM-dd");
-      const existingEntry = dateMap.get(dateKey) || {
-        date: format(date, "MMM dd"),
-        userConsumption: 0,
-        totalConsumption: 0,
-      };
-      existingEntry.userConsumption = consumption;
-      dateMap.set(dateKey, existingEntry);
-    });
-
-    // Add total consumption data
-    data.totalConsumption.forEach(({ date, consumption }) => {
-      const dateKey = format(date, "yyyy-MM-dd");
-      const existingEntry = dateMap.get(dateKey) || {
-        date: format(date, "MMM dd"),
-        userConsumption: 0,
-        totalConsumption: 0,
-      };
-      existingEntry.totalConsumption = consumption;
-      dateMap.set(dateKey, existingEntry);
-    });
-
-    // Convert map to array and sort by date
-    return Array.from(dateMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([, value]) => value);
-  }, [data]);
-
-  // Calculate totals for summary
-  const totalUserConsumption = data.userConsumption.reduce(
-    (sum, item) => sum + item.consumption,
-    0,
-  );
-  const totalOverallConsumption = data.totalConsumption.reduce(
-    (sum, item) => sum + item.consumption,
-    0,
-  );
   const userPercentage =
     totalOverallConsumption > 0
       ? (totalUserConsumption / totalOverallConsumption) * 100
@@ -340,4 +301,46 @@ export default function UsageChart({
       </CardContent>
     </Card>
   );
+
+  function buildChartData(): () => {
+    date: string;
+    userConsumption: number;
+    totalConsumption: number;
+  }[] {
+    return () => {
+      const dateMap = new Map<
+        string,
+        { date: string; userConsumption: number; totalConsumption: number }
+      >();
+
+      // Add user consumption data
+      data.userConsumption.forEach(({ date, consumption }) => {
+        const dateKey = format(date, "yyyy-MM-dd");
+        const existingEntry = dateMap.get(dateKey) || {
+          date: format(date, "MMM dd"),
+          userConsumption: 0,
+          totalConsumption: 0,
+        };
+        existingEntry.userConsumption = consumption;
+        dateMap.set(dateKey, existingEntry);
+      });
+
+      // Add total consumption data
+      data.totalConsumption.forEach(({ date, consumption }) => {
+        const dateKey = format(date, "yyyy-MM-dd");
+        const existingEntry = dateMap.get(dateKey) || {
+          date: format(date, "MMM dd"),
+          userConsumption: 0,
+          totalConsumption: 0,
+        };
+        existingEntry.totalConsumption = consumption;
+        dateMap.set(dateKey, existingEntry);
+      });
+
+      // Convert map to array and sort by date
+      return Array.from(dateMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([, value]) => value);
+    };
+  }
 }

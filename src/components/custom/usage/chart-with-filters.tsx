@@ -107,6 +107,8 @@ export default function ChartWithFilters({
             data={usageData.data}
             timePeriod={selectedTimePeriod}
             isLoading={isPending}
+            totalUserConsumption={totalUserConsumption}
+            totalOverallConsumption={totalOverallConsumption}
           />
         )}
 
