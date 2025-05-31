@@ -65,7 +65,7 @@ export default function UsageChart({
   timePeriod,
   isLoading,
 }: UsageChartProps) {
-  const [chartType, setChartType] = useState<ChartType>("line");
+  const [chartType, setChartType] = useState<ChartType>("bar");
 
   // Transform and merge data for chart consumption
   const chartData = React.useMemo(() => {
