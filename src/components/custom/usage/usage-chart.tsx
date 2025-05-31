@@ -62,6 +62,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+// Container
 export default function UsageChart({
   data,
   timePeriod,
@@ -79,7 +80,165 @@ export default function UsageChart({
       ? (totalUserConsumption / totalOverallConsumption) * 100
       : 0;
 
-  const renderChart = () => {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Power Consumption Chart</CardTitle>
+          <CardDescription>Loading chart data...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex h-[350px] items-center justify-center">
+            <div className="text-muted-foreground text-sm">Loading...</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!chartData.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Power Consumption Chart</CardTitle>
+          <CardDescription>
+            No data available for the selected period
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex h-[350px] items-center justify-center">
+            <div className="text-muted-foreground text-sm">
+              No data to display
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+        <div className="grid flex-1 gap-1 text-center sm:text-left">
+          <CardTitle>Power Consumption Overview</CardTitle>
+          <CardDescription>
+            Showing consumption data for {timePeriod.toLowerCase()}
+          </CardDescription>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={chartType === "line" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setChartType("line")}
+          >
+            <LineChartIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={chartType === "bar" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setChartType("bar")}
+          >
+            <BarChart3 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={chartType === "area" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setChartType("area")}
+          >
+            <Activity className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+        {/* <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[350px] w-full"
+        >
+          {renderChart()}
+        </ChartContainer> */}
+        <TheChart chartData={chartData} chartType={chartType} />
+        <div className="flex w-full items-start gap-2 text-sm">
+          <div className="grid gap-2">
+            <div className="flex items-center gap-2 leading-none font-medium">
+              <TrendingUp className="h-4 w-4" />
+              Your usage represents {userPercentage.toFixed(1)}% of total
+              consumption
+            </div>
+            <div className="text-muted-foreground flex items-center gap-2 leading-none">
+              {totalUserConsumption.toFixed(2)} kWh of{" "}
+              {totalOverallConsumption.toFixed(2)} kWh total
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  function buildChartData(): () => {
+    date: string;
+    userConsumption: number;
+    totalConsumption: number;
+  }[] {
+    return () => {
+      const dateMap = new Map<
+        string,
+        { date: string; userConsumption: number; totalConsumption: number }
+      >();
+
+      // Add user consumption data
+      data.userConsumption.forEach(({ date, consumption }) => {
+        const dateKey = format(date, "yyyy-MM-dd");
+        const existingEntry = dateMap.get(dateKey) || {
+          date: format(date, "MMM dd"),
+          userConsumption: 0,
+          totalConsumption: 0,
+        };
+        existingEntry.userConsumption = consumption;
+        dateMap.set(dateKey, existingEntry);
+      });
+
+      // Add total consumption data
+      data.totalConsumption.forEach(({ date, consumption }) => {
+        const dateKey = format(date, "yyyy-MM-dd");
+        const existingEntry = dateMap.get(dateKey) || {
+          date: format(date, "MMM dd"),
+          userConsumption: 0,
+          totalConsumption: 0,
+        };
+        existingEntry.totalConsumption = consumption;
+        dateMap.set(dateKey, existingEntry);
+      });
+
+      // Convert map to array and sort by date
+      return Array.from(dateMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([, value]) => value);
+    };
+  }
+}
+
+// Presentation
+function TheChart({
+  chartData,
+  chartType,
+}: {
+  chartData: {
+    date: string;
+    userConsumption: number;
+    totalConsumption: number;
+  }[];
+  chartType: ChartType;
+}) {
+  return (
+    <ChartContainer
+      config={chartConfig}
+      className="aspect-auto h-[350px] w-full"
+    >
+      {renderChart()}
+    </ChartContainer>
+  );
+
+  function renderChart() {
     const commonProps = {
       data: chartData,
       margin: {
@@ -207,140 +366,5 @@ export default function UsageChart({
           </LineChart>
         );
     }
-  };
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Power Consumption Chart</CardTitle>
-          <CardDescription>Loading chart data...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-[350px] items-center justify-center">
-            <div className="text-muted-foreground text-sm">Loading...</div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!chartData.length) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Power Consumption Chart</CardTitle>
-          <CardDescription>
-            No data available for the selected period
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-[350px] items-center justify-center">
-            <div className="text-muted-foreground text-sm">
-              No data to display
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-        <div className="grid flex-1 gap-1 text-center sm:text-left">
-          <CardTitle>Power Consumption Overview</CardTitle>
-          <CardDescription>
-            Showing consumption data for {timePeriod.toLowerCase()}
-          </CardDescription>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant={chartType === "line" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setChartType("line")}
-          >
-            <LineChartIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={chartType === "bar" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setChartType("bar")}
-          >
-            <BarChart3 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={chartType === "area" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setChartType("area")}
-          >
-            <Activity className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-[350px] w-full"
-        >
-          {renderChart()}
-        </ChartContainer>
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 leading-none font-medium">
-              <TrendingUp className="h-4 w-4" />
-              Your usage represents {userPercentage.toFixed(1)}% of total
-              consumption
-            </div>
-            <div className="text-muted-foreground flex items-center gap-2 leading-none">
-              {totalUserConsumption.toFixed(2)} kWh of{" "}
-              {totalOverallConsumption.toFixed(2)} kWh total
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  function buildChartData(): () => {
-    date: string;
-    userConsumption: number;
-    totalConsumption: number;
-  }[] {
-    return () => {
-      const dateMap = new Map<
-        string,
-        { date: string; userConsumption: number; totalConsumption: number }
-      >();
-
-      // Add user consumption data
-      data.userConsumption.forEach(({ date, consumption }) => {
-        const dateKey = format(date, "yyyy-MM-dd");
-        const existingEntry = dateMap.get(dateKey) || {
-          date: format(date, "MMM dd"),
-          userConsumption: 0,
-          totalConsumption: 0,
-        };
-        existingEntry.userConsumption = consumption;
-        dateMap.set(dateKey, existingEntry);
-      });
-
-      // Add total consumption data
-      data.totalConsumption.forEach(({ date, consumption }) => {
-        const dateKey = format(date, "yyyy-MM-dd");
-        const existingEntry = dateMap.get(dateKey) || {
-          date: format(date, "MMM dd"),
-          userConsumption: 0,
-          totalConsumption: 0,
-        };
-        existingEntry.totalConsumption = consumption;
-        dateMap.set(dateKey, existingEntry);
-      });
-
-      // Convert map to array and sort by date
-      return Array.from(dateMap.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([, value]) => value);
-    };
   }
 }
