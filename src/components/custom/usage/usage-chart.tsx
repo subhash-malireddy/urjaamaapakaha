@@ -144,6 +144,7 @@ export default function UsageChart({
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => `${value} kWh`}
+              domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.1)]}
             />
             <ChartTooltip
               cursor={false}
@@ -170,6 +171,7 @@ export default function UsageChart({
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => `${value} kWh`}
+              domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.1)]}
             />
             <ChartTooltip
               cursor={false}
@@ -210,6 +212,7 @@ export default function UsageChart({
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => `${value} kWh`}
+              domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.1)]}
             />
             <ChartTooltip
               cursor={false}
