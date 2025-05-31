@@ -112,7 +112,8 @@ export function processUsageData(
   >();
 
   data.forEach(({ period, consumption, userEmail: dataUserEmail }) => {
-    const consumptionValue = roundUpTwoDecimals(consumption.toNumber());
+    const consumptionValue = consumption.toNumber();
+    const consumptionValueInKWh = roundUpTwoDecimals(consumptionValue / 1000);
     const periodStart = getPeriodStart(period, timePeriod, startDate);
     const periodKey = periodStart.toISOString();
 
@@ -121,9 +122,7 @@ export function processUsageData(
       date: periodStart,
       consumption: 0,
     };
-    totalEntry.consumption = roundUpTwoDecimals(
-      totalEntry.consumption + consumptionValue,
-    );
+    totalEntry.consumption = totalEntry.consumption + consumptionValueInKWh;
     totalConsumptionMap.set(periodKey, totalEntry);
 
     // Update user consumption if it matches the current user
@@ -132,9 +131,7 @@ export function processUsageData(
         date: periodStart,
         consumption: 0,
       };
-      userEntry.consumption = roundUpTwoDecimals(
-        userEntry.consumption + consumptionValue,
-      );
+      userEntry.consumption = userEntry.consumption + consumptionValueInKWh;
       userConsumptionMap.set(periodKey, userEntry);
     }
   });
