@@ -101,6 +101,7 @@ export default function ChartWithFilters({
           timePeriod={selectedTimePeriod}
           isLoading={isPending}
           isDataAvailable={!!usageData?.data}
+          selectedDeviceAlias={selectedDeviceAlias}
         />
 
         {/* Chart Component */}

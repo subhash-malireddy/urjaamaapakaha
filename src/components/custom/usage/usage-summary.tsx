@@ -7,6 +7,7 @@ interface UsageSummaryProps {
   timePeriod: string;
   isLoading?: boolean;
   isDataAvailable?: boolean;
+  selectedDeviceAlias: string;
 }
 
 export default function UsageSummary({
@@ -15,6 +16,7 @@ export default function UsageSummary({
   timePeriod,
   isLoading = false,
   isDataAvailable = false,
+  selectedDeviceAlias,
 }: UsageSummaryProps) {
   const userPercentage =
     totalConsumption > 0 ? (userConsumption / totalConsumption) * 100 : 0;
@@ -66,7 +68,11 @@ export default function UsageSummary({
               {totalConsumption.toFixed(2)} kWh
             </div>
           )}
-          <p className="text-muted-foreground text-xs">All devices combined</p>
+          <p className="text-muted-foreground text-xs">
+            {selectedDeviceAlias === "All"
+              ? "All devices combined"
+              : `For ${selectedDeviceAlias}`}
+          </p>
         </CardContent>
       </Card>
 
