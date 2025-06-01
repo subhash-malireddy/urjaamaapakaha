@@ -297,7 +297,6 @@ function TheChart({
               fill="var(--chart-1)"
               fillOpacity={0.4}
               stroke="var(--chart-1)"
-              stackId="a"
             />
             <Area
               dataKey="totalConsumption"
@@ -305,7 +304,6 @@ function TheChart({
               fill="var(--chart-2)"
               fillOpacity={0.4}
               stroke="var(--chart-2)"
-              stackId="a"
             />
           </AreaChart>
         );
