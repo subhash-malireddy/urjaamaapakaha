@@ -8,6 +8,7 @@ interface UsageSummaryProps {
   isLoading?: boolean;
   isDataAvailable?: boolean;
   selectedDeviceAlias: string;
+  isMember?: boolean;
 }
 
 export default function UsageSummary({
@@ -17,6 +18,7 @@ export default function UsageSummary({
   isLoading = false,
   isDataAvailable = false,
   selectedDeviceAlias,
+  isMember,
 }: UsageSummaryProps) {
   const userPercentage =
     totalConsumption > 0 ? (userConsumption / totalConsumption) * 100 : 0;
@@ -40,13 +42,15 @@ export default function UsageSummary({
           <Zap className="text-muted-foreground h-4 w-4" />
         </CardHeader>
         <CardContent>
-          {showLoading ? (
-            <div className="bg-muted h-8 w-24 animate-pulse rounded"></div>
-          ) : (
-            <div className="text-2xl font-bold">
-              {userConsumption.toFixed(2)} kWh
-            </div>
-          )}
+          <MemberVsNonMemberContent isMember={isMember}>
+            {showLoading ? (
+              <div className="bg-muted h-8 w-24 animate-pulse rounded"></div>
+            ) : (
+              <div className="text-2xl font-bold">
+                {userConsumption.toFixed(2)} kWh
+              </div>
+            )}
+          </MemberVsNonMemberContent>
           <p className="text-muted-foreground text-xs">
             For {timePeriod.toLowerCase()}
           </p>
@@ -82,33 +86,56 @@ export default function UsageSummary({
           <TrendingUp className="text-muted-foreground h-4 w-4" />
         </CardHeader>
         <CardContent>
-          {showLoading ? (
-            <div className="bg-muted h-8 w-16 animate-pulse rounded"></div>
-          ) : (
-            <div className="text-2xl font-bold">
-              {userPercentage.toFixed(1)}%
-            </div>
-          )}
-          <p className="text-muted-foreground text-xs">
-            Usage efficiency:{" "}
+          <MemberVsNonMemberContent isMember={isMember}>
             {showLoading ? (
-              <span className="bg-muted inline-block h-3 w-16 animate-pulse rounded"></span>
+              <div className="bg-muted h-8 w-16 animate-pulse rounded"></div>
             ) : (
-              <span
-                className={`font-medium ${
-                  efficiency === "excellent"
-                    ? "text-green-600"
-                    : efficiency === "good"
-                      ? "text-yellow-600"
-                      : "text-red-600"
-                }`}
-              >
-                {efficiency}
-              </span>
+              <div className="text-2xl font-bold">
+                {userPercentage.toFixed(1)}%
+              </div>
             )}
-          </p>
+            <p className="text-muted-foreground text-xs">
+              Usage efficiency:{" "}
+              {showLoading ? (
+                <span className="bg-muted inline-block h-3 w-16 animate-pulse rounded"></span>
+              ) : (
+                <span
+                  className={`font-medium ${
+                    efficiency === "excellent"
+                      ? "text-green-600"
+                      : efficiency === "good"
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                  }`}
+                >
+                  {efficiency}
+                </span>
+              )}
+            </p>
+          </MemberVsNonMemberContent>
         </CardContent>
       </Card>
     </div>
   );
+}
+
+function NonMemberContent() {
+  return (
+    <div className="text-muted-foreground text-md italic">
+      Member stats will be displayed here
+    </div>
+  );
+}
+
+function MemberVsNonMemberContent({
+  isMember,
+  children,
+}: {
+  isMember?: boolean;
+  children: React.ReactNode;
+}) {
+  if (!isMember) {
+    return <NonMemberContent />;
+  }
+  return <>{children}</>;
 }
