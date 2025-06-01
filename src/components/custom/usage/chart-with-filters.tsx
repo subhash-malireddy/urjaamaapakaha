@@ -14,10 +14,12 @@ export default function ChartWithFilters({
 }) {
   const [usageData, setUsageData] =
     useState<Awaited<ReturnType<typeof getUsageDataAction>>>();
-  console.log("📜usageData:: ", usageData);
+
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+
   const [selectedTimePeriod, setSelectedTimePeriod] =
     useState<TimePeriod>("current week");
+
   const [isPending, startTransition] = useTransition();
 
   const handleDeviceSelect = (deviceId: string) => {
@@ -93,13 +95,13 @@ export default function ChartWithFilters({
         </p>
 
         {/* Summary Cards */}
-        {usageData?.data && !isPending && (
-          <UsageSummary
-            userConsumption={totalUserConsumption}
-            totalConsumption={totalOverallConsumption}
-            timePeriod={selectedTimePeriod}
-          />
-        )}
+        <UsageSummary
+          userConsumption={totalUserConsumption}
+          totalConsumption={totalOverallConsumption}
+          timePeriod={selectedTimePeriod}
+          isLoading={isPending}
+          isDataAvailable={!!usageData?.data}
+        />
 
         {/* Chart Component */}
         {usageData?.data && (

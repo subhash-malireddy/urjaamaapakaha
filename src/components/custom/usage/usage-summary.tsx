@@ -5,12 +5,16 @@ interface UsageSummaryProps {
   userConsumption: number;
   totalConsumption: number;
   timePeriod: string;
+  isLoading?: boolean;
+  isDataAvailable?: boolean;
 }
 
 export default function UsageSummary({
   userConsumption,
   totalConsumption,
   timePeriod,
+  isLoading = false,
+  isDataAvailable = false,
 }: UsageSummaryProps) {
   const userPercentage =
     totalConsumption > 0 ? (userConsumption / totalConsumption) * 100 : 0;
@@ -20,6 +24,9 @@ export default function UsageSummary({
       : userPercentage <= 75
         ? "good"
         : "needs attention";
+
+  //show loading state if isLoading is true or isDataAvailable is false
+  const showLoading = isLoading || !isDataAvailable;
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -31,9 +38,13 @@ export default function UsageSummary({
           <Zap className="text-muted-foreground h-4 w-4" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {userConsumption.toFixed(2)} kWh
-          </div>
+          {showLoading ? (
+            <div className="bg-muted h-8 w-24 animate-pulse rounded"></div>
+          ) : (
+            <div className="text-2xl font-bold">
+              {userConsumption.toFixed(2)} kWh
+            </div>
+          )}
           <p className="text-muted-foreground text-xs">
             For {timePeriod.toLowerCase()}
           </p>
@@ -48,9 +59,13 @@ export default function UsageSummary({
           <BarChart3 className="text-muted-foreground h-4 w-4" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {totalConsumption.toFixed(2)} kWh
-          </div>
+          {showLoading ? (
+            <div className="bg-muted h-8 w-24 animate-pulse rounded"></div>
+          ) : (
+            <div className="text-2xl font-bold">
+              {totalConsumption.toFixed(2)} kWh
+            </div>
+          )}
           <p className="text-muted-foreground text-xs">All devices combined</p>
         </CardContent>
       </Card>
@@ -61,20 +76,30 @@ export default function UsageSummary({
           <TrendingUp className="text-muted-foreground h-4 w-4" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{userPercentage.toFixed(1)}%</div>
+          {showLoading ? (
+            <div className="bg-muted h-8 w-16 animate-pulse rounded"></div>
+          ) : (
+            <div className="text-2xl font-bold">
+              {userPercentage.toFixed(1)}%
+            </div>
+          )}
           <p className="text-muted-foreground text-xs">
             Usage efficiency:{" "}
-            <span
-              className={`font-medium ${
-                efficiency === "excellent"
-                  ? "text-green-600"
-                  : efficiency === "good"
-                    ? "text-yellow-600"
-                    : "text-red-600"
-              }`}
-            >
-              {efficiency}
-            </span>
+            {showLoading ? (
+              <span className="bg-muted inline-block h-3 w-16 animate-pulse rounded"></span>
+            ) : (
+              <span
+                className={`font-medium ${
+                  efficiency === "excellent"
+                    ? "text-green-600"
+                    : efficiency === "good"
+                      ? "text-yellow-600"
+                      : "text-red-600"
+                }`}
+              >
+                {efficiency}
+              </span>
+            )}
           </p>
         </CardContent>
       </Card>
