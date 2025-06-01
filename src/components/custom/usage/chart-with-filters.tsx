@@ -14,8 +14,10 @@ export default function ChartWithFilters({
   devices: DeviceSelectionList;
   isMember?: boolean;
 }) {
-  const [usageData, setUsageData] =
-    useState<Awaited<ReturnType<typeof getUsageDataAction>>>();
+  //* usageData is null during the initial render
+  const [usageData, setUsageData] = useState<Awaited<
+    ReturnType<typeof getUsageDataAction>
+  > | null>(null);
 
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
@@ -101,22 +103,22 @@ export default function ChartWithFilters({
           userConsumption={totalUserConsumption}
           totalConsumption={totalOverallConsumption}
           timePeriod={selectedTimePeriod}
-          isLoading={isPending}
-          isDataAvailable={!!usageData?.data}
+          isFetchingData={isPending}
+          isDataAvailable={usageData !== null}
           selectedDeviceAlias={selectedDeviceAlias}
           isMember={isMember}
         />
 
         {/* Chart Component */}
-        {usageData?.data && (
-          <UsageChart
-            data={usageData.data}
-            timePeriod={selectedTimePeriod}
-            isLoading={isPending}
-            totalUserConsumption={totalUserConsumption}
-            totalOverallConsumption={totalOverallConsumption}
-          />
-        )}
+
+        <UsageChart
+          isDataAvailable={usageData !== null}
+          data={usageData?.data}
+          timePeriod={selectedTimePeriod}
+          isFetchingData={isPending}
+          totalUserConsumption={totalUserConsumption}
+          totalOverallConsumption={totalOverallConsumption}
+        />
 
         {/* Text-based data display for fallback/debugging */}
         {usageData && (
@@ -156,14 +158,6 @@ export default function ChartWithFilters({
               </div>
             </div>
           </details>
-        )}
-
-        {isPending && !usageData && (
-          <div className="flex h-[350px] items-center justify-center">
-            <div className="text-muted-foreground text-sm">
-              Loading chart data...
-            </div>
-          </div>
         )}
       </div>
     </div>

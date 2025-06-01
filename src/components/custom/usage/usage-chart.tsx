@@ -42,11 +42,12 @@ interface UsageData {
 }
 
 interface UsageChartProps {
-  data: UsageData;
+  data: UsageData | undefined;
   timePeriod: string;
-  isLoading?: boolean;
+  isFetchingData?: boolean;
   totalUserConsumption: number;
   totalOverallConsumption: number;
+  isDataAvailable: boolean;
 }
 
 type ChartType = "line" | "bar" | "area";
@@ -66,9 +67,10 @@ const chartConfig = {
 export default function UsageChart({
   data,
   timePeriod,
-  isLoading,
+  isFetchingData,
   totalUserConsumption,
   totalOverallConsumption,
+  isDataAvailable,
 }: UsageChartProps) {
   const [chartType, setChartType] = useState<ChartType>("bar");
 
@@ -79,57 +81,24 @@ export default function UsageChart({
     totalOverallConsumption > 0
       ? (totalUserConsumption / totalOverallConsumption) * 100
       : 0;
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Power Consumption Chart</CardTitle>
-          <CardDescription>Loading chart data...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-[350px] items-center justify-center">
-            <div className="text-muted-foreground text-sm">Loading...</div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!chartData.length) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Power Consumption Chart</CardTitle>
-          <CardDescription>
-            No data available for the selected period
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-[350px] items-center justify-center">
-            <div className="text-muted-foreground text-sm">
-              No data to display
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
+  const showLoading = isFetchingData || !isDataAvailable;
   return (
     <Card>
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+        {/* title and description */}
         <div className="grid flex-1 gap-1 text-center sm:text-left">
           <CardTitle>Power Consumption Overview</CardTitle>
           <CardDescription>
             Showing consumption data for {timePeriod.toLowerCase()}
           </CardDescription>
         </div>
+        {/* chart type selector */}
         <div className="flex gap-2">
           <Button
             variant={chartType === "line" ? "default" : "outline"}
             size="sm"
             onClick={() => setChartType("line")}
+            disabled={showLoading}
           >
             <LineChartIcon className="h-4 w-4" />
           </Button>
@@ -137,6 +106,7 @@ export default function UsageChart({
             variant={chartType === "bar" ? "default" : "outline"}
             size="sm"
             onClick={() => setChartType("bar")}
+            disabled={showLoading}
           >
             <BarChart3 className="h-4 w-4" />
           </Button>
@@ -144,30 +114,56 @@ export default function UsageChart({
             variant={chartType === "area" ? "default" : "outline"}
             size="sm"
             onClick={() => setChartType("area")}
+            disabled={showLoading}
           >
             <Activity className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        {/* <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-[350px] w-full"
-        >
-          {renderChart()}
-        </ChartContainer> */}
-        <TheChart chartData={chartData} chartType={chartType} />
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 leading-none font-medium">
-              <TrendingUp className="h-4 w-4" />
-              Your usage represents {userPercentage.toFixed(1)}% of total
-              consumption
+        {/* chart */}
+        {showLoading ? (
+          <div className="flex h-[350px] items-center justify-center">
+            <div className="text-muted-foreground text-sm">
+              Loading chart...
             </div>
-            <div className="text-muted-foreground flex items-center gap-2 leading-none">
-              {totalUserConsumption.toFixed(2)} kWh of{" "}
-              {totalOverallConsumption.toFixed(2)} kWh total
+          </div>
+        ) : !chartData.length ? (
+          <div className="flex h-[350px] items-center justify-center">
+            <div className="text-muted-foreground text-sm">
+              No data to display
             </div>
+          </div>
+        ) : (
+          <TheChart chartData={chartData} chartType={chartType} />
+        )}
+
+        {/* chart footer: user percentage and total consumption */}
+        <div className="flex w-full flex-col items-center justify-center gap-2 pt-4 text-sm">
+          <div className="flex items-center justify-center gap-2 leading-none font-medium">
+            <TrendingUp className="h-4 w-4" />
+            Your usage represents{" "}
+            {showLoading ? (
+              <span className="bg-muted inline-block h-4 w-8 animate-pulse rounded"></span>
+            ) : (
+              userPercentage.toFixed(1)
+            )}
+            % of total consumption
+          </div>
+          <div className="text-muted-foreground flex items-center justify-center gap-2 leading-none">
+            {showLoading ? (
+              <>
+                <span className="bg-muted inline-block h-3 w-12 animate-pulse rounded"></span>
+                {" kWh of "}
+                <span className="bg-muted inline-block h-3 w-12 animate-pulse rounded"></span>
+                {" kWh total"}
+              </>
+            ) : (
+              <>
+                {totalUserConsumption.toFixed(2)} kWh of{" "}
+                {totalOverallConsumption.toFixed(2)} kWh total
+              </>
+            )}
           </div>
         </div>
       </CardContent>
@@ -175,6 +171,9 @@ export default function UsageChart({
   );
 
   function buildChartData(): ChartDataItem[] {
+    if (!data) {
+      return [];
+    }
     const dateMap = new Map<string, ChartDataItem>();
 
     // Add user consumption data

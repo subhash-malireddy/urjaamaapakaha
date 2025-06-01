@@ -5,7 +5,7 @@ interface UsageSummaryProps {
   userConsumption: number;
   totalConsumption: number;
   timePeriod: string;
-  isLoading?: boolean;
+  isFetchingData?: boolean;
   isDataAvailable?: boolean;
   selectedDeviceAlias: string;
   isMember?: boolean;
@@ -15,7 +15,7 @@ export default function UsageSummary({
   userConsumption,
   totalConsumption,
   timePeriod,
-  isLoading = false,
+  isFetchingData = false,
   isDataAvailable = false,
   selectedDeviceAlias,
   isMember,
@@ -30,7 +30,7 @@ export default function UsageSummary({
         : "needs attention";
 
   //show loading state if isLoading is true or isDataAvailable is false
-  const showLoading = isLoading || !isDataAvailable;
+  const showLoading = isFetchingData || !isDataAvailable;
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
