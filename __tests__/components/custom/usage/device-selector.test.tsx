@@ -86,17 +86,14 @@ describe("DeviceSelector", () => {
       });
 
       render(<DeviceSelector {...defaultProps} onSelect={mockOnSelect} />);
-      screen.debug(undefined, 30000);
       const combobox = screen.getByRole("combobox");
-      await user.click(combobox);
 
+      await user.click(combobox);
       // the selected content and the options are rendered
       const allOptions = screen.getAllByText("All");
       await waitFor(() => {
         expect(allOptions).toHaveLength(2);
       });
-
-      screen.debug(undefined, 30000);
 
       await user.click(allOptions[1]); // Click the option, not the selected value
 
