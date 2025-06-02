@@ -9,10 +9,8 @@ import { getDateRangeForTimePeriod, type TimePeriod } from "@/lib/usage-utils";
 
 export default function ChartWithFilters({
   devices,
-  isMember,
 }: {
   devices: DeviceSelectionList;
-  isMember?: boolean;
 }) {
   //* usageData is null during the initial render
   const [usageData, setUsageData] = useState<Awaited<
@@ -106,7 +104,6 @@ export default function ChartWithFilters({
           isFetchingData={isPending}
           isDataAvailable={usageData !== null}
           selectedDeviceAlias={selectedDeviceAlias}
-          isMember={isMember}
         />
 
         {/* Chart Component */}
