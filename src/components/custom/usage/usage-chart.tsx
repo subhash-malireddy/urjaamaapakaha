@@ -81,7 +81,7 @@ export default function UsageChart({
     totalOverallConsumption > 0
       ? (totalUserConsumption / totalOverallConsumption) * 100
       : 0;
-  const showLoading = isFetchingData || !isDataAvailable;
+  const showLoading = Boolean(isFetchingData) || !Boolean(isDataAvailable);
   return (
     <Card>
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
@@ -135,7 +135,9 @@ export default function UsageChart({
             </div>
           </div>
         ) : (
-          <TheChart chartData={chartData} chartType={chartType} />
+          <div data-testid={chartType}>
+            <TheChart chartData={chartData} chartType={chartType} />
+          </div>
         )}
 
         {/* chart footer: user percentage and total consumption */}
