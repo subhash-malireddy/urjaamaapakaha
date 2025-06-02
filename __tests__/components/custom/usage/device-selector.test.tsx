@@ -30,10 +30,7 @@ describe("DeviceSelector", () => {
     jest.clearAllMocks();
     window.HTMLElement.prototype.hasPointerCapture = jest
       .fn()
-      .mockImplementation((_pointerId: any) => {
-        console.log("hasPointerCapture");
-        return true;
-      });
+      .mockImplementation((_pointerId: any) => true);
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
     window.HTMLElement.prototype.releasePointerCapture = jest.fn();
   });
