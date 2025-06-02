@@ -35,6 +35,7 @@ import {
   LineChart as LineChartIcon,
   Activity,
 } from "lucide-react";
+import MemberVsNonMemberContent from "@/components/member-non-member-content";
 
 interface UsageData {
   userConsumption: { date: Date; consumption: number }[];
@@ -48,6 +49,7 @@ interface UsageChartProps {
   totalUserConsumption: number;
   totalOverallConsumption: number;
   isDataAvailable: boolean;
+  isMember?: boolean;
 }
 
 type ChartType = "line" | "bar" | "area";
@@ -71,6 +73,7 @@ export default function UsageChart({
   totalUserConsumption,
   totalOverallConsumption,
   isDataAvailable,
+  isMember,
 }: UsageChartProps) {
   const [chartType, setChartType] = useState<ChartType>("bar");
 
@@ -138,34 +141,36 @@ export default function UsageChart({
           <TheChart chartData={chartData} chartType={chartType} />
         )}
 
-        {/* chart footer: user percentage and total consumption */}
-        <div className="flex w-full flex-col items-center justify-center gap-2 pt-4 text-sm">
-          <div className="flex items-center justify-center gap-2 leading-none font-medium">
-            <TrendingUp className="h-4 w-4" />
-            Your usage represents{" "}
-            {showLoading ? (
-              <span className="bg-muted inline-block h-4 w-8 animate-pulse rounded"></span>
-            ) : (
-              userPercentage.toFixed(1)
-            )}
-            % of total consumption
+        <MemberVsNonMemberContent isMember={isMember}>
+          {/* chart footer: user percentage and total consumption */}
+          <div className="flex w-full flex-col items-center justify-center gap-2 pt-4 text-sm">
+            <div className="flex items-center justify-center gap-2 leading-none font-medium">
+              <TrendingUp className="h-4 w-4" />
+              Your usage represents{" "}
+              {showLoading ? (
+                <span className="bg-muted inline-block h-4 w-8 animate-pulse rounded"></span>
+              ) : (
+                userPercentage.toFixed(1)
+              )}
+              % of total consumption
+            </div>
+            <div className="text-muted-foreground flex items-center justify-center gap-2 leading-none">
+              {showLoading ? (
+                <>
+                  <span className="bg-muted inline-block h-3 w-12 animate-pulse rounded"></span>
+                  {" kWh of "}
+                  <span className="bg-muted inline-block h-3 w-12 animate-pulse rounded"></span>
+                  {" kWh total"}
+                </>
+              ) : (
+                <>
+                  {totalUserConsumption.toFixed(2)} kWh of{" "}
+                  {totalOverallConsumption.toFixed(2)} kWh total
+                </>
+              )}
+            </div>
           </div>
-          <div className="text-muted-foreground flex items-center justify-center gap-2 leading-none">
-            {showLoading ? (
-              <>
-                <span className="bg-muted inline-block h-3 w-12 animate-pulse rounded"></span>
-                {" kWh of "}
-                <span className="bg-muted inline-block h-3 w-12 animate-pulse rounded"></span>
-                {" kWh total"}
-              </>
-            ) : (
-              <>
-                {totalUserConsumption.toFixed(2)} kWh of{" "}
-                {totalOverallConsumption.toFixed(2)} kWh total
-              </>
-            )}
-          </div>
-        </div>
+        </MemberVsNonMemberContent>
       </CardContent>
     </Card>
   );
