@@ -82,7 +82,7 @@ export default function ChartWithFilters({
         handleTimePeriodSelect={handleTimePeriodSelect}
       />
 
-      <div data-testid="chart" className="flex w-full flex-col gap-6">
+      <div className="flex w-full flex-col gap-6">
         <p className="text-center text-lg">
           Showing usage for&nbsp;
           <em>
