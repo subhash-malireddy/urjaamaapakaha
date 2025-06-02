@@ -35,15 +35,16 @@ import {
   LineChart as LineChartIcon,
   Activity,
 } from "lucide-react";
+import { type TimePeriod } from "@/lib/usage-utils";
 
 interface UsageData {
   userConsumption: { date: Date; consumption: number }[];
   totalConsumption: { date: Date; consumption: number }[];
 }
 
-interface UsageChartProps {
+export interface UsageChartProps {
   data: UsageData | undefined;
-  timePeriod: string;
+  timePeriod: TimePeriod;
   isFetchingData?: boolean;
   totalUserConsumption: number;
   totalOverallConsumption: number;
