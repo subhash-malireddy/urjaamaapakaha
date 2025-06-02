@@ -1,5 +1,3 @@
-"use client";
-
 import { type DeviceSelectionList } from "@/lib/zod/usage";
 import TimePeriodSelector from "./time-period-selector";
 import DeviceSelector from "./device-selector";
