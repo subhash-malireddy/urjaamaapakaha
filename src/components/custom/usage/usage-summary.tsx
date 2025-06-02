@@ -14,8 +14,8 @@ export default function UsageSummary({
   userConsumption,
   totalConsumption,
   timePeriod,
-  isFetchingData = false,
-  isDataAvailable = false,
+  isFetchingData,
+  isDataAvailable,
   selectedDeviceAlias,
 }: UsageSummaryProps) {
   const userPercentage =
@@ -28,7 +28,7 @@ export default function UsageSummary({
         : "needs attention";
 
   //show loading state if isLoading is true or isDataAvailable is false
-  const showLoading = isFetchingData || !isDataAvailable;
+  const showLoading = Boolean(isFetchingData) || !Boolean(isDataAvailable);
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
