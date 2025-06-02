@@ -31,7 +31,11 @@ export default function DeviceSelector({
         Device Selection
       </label>
       <Select
-        onValueChange={onSelect}
+        onValueChange={(value) => {
+          console.log("value", value);
+          console.log("onSelect", onSelect.toString());
+          onSelect(value);
+        }}
         value={selectedDeviceValue}
         name="deviceId"
         disabled={!hasDevices}
