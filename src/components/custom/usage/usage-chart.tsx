@@ -99,6 +99,8 @@ export default function UsageChart({
             size="sm"
             onClick={() => setChartType("line")}
             disabled={showLoading}
+            aria-label="Line chart"
+            aria-pressed={chartType === "line"}
           >
             <LineChartIcon className="h-4 w-4" />
           </Button>
@@ -107,6 +109,8 @@ export default function UsageChart({
             size="sm"
             onClick={() => setChartType("bar")}
             disabled={showLoading}
+            aria-label="Bar chart"
+            aria-pressed={chartType === "bar"}
           >
             <BarChart3 className="h-4 w-4" />
           </Button>
@@ -115,6 +119,8 @@ export default function UsageChart({
             size="sm"
             onClick={() => setChartType("area")}
             disabled={showLoading}
+            aria-label="Area chart"
+            aria-pressed={chartType === "area"}
           >
             <Activity className="h-4 w-4" />
           </Button>
