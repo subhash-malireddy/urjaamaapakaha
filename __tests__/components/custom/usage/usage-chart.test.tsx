@@ -45,7 +45,7 @@ describe("UsageChart", () => {
     });
   });
 
-  describe.only("Chart Type Selection", () => {
+  describe("Chart Type Selection", () => {
     it("has bar chart as default selection", () => {
       render(<UsageChart {...defaultProps} />);
 
@@ -58,30 +58,97 @@ describe("UsageChart", () => {
       expect(areaButton).toHaveAttribute("aria-pressed", "false");
     });
 
-    it("changes to line chart when line button is clicked", async () => {
+    it("renders correct chart when chart type button is clicked", async () => {
       const user = userEvent.setup();
       render(<UsageChart {...defaultProps} />);
 
       const lineButton = screen.getByRole("button", { name: "Line chart" });
       const barButton = screen.getByRole("button", { name: "Bar chart" });
+      const areaButton = screen.getByRole("button", { name: "Area chart" });
 
       await user.click(lineButton);
 
       expect(lineButton).toHaveAttribute("aria-pressed", "true");
       expect(barButton).toHaveAttribute("aria-pressed", "false");
-    });
+      expect(areaButton).toHaveAttribute("aria-pressed", "false");
 
-    it("changes to area chart when area button is clicked", async () => {
-      const user = userEvent.setup();
-      render(<UsageChart {...defaultProps} />);
+      await user.click(barButton);
 
-      const areaButton = screen.getByRole("button", { name: "Area chart" });
-      const barButton = screen.getByRole("button", { name: "Bar chart" });
+      expect(lineButton).toHaveAttribute("aria-pressed", "false");
+      expect(barButton).toHaveAttribute("aria-pressed", "true");
+      expect(areaButton).toHaveAttribute("aria-pressed", "false");
 
       await user.click(areaButton);
 
-      expect(areaButton).toHaveAttribute("aria-pressed", "true");
+      expect(lineButton).toHaveAttribute("aria-pressed", "false");
       expect(barButton).toHaveAttribute("aria-pressed", "false");
+      expect(areaButton).toHaveAttribute("aria-pressed", "true");
+    });
+  });
+
+  describe("Loading States", () => {
+    it("shows loading message when isFetchingData is true", () => {
+      const props = {
+        ...defaultProps,
+        isFetchingData: true,
+      };
+
+      render(<UsageChart {...props} />);
+
+      expect(screen.getByText("Loading chart...")).toBeInTheDocument();
+    });
+
+    it("shows loading message when isDataAvailable is false; because it's the intial render", () => {
+      const props = {
+        ...defaultProps,
+        isDataAvailable: false,
+      };
+
+      render(<UsageChart {...props} />);
+
+      expect(screen.getByText("Loading chart...")).toBeInTheDocument();
+    });
+
+    it("disables chart type buttons when loading", () => {
+      const props = {
+        ...defaultProps,
+        isFetchingData: true,
+      };
+
+      render(<UsageChart {...props} />);
+
+      expect(screen.getByRole("button", { name: "Line chart" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Bar chart" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Area chart" })).toBeDisabled();
+    });
+
+    it("shows loading placeholders in footer when loading", () => {
+      const props = {
+        ...defaultProps,
+        isFetchingData: true,
+      };
+
+      render(<UsageChart {...props} />);
+
+      // Check for loading placeholders by looking for elements with animate-pulse class
+      expect(screen.getByTestId("user-percentage-loading")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("user-consumption-loading"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("total-consumption-loading"),
+      ).toBeInTheDocument();
+    });
+
+    it("shows actual values in footer when not loading", () => {
+      render(<UsageChart {...defaultProps} />);
+
+      expect(
+        screen.getByText(/Your usage represents 50\.0% of total consumption/),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/50\.00 kWh of 100\.00 kWh total/),
+      ).toBeInTheDocument();
     });
   });
 });

@@ -153,7 +153,10 @@ export default function UsageChart({
             <TrendingUp className="h-4 w-4" />
             Your usage represents{" "}
             {showLoading ? (
-              <span className="bg-muted inline-block h-4 w-8 animate-pulse rounded"></span>
+              <span
+                className="bg-muted inline-block h-4 w-8 animate-pulse rounded"
+                data-testid="user-percentage-loading"
+              ></span>
             ) : (
               userPercentage.toFixed(1)
             )}
@@ -162,9 +165,15 @@ export default function UsageChart({
           <div className="text-muted-foreground flex items-center justify-center gap-2 leading-none">
             {showLoading ? (
               <>
-                <span className="bg-muted inline-block h-3 w-12 animate-pulse rounded"></span>
+                <span
+                  className="bg-muted inline-block h-3 w-12 animate-pulse rounded"
+                  data-testid="user-consumption-loading"
+                ></span>
                 {" kWh of "}
-                <span className="bg-muted inline-block h-3 w-12 animate-pulse rounded"></span>
+                <span
+                  className="bg-muted inline-block h-3 w-12 animate-pulse rounded"
+                  data-testid="total-consumption-loading"
+                ></span>
                 {" kWh total"}
               </>
             ) : (
