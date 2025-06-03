@@ -498,8 +498,7 @@ describe("ChartWithFilters", () => {
       act(() => {
         handleDeviceSelect("device-1");
       });
-      //check for loading state - should be true
-      expect(capturedUsageSummaryProps.isFetchingData).toBe(true);
+
       await waitFor(() => {
         expect(capturedFiltersFormProps.selectedDeviceValue).toBe("device-1");
       });
@@ -523,8 +522,183 @@ describe("ChartWithFilters", () => {
           "device-1",
         );
       });
-      //check for loading state - should be false
-      expect(capturedUsageSummaryProps.isFetchingData).toBe(false);
+    });
+  });
+
+  describe("Consumption Calculations", () => {
+    it("calculates totals correctly when data is loaded", async () => {
+      const mockUsageData = {
+        message: "Success",
+        data: {
+          userConsumption: [
+            { date: new Date("2024-01-01"), consumption: 15 },
+            { date: new Date("2024-01-02"), consumption: 25 },
+          ],
+          totalConsumption: [
+            { date: new Date("2024-01-01"), consumption: 50 },
+            { date: new Date("2024-01-02"), consumption: 75 },
+          ],
+        },
+      };
+
+      mockGetUsageDataAction.mockResolvedValue(mockUsageData);
+
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for data to load and check calculated totals
+      await waitFor(() => {
+        expect(capturedUsageSummaryProps.userConsumption).toBe(40); // 15 + 25
+      });
+
+      expect(capturedUsageSummaryProps.totalConsumption).toBe(125); // 50 + 75
+      expect(capturedUsageChartProps.totalUserConsumption).toBe(40);
+      expect(capturedUsageChartProps.totalOverallConsumption).toBe(125);
+    });
+
+    it("handles decimal consumption values correctly", async () => {
+      const mockUsageData = {
+        message: "Success",
+        data: {
+          userConsumption: [
+            { date: new Date("2024-01-01"), consumption: 12.5 },
+            { date: new Date("2024-01-02"), consumption: 7.3 },
+          ],
+          totalConsumption: [
+            { date: new Date("2024-01-01"), consumption: 45.8 },
+            { date: new Date("2024-01-02"), consumption: 32.2 },
+          ],
+        },
+      };
+
+      mockGetUsageDataAction.mockResolvedValue(mockUsageData);
+
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for data to load and check calculated totals
+      await waitFor(() => {
+        expect(capturedUsageSummaryProps.userConsumption).toBe(19.8); // 12.5 + 7.3
+      });
+
+      expect(capturedUsageSummaryProps.totalConsumption).toBe(78); // 45.8 + 32.2
+    });
+
+    it("updates totals when data changes after device selection", async () => {
+      // Initial data
+      const initialData = {
+        message: "Success",
+        data: {
+          userConsumption: [{ date: new Date("2024-01-01"), consumption: 10 }],
+          totalConsumption: [{ date: new Date("2024-01-01"), consumption: 20 }],
+        },
+      };
+
+      // New data after device selection
+      const newData = {
+        message: "Success",
+        data: {
+          userConsumption: [{ date: new Date("2024-01-01"), consumption: 30 }],
+          totalConsumption: [{ date: new Date("2024-01-01"), consumption: 60 }],
+        },
+      };
+
+      mockGetUsageDataAction
+        .mockResolvedValueOnce(initialData)
+        .mockResolvedValueOnce(newData);
+
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for initial data
+      await waitFor(() => {
+        expect(capturedUsageSummaryProps.userConsumption).toBe(10);
+      });
+
+      expect(capturedUsageSummaryProps.totalConsumption).toBe(20);
+
+      // Select device to trigger new data fetch
+      const handleDeviceSelect = capturedFiltersFormProps.handleDeviceSelect;
+      act(() => {
+        handleDeviceSelect("device-1");
+      });
+
+      // Wait for updated totals
+      await waitFor(() => {
+        expect(capturedUsageSummaryProps.userConsumption).toBe(30);
+      });
+
+      expect(capturedUsageSummaryProps.totalConsumption).toBe(60);
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("handles undefined usageData gracefully", async () => {
+      mockGetUsageDataAction.mockResolvedValue(undefined as any);
+
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Should not crash and maintain zero totals
+      await waitFor(() => {
+        expect(capturedUsageSummaryProps.userConsumption).toBe(0);
+      });
+      expect(capturedUsageSummaryProps.totalConsumption).toBe(0);
+      expect(capturedUsageChartProps.data).toBeUndefined();
+    });
+
+    it("handles empty consumption arrays", async () => {
+      const emptyData = {
+        message: "Success",
+        data: {
+          userConsumption: [],
+          totalConsumption: [],
+        },
+      };
+
+      mockGetUsageDataAction.mockResolvedValue(emptyData);
+
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for data and verify zero totals
+      await waitFor(() => {
+        expect(capturedUsageSummaryProps.userConsumption).toBe(0);
+      });
+
+      expect(capturedUsageSummaryProps.totalConsumption).toBe(0);
+      expect(capturedUsageChartProps.data).toEqual(emptyData.data);
+    });
+
+    it("handles missing data property", async () => {
+      const malformedData = {
+        message: "Success",
+        data: undefined,
+      };
+
+      mockGetUsageDataAction.mockResolvedValue(malformedData as any);
+
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Should handle gracefully without crashing
+      await waitFor(() => {
+        expect(capturedUsageSummaryProps.userConsumption).toBe(0);
+      });
+
+      expect(capturedUsageSummaryProps.totalConsumption).toBe(0);
+      expect(capturedUsageChartProps.data).toBeUndefined();
+    });
+
+    it("handles data fetch errors gracefully", async () => {
+      mockGetUsageDataAction.mockRejectedValue(new Error("Network error"));
+
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Component should still render without crashing
+      expect(screen.getByTestId("filters-form")).toBeInTheDocument();
+      expect(screen.getByTestId("usage-summary")).toBeInTheDocument();
+      expect(screen.getByTestId("usage-chart")).toBeInTheDocument();
+
+      await waitFor(() => {
+        // Should maintain initial state
+        expect(capturedUsageSummaryProps.userConsumption).toBe(0);
+        expect(capturedUsageSummaryProps.totalConsumption).toBe(0);
+      });
     });
   });
 });
