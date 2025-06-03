@@ -277,6 +277,22 @@ describe("UsageChart", () => {
       // Should render chart even with partial data
       expect(screen.getByTestId("bar-chart")).toBeInTheDocument();
     });
+
+    it("handles data when the total overall consumption is 0", () => {
+      const props = {
+        ...defaultProps,
+        totalOverallConsumption: 0,
+      };
+
+      render(<UsageChart {...props} />);
+
+      expect(
+        screen.getByText(/Your usage represents 0\.0% of total consumption/),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/0\.00 kWh of 0\.00 kWh total/),
+      ).toBeInTheDocument();
+    });
   });
 
   describe("Footer Information", () => {
