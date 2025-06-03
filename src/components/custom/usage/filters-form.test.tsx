@@ -110,7 +110,7 @@ describe("FiltersForm", () => {
       // Assert
       const deviceLabel = screen.getByText("Device");
       expect(deviceLabel).toBeInTheDocument();
-      expect(deviceLabel).toHaveClass("text-lg");
+      expect(deviceLabel).toHaveClass("font-medium");
       expect(deviceLabel).toHaveAttribute("for", "device-selector");
     });
 
@@ -121,7 +121,7 @@ describe("FiltersForm", () => {
       // Assert
       const timePeriodLabel = screen.getByText("Time Period");
       expect(timePeriodLabel).toBeInTheDocument();
-      expect(timePeriodLabel).toHaveClass("text-lg");
+      expect(timePeriodLabel).toHaveClass("font-medium");
       expect(timePeriodLabel).toHaveAttribute("for", "time-period-selector");
     });
 
