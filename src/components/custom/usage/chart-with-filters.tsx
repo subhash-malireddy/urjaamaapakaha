@@ -83,18 +83,22 @@ export default function ChartWithFilters({
       />
 
       <div className="flex w-full flex-col gap-6">
-        <p className="text-center text-lg">
-          Showing usage for&nbsp;
-          <em>
+        <div className="text-muted-foreground text-center text-base leading-relaxed">
+          Showing usage data for&nbsp;
+          <span className="text-foreground font-medium">
             {selectedDeviceAlias === "All"
               ? "All Devices"
               : selectedDeviceAlias}
-          </em>
+          </span>
           &nbsp;from&nbsp;
-          <em>{dateRange.formatted.start}</em>
+          <span className="text-foreground font-medium">
+            {dateRange.formatted.start}
+          </span>
           &nbsp;to&nbsp;
-          <em>{dateRange.formatted.end}</em>
-        </p>
+          <span className="text-foreground font-medium">
+            {dateRange.formatted.end}
+          </span>
+        </div>
 
         {/* Summary Cards */}
         <UsageSummary
