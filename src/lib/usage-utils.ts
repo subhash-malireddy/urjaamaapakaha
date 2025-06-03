@@ -142,7 +142,6 @@ export function processUsageData(
   };
 }
 
-// * Tested along with getUsageDataAction
 export function getPeriodStart(
   date: Date,
   timePeriod: TimePeriod,
