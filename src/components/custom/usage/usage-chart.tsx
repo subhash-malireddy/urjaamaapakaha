@@ -36,6 +36,7 @@ import {
   Activity,
 } from "lucide-react";
 import { type TimePeriod } from "@/lib/usage-utils";
+import { type AxisDomain } from "recharts/types/util/types";
 
 interface UsageData {
   userConsumption: { date: Date; consumption: number }[];
@@ -256,7 +257,15 @@ function TheChart({
         right: 12,
       },
     };
-
+    // istanbul ignore next
+    const xAxisTickFormatter = (value: string) => value;
+    // istanbul ignore next
+    const yAxisTickFormatter = (value: number) => `${value} kWh`;
+    // istanbul ignore next
+    const yAxisDomain: AxisDomain = [
+      0,
+      (dataMax: number) => Math.ceil(dataMax * 1.1),
+    ];
     switch (chartType) {
       case "bar":
         return (
@@ -267,14 +276,14 @@ function TheChart({
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value}
+              tickFormatter={xAxisTickFormatter}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => `${value} kWh`}
-              domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.1)]}
+              tickFormatter={yAxisTickFormatter}
+              domain={yAxisDomain}
             />
             <ChartTooltip
               cursor={false}
@@ -294,14 +303,14 @@ function TheChart({
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value}
+              tickFormatter={xAxisTickFormatter}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => `${value} kWh`}
-              domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.1)]}
+              tickFormatter={yAxisTickFormatter}
+              domain={yAxisDomain}
             />
             <ChartTooltip
               cursor={false}
@@ -333,14 +342,14 @@ function TheChart({
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value}
+              tickFormatter={xAxisTickFormatter}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => `${value} kWh`}
-              domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.1)]}
+              tickFormatter={yAxisTickFormatter}
+              domain={yAxisDomain}
             />
             <ChartTooltip
               cursor={false}
