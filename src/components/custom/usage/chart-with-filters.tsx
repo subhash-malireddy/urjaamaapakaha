@@ -84,7 +84,7 @@ export default function ChartWithFilters({
 
       <div className="flex w-full flex-col gap-6">
         <div className="text-muted-foreground text-center text-base leading-relaxed">
-          Showing usage data for&nbsp;
+          Usage data for&nbsp;
           <span className="text-foreground font-medium">
             {selectedDeviceAlias === "All"
               ? "All Devices"
