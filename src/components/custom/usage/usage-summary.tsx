@@ -97,10 +97,10 @@ export default function UsageSummary({
               <span
                 className={`font-medium ${
                   efficiency === "excellent"
-                    ? "text-green-600"
+                    ? "text-green-700 dark:text-green-600"
                     : efficiency === "good"
-                      ? "text-yellow-600"
-                      : "text-red-600"
+                      ? "text-yellow-700 dark:text-yellow-600"
+                      : "text-red-700 dark:text-red-600"
                 }`}
               >
                 {efficiency}
