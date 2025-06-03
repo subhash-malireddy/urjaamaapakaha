@@ -25,9 +25,7 @@ export default function FiltersForm({
     <div data-testid="filters-form" className="flex w-full flex-col gap-2">
       <form className="flex w-full justify-between">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="device-selector" className="text-lg">
-            Device
-          </Label>
+          <Label htmlFor="device-selector">Device</Label>
           <DeviceSelector
             devices={devices}
             onSelect={handleDeviceSelect}
@@ -36,9 +34,7 @@ export default function FiltersForm({
           />
         </div>
         <div className="flex flex-col justify-around gap-2">
-          <Label htmlFor="time-period-selector" className="text-lg">
-            Time Period
-          </Label>
+          <Label htmlFor="time-period-selector">Time Period</Label>
           <TimePeriodSelector
             onSelect={handleTimePeriodSelect}
             selectedValue={selectedTimePeriod}
