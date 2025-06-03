@@ -326,13 +326,11 @@ describe("ChartWithFilters", () => {
         );
       });
 
-      await waitFor(() => {
-        expect(mockGetUsageDataAction).toHaveBeenCalledWith(
-          "current week",
-          mockDateRange,
-          "device-2",
-        );
-      });
+      expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+        "current week",
+        mockDateRange,
+        "device-2",
+      );
 
       expect(capturedUsageSummaryProps.selectedDeviceAlias).toBe(
         "Living Room TV",
@@ -371,6 +369,144 @@ describe("ChartWithFilters", () => {
 
       // Should default to "All" for alias when device not found
       expect(capturedFiltersFormProps.selectedDeviceAlias).toBe("All");
+    });
+  });
+
+  describe("Time Period Selection Handling", () => {
+    const mockNewDateRange = {
+      start: new Date("2024-01-08"),
+      end: new Date("2024-01-14"),
+      formatted: {
+        start: "January 8, 2024",
+        end: "January 14, 2024",
+      },
+    };
+
+    it("handles time period selection correctly", async () => {
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for initial render
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalled();
+      });
+
+      // Clear previous calls and setup new date range
+      mockGetUsageDataAction.mockClear();
+      mockGetDateRangeForTimePeriod.mockReturnValue(mockNewDateRange);
+
+      // Simulate time period selection
+      const handleTimePeriodSelect =
+        capturedFiltersFormProps.handleTimePeriodSelect;
+      act(() => {
+        handleTimePeriodSelect("current month");
+      });
+
+      // Wait for state update
+      await waitFor(() => {
+        expect(capturedFiltersFormProps.selectedTimePeriod).toBe(
+          "current month",
+        );
+      });
+
+      expect(mockGetDateRangeForTimePeriod).toHaveBeenCalledWith(
+        "current month",
+      );
+      expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+        "current month",
+        mockNewDateRange,
+        undefined,
+      );
+    });
+
+    it("updates date range display when time period changes", async () => {
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for initial render
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalled();
+      });
+
+      // Setup new date range for time period change
+      mockGetDateRangeForTimePeriod.mockReturnValue(mockNewDateRange);
+
+      // Change time period
+      const handleTimePeriodSelect =
+        capturedFiltersFormProps.handleTimePeriodSelect;
+      act(() => {
+        handleTimePeriodSelect("current billing period");
+      });
+
+      // Wait for update and check new date range display
+      await waitFor(() => {
+        expect(screen.getByText(/January 8, 2024/)).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/January 14, 2024/)).toBeInTheDocument();
+    });
+
+    it("passes updated time period to child components", async () => {
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for initial render
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalled();
+      });
+
+      // Change time period
+      const handleTimePeriodSelect =
+        capturedFiltersFormProps.handleTimePeriodSelect;
+      act(() => {
+        handleTimePeriodSelect("current month");
+      });
+
+      // Wait for props to update
+      await waitFor(() => {
+        expect(capturedFiltersFormProps.selectedTimePeriod).toBe(
+          "current month",
+        );
+      });
+
+      expect(capturedUsageSummaryProps.timePeriod).toBe("current month");
+      expect(capturedUsageChartProps.timePeriod).toBe("current month");
+    });
+
+    it("triggers data fetch with selected device when time period changes", async () => {
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for initial render
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalled();
+      });
+
+      // First select a device
+      const handleDeviceSelect = capturedFiltersFormProps.handleDeviceSelect;
+      act(() => {
+        handleDeviceSelect("device-1");
+      });
+
+      await waitFor(() => {
+        expect(capturedFiltersFormProps.selectedDeviceValue).toBe("device-1");
+      });
+
+      // Clear calls and setup new date range
+      mockGetUsageDataAction.mockClear();
+      mockGetDateRangeForTimePeriod.mockReturnValue(mockNewDateRange);
+
+      // Change time period
+      const handleTimePeriodSelect =
+        capturedFiltersFormProps.handleTimePeriodSelect;
+      act(() => {
+        handleTimePeriodSelect("current billing period");
+      });
+
+      // Should fetch with selected device and new time period
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+          "current billing period",
+          mockNewDateRange,
+          "device-1",
+        );
+      });
     });
   });
 });
