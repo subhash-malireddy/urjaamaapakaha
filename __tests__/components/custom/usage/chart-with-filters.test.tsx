@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import ChartWithFilters from "@/components/custom/usage/chart-with-filters";
 import { type DeviceSelectionList } from "@/lib/zod/usage";
 import { getUsageDataAction } from "@/lib/actions/usage-actions";
@@ -185,6 +185,192 @@ describe("ChartWithFilters", () => {
           undefined, // deviceId is null initially
         );
       });
+    });
+  });
+
+  describe("Device Selection Handling", () => {
+    it("handles specific device selection correctly", async () => {
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for initial render and data fetch
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalled();
+      });
+
+      // Clear previous calls
+      mockGetUsageDataAction.mockClear();
+
+      // Simulate device selection
+      const handleDeviceSelect = capturedFiltersFormProps.handleDeviceSelect;
+      act(() => {
+        handleDeviceSelect("device-1");
+      });
+
+      // Wait for state update and new data fetch to complete
+      await waitFor(() => {
+        expect(capturedFiltersFormProps.selectedDeviceValue).toBe("device-1");
+      });
+
+      expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+        "current week",
+        mockDateRange,
+        "device-1",
+      );
+
+      expect(capturedFiltersFormProps.selectedDeviceAlias).toBe(
+        "Kitchen Light",
+      );
+      expect(screen.getByText(/Kitchen Light/)).toBeInTheDocument();
+    });
+
+    it("handles 'All' device selection correctly", async () => {
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for initial render and data fetch
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalled();
+      });
+
+      // First select a specific device
+      const handleDeviceSelect = capturedFiltersFormProps.handleDeviceSelect;
+      act(() => {
+        handleDeviceSelect("device-1");
+      });
+
+      // Wait for first selection to complete
+      await waitFor(() => {
+        expect(capturedFiltersFormProps.selectedDeviceValue).toBe("device-1");
+      });
+
+      expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+        "current week",
+        mockDateRange,
+        "device-1",
+      );
+
+      // Clear previous calls
+      mockGetUsageDataAction.mockClear();
+
+      // Now select "All"
+      act(() => {
+        handleDeviceSelect("All");
+      });
+
+      // Wait for "All" selection to complete
+      await waitFor(() => {
+        expect(capturedFiltersFormProps.selectedDeviceValue).toBe("All");
+      });
+
+      expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+        "current week",
+        mockDateRange,
+        undefined,
+      );
+
+      expect(capturedFiltersFormProps.selectedDeviceAlias).toBe("All");
+      expect(screen.getByText(/All Devices/)).toBeInTheDocument();
+    });
+
+    it("triggers data fetch when device is selected", async () => {
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for initial render and data fetch
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+          "current week",
+          mockDateRange,
+          undefined,
+        );
+      });
+
+      // Clear previous calls
+      mockGetUsageDataAction.mockClear();
+
+      // Select a specific device
+      const handleDeviceSelect = capturedFiltersFormProps.handleDeviceSelect;
+      act(() => {
+        handleDeviceSelect("device-1");
+      });
+
+      // Wait for new data fetch to complete
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+          "current week",
+          mockDateRange,
+          "device-1",
+        );
+      });
+    });
+
+    it("updates child component props when device changes", async () => {
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for initial render and data fetch
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalled();
+      });
+
+      // Clear previous calls to isolate our test
+      mockGetUsageDataAction.mockClear();
+
+      // Select a specific device
+      const handleDeviceSelect = capturedFiltersFormProps.handleDeviceSelect;
+      act(() => {
+        handleDeviceSelect("device-2");
+      });
+
+      // Wait for all updates to complete
+      await waitFor(() => {
+        expect(capturedFiltersFormProps.selectedDeviceAlias).toBe(
+          "Living Room TV",
+        );
+      });
+
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+          "current week",
+          mockDateRange,
+          "device-2",
+        );
+      });
+
+      expect(capturedUsageSummaryProps.selectedDeviceAlias).toBe(
+        "Living Room TV",
+      );
+    });
+
+    it("handles device not found in devices list", async () => {
+      render(<ChartWithFilters devices={mockDevices} />);
+
+      // Wait for initial render and data fetch
+      await waitFor(() => {
+        expect(mockGetUsageDataAction).toHaveBeenCalled();
+      });
+
+      // Clear previous calls
+      mockGetUsageDataAction.mockClear();
+
+      // Select a device that doesn't exist
+      const handleDeviceSelect = capturedFiltersFormProps.handleDeviceSelect;
+      act(() => {
+        handleDeviceSelect("non-existent-device");
+      });
+
+      // Wait for state update to complete
+      await waitFor(() => {
+        expect(capturedFiltersFormProps.selectedDeviceValue).toBe(
+          "non-existent-device",
+        );
+      });
+
+      expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+        "current week",
+        mockDateRange,
+        "non-existent-device",
+      );
+
+      // Should default to "All" for alias when device not found
+      expect(capturedFiltersFormProps.selectedDeviceAlias).toBe("All");
     });
   });
 });
