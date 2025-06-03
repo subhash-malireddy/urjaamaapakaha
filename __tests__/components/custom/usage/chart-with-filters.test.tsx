@@ -178,12 +178,23 @@ describe("ChartWithFilters", () => {
     it("triggers data fetch on initial render", async () => {
       render(<ChartWithFilters devices={mockDevices} />);
 
+      //for the initial render, isDataAvailable should be null - signalling that there is no attempt to fetch data yet
+      expect(capturedUsageChartProps.isDataAvailable).toBe(false);
+
+      expect(mockGetUsageDataAction).toHaveBeenCalledWith(
+        "current week",
+        mockDateRange,
+        undefined, // deviceId is null initially
+      );
+
+      //check for loading state before/while data fetch - should be true
       await waitFor(() => {
-        expect(mockGetUsageDataAction).toHaveBeenCalledWith(
-          "current week",
-          mockDateRange,
-          undefined, // deviceId is null initially
-        );
+        expect(capturedUsageSummaryProps.isFetchingData).toBe(true);
+      });
+
+      //check for loading state after data fetch - should be false
+      await waitFor(() => {
+        expect(capturedUsageChartProps.isFetchingData).toBe(false);
       });
     });
   });
@@ -291,6 +302,8 @@ describe("ChartWithFilters", () => {
       act(() => {
         handleDeviceSelect("device-1");
       });
+      //check for loading state - should be true
+      expect(capturedUsageSummaryProps.isFetchingData).toBe(true);
 
       // Wait for new data fetch to complete
       await waitFor(() => {
@@ -300,6 +313,8 @@ describe("ChartWithFilters", () => {
           "device-1",
         );
       });
+      //check for loading state - should be false
+      expect(capturedUsageSummaryProps.isFetchingData).toBe(false);
     });
 
     it("updates child component props when device changes", async () => {
@@ -483,7 +498,8 @@ describe("ChartWithFilters", () => {
       act(() => {
         handleDeviceSelect("device-1");
       });
-
+      //check for loading state - should be true
+      expect(capturedUsageSummaryProps.isFetchingData).toBe(true);
       await waitFor(() => {
         expect(capturedFiltersFormProps.selectedDeviceValue).toBe("device-1");
       });
@@ -507,6 +523,8 @@ describe("ChartWithFilters", () => {
           "device-1",
         );
       });
+      //check for loading state - should be false
+      expect(capturedUsageSummaryProps.isFetchingData).toBe(false);
     });
   });
 });
