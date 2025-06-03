@@ -302,8 +302,11 @@ describe("ChartWithFilters", () => {
       act(() => {
         handleDeviceSelect("device-1");
       });
+
       //check for loading state - should be true
-      expect(capturedUsageSummaryProps.isFetchingData).toBe(true);
+      await waitFor(() => {
+        expect(capturedUsageSummaryProps.isFetchingData).toBe(true);
+      });
 
       // Wait for new data fetch to complete
       await waitFor(() => {
@@ -312,9 +315,9 @@ describe("ChartWithFilters", () => {
           mockDateRange,
           "device-1",
         );
+        //check for loading state - should be false
+        expect(capturedUsageSummaryProps.isFetchingData).toBe(false);
       });
-      //check for loading state - should be false
-      expect(capturedUsageSummaryProps.isFetchingData).toBe(false);
     });
 
     it("updates child component props when device changes", async () => {
@@ -335,11 +338,16 @@ describe("ChartWithFilters", () => {
       });
 
       // Wait for all updates to complete
-      await waitFor(() => {
-        expect(capturedFiltersFormProps.selectedDeviceAlias).toBe(
-          "Living Room TV",
-        );
-      });
+      await waitFor(
+        () => {
+          expect(capturedFiltersFormProps.selectedDeviceAlias).toBe(
+            "Living Room TV",
+          );
+        },
+        {
+          timeout: 1000,
+        },
+      );
 
       expect(mockGetUsageDataAction).toHaveBeenCalledWith(
         "current week",
