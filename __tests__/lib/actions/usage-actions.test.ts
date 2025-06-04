@@ -515,12 +515,12 @@ describe("getUsageDataAction", () => {
   const mockUsageData = [
     {
       period: new Date("2024-03-20T00:00:00Z"),
-      consumption: new Prisma.Decimal(10.12),
+      consumption: new Prisma.Decimal(200.12),
       userEmail: mockUserEmail,
     },
     {
       period: new Date("2024-03-21T00:00:00Z"),
-      consumption: new Prisma.Decimal(20.23),
+      consumption: new Prisma.Decimal(1560.23),
       userEmail: "other@example.com",
     },
   ];
@@ -583,7 +583,7 @@ describe("getUsageDataAction", () => {
                 "current week",
                 mockDateRange.start,
               ), // asserting that the date is the start of the day
-              consumption: 10.12,
+              consumption: 0.21,
             },
           ],
           totalConsumption: [
@@ -593,7 +593,7 @@ describe("getUsageDataAction", () => {
                 "current week",
                 mockDateRange.start,
               ),
-              consumption: 10.12,
+              consumption: 0.21,
             },
             {
               date: getPeriodStart(
@@ -601,7 +601,7 @@ describe("getUsageDataAction", () => {
                 "current week",
                 mockDateRange.start,
               ),
-              consumption: 20.23,
+              consumption: 1.57,
             },
           ],
         },
@@ -633,7 +633,7 @@ describe("getUsageDataAction", () => {
                 "current month",
                 mockDateRange.start,
               ),
-              consumption: 10.12,
+              consumption: 0.21,
             },
           ],
           totalConsumption: [
@@ -643,7 +643,7 @@ describe("getUsageDataAction", () => {
                 "current month",
                 mockDateRange.start,
               ),
-              consumption: 30.35, // Aggregated: 10.12 + 20.23
+              consumption: 1.78, // Aggregated: 0.21 + 1.57
             },
           ],
         },
@@ -675,7 +675,7 @@ describe("getUsageDataAction", () => {
                 "current billing period",
                 mockDateRange.start,
               ),
-              consumption: 10.12,
+              consumption: 0.21,
             },
           ],
           totalConsumption: [
@@ -685,7 +685,7 @@ describe("getUsageDataAction", () => {
                 "current billing period",
                 mockDateRange.start,
               ),
-              consumption: 30.35, // Aggregated: 10.12 + 20.23
+              consumption: 1.78, // Aggregated: 0.21 + 1.57
             },
           ],
         },
@@ -713,7 +713,7 @@ describe("getUsageDataAction", () => {
                 mockTimePeriod,
                 mockDateRange.start,
               ),
-              consumption: 10.12,
+              consumption: 0.21,
             },
           ],
           totalConsumption: [
@@ -723,7 +723,7 @@ describe("getUsageDataAction", () => {
                 mockTimePeriod,
                 mockDateRange.start,
               ),
-              consumption: 10.12,
+              consumption: 0.21,
             },
             {
               date: getPeriodStart(
@@ -731,7 +731,7 @@ describe("getUsageDataAction", () => {
                 mockTimePeriod,
                 mockDateRange.start,
               ),
-              consumption: 20.23,
+              consumption: 1.57,
             },
           ],
         },
@@ -760,7 +760,7 @@ describe("getUsageDataAction", () => {
       const otherUserData = [
         {
           period: new Date("2024-03-20T00:00:00Z"),
-          consumption: new Prisma.Decimal(15.5),
+          consumption: new Prisma.Decimal(150.3),
           userEmail: "other@example.com",
         },
       ];
@@ -783,7 +783,7 @@ describe("getUsageDataAction", () => {
                 mockTimePeriod,
                 mockDateRange.start,
               ),
-              consumption: 15.5,
+              consumption: 0.16,
             },
           ],
         },

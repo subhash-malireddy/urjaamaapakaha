@@ -4,8 +4,15 @@ import {
   getCurrentBillingPeriodRange,
   getDateRangeForTimePeriod,
   type TimePeriod,
+  getPeriodStart,
 } from "@/lib/usage-utils";
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import {
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfDay,
+} from "date-fns";
 
 describe("Usage Utils", () => {
   const mockToday = new Date("2024-03-15"); // A Friday
@@ -86,6 +93,106 @@ describe("Usage Utils", () => {
       expect(result.end).toBeInstanceOf(Date);
       expect(result.formatted.start).toMatch(/^[A-Za-z]{3} \d{2}, \d{4}$/);
       expect(result.formatted.end).toMatch(/^[A-Za-z]{3} \d{2}, \d{4}$/);
+    });
+  });
+
+  describe("getPeriodStart", () => {
+    const mondayDate = new Date("2024-01-15"); // Monday, Jan 15, 2024
+    const wednesdayStartDate = new Date("2024-01-10"); // Wednesday, Jan 10, 2024
+
+    describe("current month", () => {
+      it("returns startOfWeek when it is after startDate", () => {
+        const result = getPeriodStart(
+          mondayDate,
+          "current month",
+          wednesdayStartDate,
+        );
+        const expectedWeekStart = startOfWeek(mondayDate); // Should be Sunday, Jan 14, 2024
+
+        expect(result).toEqual(expectedWeekStart);
+        expect(result.getTime()).toBeGreaterThan(wednesdayStartDate.getTime());
+      });
+
+      it("returns startDate when startOfWeek is before startDate", () => {
+        const mondayEarlier = new Date("2024-01-08"); // Monday, Jan 8, 2024
+        const wednesdayLater = new Date("2024-01-10"); // Wednesday, Jan 10, 2024
+
+        const result = getPeriodStart(
+          mondayEarlier,
+          "current month",
+          wednesdayLater,
+        );
+        // startOfWeek(Monday Jan 8) = Sunday Jan 7, which is before Wednesday Jan 10
+
+        expect(result).toBe(wednesdayLater);
+      });
+    });
+
+    describe("current week", () => {
+      it("returns startOfDay when it is after startDate", () => {
+        const result = getPeriodStart(
+          mondayDate,
+          "current week",
+          wednesdayStartDate,
+        );
+        const expectedDayStart = startOfDay(mondayDate); // Should be Monday, Jan 15, 2024 00:00:00
+
+        expect(result).toEqual(expectedDayStart);
+        expect(result.getTime()).toBeGreaterThan(wednesdayStartDate.getTime());
+      });
+
+      it("returns startDate when startOfDay is before startDate", () => {
+        const mondayEarlier = new Date("2024-01-08"); // Monday, Jan 8, 2024
+
+        const result = getPeriodStart(
+          mondayEarlier,
+          "current week",
+          wednesdayStartDate,
+        );
+        // startOfDay(Monday Jan 8) is before Wednesday Jan 10
+
+        expect(result).toBe(wednesdayStartDate);
+      });
+    });
+
+    describe("current billing period", () => {
+      it("returns startOfMonth when it is after startDate", () => {
+        const thursdayInFebruary = new Date("2024-02-15"); // Thursday, Feb 15, 2024
+        const mondayInJanuary = new Date("2024-01-15"); // Monday, Jan 15, 2024
+
+        const result = getPeriodStart(
+          thursdayInFebruary,
+          "current billing period",
+          mondayInJanuary,
+        );
+        const expectedMonthStart = startOfMonth(thursdayInFebruary); // Should be Thursday, Feb 1, 2024
+
+        expect(result).toEqual(expectedMonthStart);
+        expect(result.getTime()).toBeGreaterThan(mondayInJanuary.getTime());
+      });
+
+      it("returns startDate when startOfMonth is before startDate", () => {
+        const result = getPeriodStart(
+          mondayDate,
+          "current billing period",
+          wednesdayStartDate,
+        );
+        // startOfMonth(Monday Jan 15) = Monday Jan 1, which is before Wednesday Jan 10
+
+        expect(result).toBe(wednesdayStartDate);
+      });
+    });
+
+    describe("default case", () => {
+      it("returns the original date for unknown time period", () => {
+        const result = getPeriodStart(
+          mondayDate,
+          "unknown" as any,
+          wednesdayStartDate,
+        );
+
+        expect(result).toBe(mondayDate);
+      });
     });
   });
 });
