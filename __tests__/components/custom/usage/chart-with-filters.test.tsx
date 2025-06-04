@@ -99,7 +99,7 @@ describe("ChartWithFilters", () => {
     it("shows correct initial date range description", async () => {
       render(<ChartWithFilters devices={mockDevices} />);
 
-      expect(screen.getByText(/Showing usage for/)).toBeInTheDocument();
+      expect(screen.getByText(/Usage data for/)).toBeInTheDocument();
       expect(screen.getByText(/All Devices/)).toBeInTheDocument();
       expect(screen.getByText(/January 1, 2024/)).toBeInTheDocument();
       expect(screen.getByText(/January 7, 2024/)).toBeInTheDocument();
