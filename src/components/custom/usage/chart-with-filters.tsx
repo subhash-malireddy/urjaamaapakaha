@@ -1,23 +1,27 @@
 "use client";
 import { type DeviceSelectionList } from "@/lib/zod/usage";
 import FiltersForm from "./filters-form";
+import UsageChart from "./usage-chart";
+import UsageSummary from "./usage-summary";
 import { useEffect, useState, useTransition } from "react";
 import { getUsageDataAction } from "@/lib/actions/usage-actions";
 import { getDateRangeForTimePeriod, type TimePeriod } from "@/lib/usage-utils";
-import { roundUpTwoDecimals } from "@/lib/utils";
 
 export default function ChartWithFilters({
   devices,
 }: {
   devices: DeviceSelectionList;
 }) {
-  const [usageData, setUsageData] =
-    useState<Awaited<ReturnType<typeof getUsageDataAction>>>();
-  console.log("📜usageData:: ", usageData);
+  //* usageData is null during the initial render
+  const [usageData, setUsageData] = useState<Awaited<
+    ReturnType<typeof getUsageDataAction>
+  > | null>(null);
+
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+
   const [selectedTimePeriod, setSelectedTimePeriod] =
     useState<TimePeriod>("current week");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [isPending, startTransition] = useTransition();
 
   const handleDeviceSelect = (deviceId: string) => {
@@ -55,8 +59,20 @@ export default function ChartWithFilters({
     fetchUsageData(selectedDeviceId, selectedTimePeriod);
   }, [selectedDeviceId, selectedTimePeriod]);
 
+  // Calculate totals for summary
+  const totalUserConsumption =
+    usageData?.data?.userConsumption.reduce(
+      (sum, item) => sum + item.consumption,
+      0,
+    ) || 0;
+  const totalOverallConsumption =
+    usageData?.data?.totalConsumption.reduce(
+      (sum, item) => sum + item.consumption,
+      0,
+    ) || 0;
+
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full flex-col gap-6">
       <FiltersForm
         devices={devices}
         selectedDeviceValue={selectedDeviceValue}
@@ -65,52 +81,84 @@ export default function ChartWithFilters({
         handleDeviceSelect={handleDeviceSelect}
         handleTimePeriodSelect={handleTimePeriodSelect}
       />
-      <div data-testid="chart" className="flex w-full flex-col gap-2">
-        <p className="text-center text-lg">
-          Showing usage for&nbsp;
-          <em>
+
+      <div className="flex w-full flex-col gap-6">
+        <div className="text-muted-foreground text-center text-base leading-relaxed">
+          Usage data for&nbsp;
+          <span className="text-foreground font-medium">
             {selectedDeviceAlias === "All"
               ? "All Devices"
               : selectedDeviceAlias}
-          </em>
+          </span>
           &nbsp;from&nbsp;
-          <em>{dateRange.formatted.start}</em>
+          <span className="text-foreground font-medium">
+            {dateRange.formatted.start}
+          </span>
           &nbsp;to&nbsp;
-          <em>{dateRange.formatted.end}</em>
-        </p>
-        {/* for now, we will display textual data as per the details in usage-screen-implemenation notepad */}
+          <span className="text-foreground font-medium">
+            {dateRange.formatted.end}
+          </span>
+        </div>
+
+        {/* Summary Cards */}
+        <UsageSummary
+          userConsumption={totalUserConsumption}
+          totalConsumption={totalOverallConsumption}
+          timePeriod={selectedTimePeriod}
+          isFetchingData={isPending}
+          isDataAvailable={usageData !== null}
+          selectedDeviceAlias={selectedDeviceAlias}
+        />
+
+        {/* Chart Component */}
+
+        <UsageChart
+          isDataAvailable={usageData !== null}
+          data={usageData?.data}
+          timePeriod={selectedTimePeriod}
+          isFetchingData={isPending}
+          totalUserConsumption={totalUserConsumption}
+          totalOverallConsumption={totalOverallConsumption}
+        />
+
+        {/* Text-based data display for fallback/debugging */}
         {usageData && (
-          <div className="flex flex-col gap-2">
-            <h3>User vs Total Usage</h3>
-            <p>
-              {usageData.data?.userConsumption.reduce((acc, curr) => {
-                return roundUpTwoDecimals(acc + curr.consumption);
-              }, 0)}
-              &nbsp;vs&nbsp;
-              {usageData.data?.totalConsumption.reduce(
-                (acc, curr) => roundUpTwoDecimals(acc + curr.consumption),
-                0,
-              )}
-            </p>
-            <div className="flex flex-col gap-2">
-              <h4>User Consumption</h4>
-              {usageData.data?.userConsumption.map((item) => (
-                <div key={item.date.toISOString()} className="animate-fade-in">
-                  <p>
-                    {item.date.toLocaleDateString()} - {item.consumption}
-                  </p>
+          <details className="mt-4">
+            <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-sm font-medium">
+              Show detailed consumption data
+            </summary>
+            <div className="mt-4 flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <h4 className="font-medium">Your Daily Consumption</h4>
+                <div className="grid grid-cols-1 gap-1 text-sm md:grid-cols-2">
+                  {usageData.data?.userConsumption.map((item) => (
+                    <div
+                      key={item.date.toISOString()}
+                      className="bg-muted/50 flex justify-between rounded-md p-2"
+                    >
+                      <span>{item.date.toLocaleDateString()}</span>
+                      <span className="font-mono">{item.consumption} kWh</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              <h4>Total Consumption</h4>
-              {usageData.data?.totalConsumption.map((item) => (
-                <div key={item.date.toISOString()} className="animate-fade-in">
-                  <p>
-                    {item.date.toLocaleDateString()} - {item.consumption}
-                  </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <h4 className="font-medium">Total Daily Consumption</h4>
+                <div className="grid grid-cols-1 gap-1 text-sm md:grid-cols-2">
+                  {usageData.data?.totalConsumption.map((item) => (
+                    <div
+                      key={item.date.toISOString()}
+                      className="bg-muted/50 flex justify-between rounded-md p-2"
+                    >
+                      <span>{item.date.toLocaleDateString()}</span>
+                      <span className="font-mono">{item.consumption} kWh</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
+          </details>
         )}
       </div>
     </div>
