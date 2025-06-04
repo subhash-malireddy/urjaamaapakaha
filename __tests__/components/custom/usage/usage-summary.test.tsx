@@ -11,43 +11,45 @@ describe("UsageSummary", () => {
     selectedDeviceAlias: "All",
   };
 
-  it("renders all three cards with titles", () => {
-    render(<UsageSummary {...defaultProps} />);
+  describe("Initial render", () => {
+    it("renders all three cards with titles", () => {
+      render(<UsageSummary {...defaultProps} />);
 
-    expect(screen.getByText("Your Consumption")).toBeInTheDocument();
-    expect(screen.getByText("Total Consumption")).toBeInTheDocument();
-    expect(screen.getByText("Your Share")).toBeInTheDocument();
-  });
+      expect(screen.getByText("Your Consumption")).toBeInTheDocument();
+      expect(screen.getByText("Total Consumption")).toBeInTheDocument();
+      expect(screen.getByText("Your Share")).toBeInTheDocument();
+    });
 
-  it("displays consumption values correctly", () => {
-    render(<UsageSummary {...defaultProps} />);
+    it("displays consumption values correctly", () => {
+      render(<UsageSummary {...defaultProps} />);
 
-    expect(screen.getByText("50.00 kWh")).toBeInTheDocument();
-    expect(screen.getByText("100.00 kWh")).toBeInTheDocument();
-    expect(screen.getByText("50.0%")).toBeInTheDocument();
-  });
+      expect(screen.getByText("50.00 kWh")).toBeInTheDocument();
+      expect(screen.getByText("100.00 kWh")).toBeInTheDocument();
+      expect(screen.getAllByText("50.0%")).toHaveLength(2); //both mobile and desktop view
+    });
 
-  it("shows time period information", () => {
-    render(<UsageSummary {...defaultProps} />);
+    it("shows time period information", () => {
+      render(<UsageSummary {...defaultProps} />);
 
-    expect(screen.getByText("For today")).toBeInTheDocument();
-  });
+      expect(screen.getByText("For today")).toBeInTheDocument();
+    });
 
-  it("shows device information for all devices", () => {
-    render(<UsageSummary {...defaultProps} />);
+    it("shows device information for all devices", () => {
+      render(<UsageSummary {...defaultProps} />);
 
-    expect(screen.getByText("All devices combined")).toBeInTheDocument();
-  });
+      expect(screen.getByText("All devices combined")).toBeInTheDocument();
+    });
 
-  it("shows device information for specific device", () => {
-    const props = {
-      ...defaultProps,
-      selectedDeviceAlias: "Kitchen Light",
-    };
+    it("shows device information for specific device", () => {
+      const props = {
+        ...defaultProps,
+        selectedDeviceAlias: "Kitchen Light",
+      };
 
-    render(<UsageSummary {...props} />);
+      render(<UsageSummary {...props} />);
 
-    expect(screen.getByText("For Kitchen Light")).toBeInTheDocument();
+      expect(screen.getByText("For Kitchen Light")).toBeInTheDocument();
+    });
   });
 
   describe("Loading states", () => {
@@ -95,7 +97,9 @@ describe("UsageSummary", () => {
       render(<UsageSummary {...props} />);
 
       expect(screen.getByText("excellent")).toBeInTheDocument();
-      expect(screen.getByText("excellent")).toHaveClass("text-green-600");
+      expect(screen.getByText("excellent")).toHaveClass(
+        "font-medium text-green-700 dark:text-green-600",
+      );
     });
 
     it("shows good efficiency for usage between 50% and 75%", () => {
@@ -108,7 +112,9 @@ describe("UsageSummary", () => {
       render(<UsageSummary {...props} />);
 
       expect(screen.getByText("good")).toBeInTheDocument();
-      expect(screen.getByText("good")).toHaveClass("text-yellow-600");
+      expect(screen.getByText("good")).toHaveClass(
+        "font-medium text-yellow-700 dark:text-yellow-600",
+      );
     });
 
     it("shows needs attention for usage > 75%", () => {
@@ -121,7 +127,9 @@ describe("UsageSummary", () => {
       render(<UsageSummary {...props} />);
 
       expect(screen.getByText("needs attention")).toBeInTheDocument();
-      expect(screen.getByText("needs attention")).toHaveClass("text-red-600");
+      expect(screen.getByText("needs attention")).toHaveClass(
+        "font-medium text-red-700 dark:text-red-600",
+      );
     });
   });
 
@@ -135,7 +143,8 @@ describe("UsageSummary", () => {
 
       render(<UsageSummary {...props} />);
 
-      expect(screen.getByText("0.0%")).toBeInTheDocument();
+      const percentageElements = screen.getAllByText("0.0%");
+      expect(percentageElements).toHaveLength(2); //both mobile and desktop view
       expect(screen.getByText("excellent")).toBeInTheDocument();
     });
 
