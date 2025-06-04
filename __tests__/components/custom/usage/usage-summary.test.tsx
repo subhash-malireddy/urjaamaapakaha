@@ -12,6 +12,18 @@ describe("UsageSummary", () => {
   };
 
   describe("Initial render", () => {
+    it("renders both mobile and desktop views", () => {
+      render(<UsageSummary {...defaultProps} />);
+
+      const desktopView = screen.getByTestId("desktop-view");
+      const mobileView = screen.getByTestId("mobile-view");
+
+      expect(desktopView).toBeInTheDocument();
+      expect(mobileView).toBeInTheDocument();
+      expect(desktopView).toHaveClass("hidden", "md:grid");
+      expect(mobileView).toHaveClass("md:hidden");
+    });
+
     it("renders all three cards with titles", () => {
       render(<UsageSummary {...defaultProps} />);
 
@@ -130,6 +142,21 @@ describe("UsageSummary", () => {
       expect(screen.getByText("needs attention")).toHaveClass(
         "font-medium text-red-700 dark:text-red-600",
       );
+    });
+
+    it("applies efficiency colors to mobile view percentage", () => {
+      const props = {
+        ...defaultProps,
+        userConsumption: 25,
+        totalConsumption: 100,
+      };
+
+      render(<UsageSummary {...props} />);
+
+      const mobileView = screen.getByTestId("mobile-view");
+      const percentageElement = mobileView.querySelector(".text-green-700");
+      expect(percentageElement).toBeInTheDocument();
+      expect(percentageElement).toHaveTextContent("25.0%");
     });
   });
 
