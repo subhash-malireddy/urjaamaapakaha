@@ -149,7 +149,7 @@ export default function UsageChart({
         )}
 
         {/* chart footer: user percentage and total consumption */}
-        <div className="flex w-full flex-col items-center justify-center gap-2 pt-4 text-sm">
+        <div className="hidden w-full flex-col items-center justify-center gap-2 pt-4 text-center text-sm md:flex">
           <div className="flex items-center justify-center gap-2 leading-none font-medium">
             <TrendingUp className="h-4 w-4" />
             Your usage represents{" "}
