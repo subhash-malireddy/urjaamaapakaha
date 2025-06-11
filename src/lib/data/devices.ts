@@ -225,12 +225,14 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
       throw new Error("Device is not currently active or missing usage record");
     }
 
-    // Call API/simulate API to get current energy reading
     let apiResponse: UsageResponse;
+
     const shouldCallRealApi =
       process.env.SHOULD_CALL_REAL_API === "1" ||
       process.env.SPECIAL_DEVICE_IPS?.split(",").includes(deviceIp);
+
     if (shouldCallRealApi) {
+      // call real api
       const credentials = Buffer.from(
         `${process.env.URJ_FSFY_API_USER}:${process.env.URJ_FSFY_API_PWD}`,
       ).toString("base64");
