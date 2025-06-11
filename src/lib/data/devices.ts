@@ -191,7 +191,6 @@ export async function turnOnDevice(
           start_date: new Date(),
           end_date: new Date(), // Same as start_date when device is turned on
           estimated_use_time: estimatedUseTime,
-          // consumption: apiResponse.usage.today_energy, // Initial consumption is 0
           consumption: apiResponse.usage.month_energy, // Initial consumption is 0
           charge: 0, // Initial charge is 0
         },
@@ -277,7 +276,6 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
       // Calculate final consumption (current - initial)
       const finalConsumption = shouldCallRealApi
         ? roundUpTwoDecimals(
-            // Number(apiResponse.usage.today_energy) -
             Number(apiResponse.usage.month_energy) -
               Number(activeDevice.usage.consumption),
           )
@@ -286,7 +284,6 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
               Math.ceil(
                 Math.abs(
                   // Math.abs is used to ensure the result is positive
-                  // Number(apiResponse.usage.today_energy) -
                   Number(apiResponse.usage.month_energy) -
                     Number(activeDevice.usage.consumption),
                 ) * 100,
