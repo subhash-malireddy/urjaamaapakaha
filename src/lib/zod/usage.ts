@@ -11,3 +11,11 @@ export const deviceSelectListResponseSchema = z.array(
 export type DeviceSelectionList = z.infer<
   typeof deviceSelectListResponseSchema
 >;
+
+export const deviceUsageResponseSchema = z.object({
+  usage: z.object({
+    month_energy: z.number(),
+  }),
+});
+
+export type DeviceUsageResponse = z.infer<typeof deviceUsageResponseSchema>;
