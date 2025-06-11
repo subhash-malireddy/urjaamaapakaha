@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { DeviceUsageResponse } from "./zod/usage";
 
 /**
  * Rounds up a number to 2 decimal places and returns it as a number
@@ -26,13 +27,6 @@ function serialize<T>(data: T): T {
   );
 }
 
-// Define the structure of the usage response
-interface UsageResponse {
-  usage: {
-    today_energy: number; // Energy value in watts
-  };
-}
-
 //TODO:: remove this function once api implemented
 // Define the simulateApiCall function
 /* istanbul ignore next */
@@ -41,12 +35,13 @@ async function simulateApiCall(
   isTurnOn: boolean,
   startTime?: string | null,
   date?: string | null,
-): Promise<UsageResponse> {
+): Promise<DeviceUsageResponse> {
   await new Promise((resolve) => setTimeout(resolve, 200)); // Simulate network delay
 
   if (isTurnOn) {
     const energyValue = getEnergyValueForDate(date);
-    return { usage: { today_energy: energyValue } };
+    // return { usage: { today_energy: energyValue } };
+    return { usage: { month_energy: energyValue } };
   } else {
     if (!startTime) {
       throw new Error("startTime must be provided for turn-off action");
@@ -54,7 +49,8 @@ async function simulateApiCall(
     // Calculate realistic usage value based on startTime
     const duration = Date.now() - new Date(startTime).getTime();
     const calculatedValue = (duration / (1000 * 60 * 60)) * 10; // Example calculation
-    return { usage: { today_energy: calculatedValue } };
+    // return { usage: { today_energy: calculatedValue } };
+    return { usage: { month_energy: calculatedValue } };
   }
 }
 
@@ -245,4 +241,4 @@ export function convertDateTimeLocalToUTC(
 }
 
 //using this syntax for making istanbul ignore next work.
-export { cn, serialize, simulateApiCall, type UsageResponse };
+export { cn, serialize, simulateApiCall };
