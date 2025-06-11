@@ -16,7 +16,7 @@ jest.mock("@/lib/utils", () => {
   return {
     ...original,
     simulateApiCall: jest.fn().mockResolvedValue({
-      usage: { today_energy: 42 },
+      usage: { month_energy: 42 },
     }),
   };
 });
@@ -197,7 +197,7 @@ describe("Device data functions", () => {
 
       // Setup API environment and mock fetch
       setupApiEnvironment();
-      mockFetchApi();
+      mockFetchApi(TEST_DATA.mockFinalConsumption, true);
 
       // Call the function
       await turnOnDevice(
@@ -289,7 +289,7 @@ describe("Device data functions", () => {
       mockDB.active_device.delete.mockResolvedValueOnce({} as any);
 
       jest.spyOn(utils, "simulateApiCall").mockResolvedValueOnce({
-        usage: { today_energy: TEST_DATA.mockFinalConsumption },
+        usage: { month_energy: TEST_DATA.mockFinalConsumption },
       } as any);
 
       // Call the function under test
@@ -383,7 +383,7 @@ describe("Device data functions", () => {
 
       // Setup API environment and mock fetch
       setupApiEnvironment();
-      mockFetchApi();
+      mockFetchApi(TEST_DATA.mockFinalConsumption, false);
 
       // Call the function
       await turnOffDevice(TEST_DATA.deviceId, TEST_DATA.specialIp);
@@ -416,7 +416,7 @@ describe("Device data functions", () => {
 
       // Mock the API call to ensure it's not the source of error
       jest.spyOn(utils, "simulateApiCall").mockResolvedValueOnce({
-        usage: { today_energy: TEST_DATA.mockFinalConsumption },
+        usage: { month_energy: TEST_DATA.mockFinalConsumption },
       } as any);
 
       // Spy on console.error to keep the jest output clean
@@ -449,7 +449,7 @@ describe("Device data functions", () => {
 
       // Mock the API call to ensure it's not the source of error
       jest.spyOn(utils, "simulateApiCall").mockResolvedValueOnce({
-        usage: { today_energy: TEST_DATA.mockFinalConsumption },
+        usage: { month_energy: TEST_DATA.mockFinalConsumption },
       } as any);
 
       // Spy on console.error to keep the jest output clean
@@ -671,10 +671,14 @@ const setupApiEnvironment = () => {
 };
 
 // Helper to mock fetch API
-const mockFetchApi = (energyValue: number = TEST_DATA.mockFinalConsumption) => {
+const mockFetchApi = (
+  energyValue: number = TEST_DATA.mockFinalConsumption,
+  isTurnOn: boolean,
+) => {
   return (global.fetch = jest.fn().mockResolvedValue({
     json: jest.fn().mockResolvedValue({
-      usage: { today_energy: energyValue },
+      usage: { month_energy: energyValue },
+      status: isTurnOn ? 1 : 0,
     }),
   } as any));
 };

@@ -1,6 +1,12 @@
 import { db } from "@/lib/db";
-import { roundUpTwoDecimals, UsageResponse } from "@/lib/utils";
+import { roundUpTwoDecimals } from "@/lib/utils";
 import type { device, usage } from "@prisma/client";
+import {
+  deviceOffResponseSchema,
+  type DeviceOffResponse,
+  type DeviceOnResponse,
+  deviceOnResponseSchema,
+} from "../zod/device";
 import { deviceSelectListResponseSchema } from "../zod/usage";
 
 export async function getAllDevicesOnlyIdAndAlias() {
@@ -144,7 +150,7 @@ export async function turnOnDevice(
   estimatedUseTime?: Date,
 ) {
   try {
-    let apiResponse: UsageResponse;
+    let apiResponse: DeviceOnResponse;
     const shouldCallRealApi =
       process.env.SHOULD_CALL_REAL_API === "1" ||
       process.env.SPECIAL_DEVICE_IPS?.split(",").includes(deviceIp);
@@ -152,7 +158,7 @@ export async function turnOnDevice(
       const credentials = Buffer.from(
         `${process.env.URJ_FSFY_API_USER}:${process.env.URJ_FSFY_API_PWD}`,
       ).toString("base64");
-      apiResponse = await (
+      const rawApiResponse = await (
         await fetch(`${process.env.URJ_FSFY_API}/on/${deviceIp}`, {
           cache: "no-cache",
           headers: {
@@ -160,11 +166,19 @@ export async function turnOnDevice(
           },
         })
       ).json();
+      apiResponse = deviceOnResponseSchema.parse(rawApiResponse);
     } else {
       // 1. Call the simulate API to get dummy data
       const { simulateApiCall } = await import("@/lib/utils");
       const currentDate = new Date().toISOString();
-      apiResponse = await simulateApiCall(deviceIp, true, null, currentDate);
+      const simulatedUsage = await simulateApiCall(
+        deviceIp,
+        true,
+        null,
+        currentDate,
+      );
+
+      apiResponse = { status: 1, ...simulatedUsage };
     }
 
     // 2. Create a transaction to ensure both operations succeed or fail together
@@ -177,7 +191,7 @@ export async function turnOnDevice(
           start_date: new Date(),
           end_date: new Date(), // Same as start_date when device is turned on
           estimated_use_time: estimatedUseTime,
-          consumption: apiResponse.usage.today_energy, // Initial consumption is 0
+          consumption: apiResponse.usage.month_energy, // Initial consumption is 0
           charge: 0, // Initial charge is 0
         },
       });
@@ -225,16 +239,18 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
       throw new Error("Device is not currently active or missing usage record");
     }
 
-    // Call API/simulate API to get current energy reading
-    let apiResponse: UsageResponse;
+    let apiResponse: DeviceOffResponse;
+
     const shouldCallRealApi =
       process.env.SHOULD_CALL_REAL_API === "1" ||
       process.env.SPECIAL_DEVICE_IPS?.split(",").includes(deviceIp);
+
     if (shouldCallRealApi) {
+      // call real api
       const credentials = Buffer.from(
         `${process.env.URJ_FSFY_API_USER}:${process.env.URJ_FSFY_API_PWD}`,
       ).toString("base64");
-      apiResponse = await (
+      const rawApiResponse = await (
         await fetch(`${process.env.URJ_FSFY_API}/off/${deviceIp}`, {
           cache: "no-cache",
           headers: {
@@ -242,15 +258,17 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
           },
         })
       ).json();
+      apiResponse = deviceOffResponseSchema.parse(rawApiResponse);
     } else {
       // Call the simulate API to get dummy data
       const { simulateApiCall } = await import("@/lib/utils");
-      apiResponse = await simulateApiCall(
+      const simulatedUsage = await simulateApiCall(
         deviceIp,
         false,
         activeDevice.usage.start_date.toISOString(),
         new Date().toISOString(),
       );
+      apiResponse = { status: 0, ...simulatedUsage };
     }
 
     // Calculate final consumption and update records in a transaction
@@ -258,7 +276,7 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
       // Calculate final consumption (current - initial)
       const finalConsumption = shouldCallRealApi
         ? roundUpTwoDecimals(
-            Number(apiResponse.usage.today_energy) -
+            Number(apiResponse.usage.month_energy) -
               Number(activeDevice.usage.consumption),
           )
         : Number(
@@ -266,7 +284,7 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
               Math.ceil(
                 Math.abs(
                   // Math.abs is used to ensure the result is positive
-                  Number(apiResponse.usage.today_energy) -
+                  Number(apiResponse.usage.month_energy) -
                     Number(activeDevice.usage.consumption),
                 ) * 100,
               ) / 100
