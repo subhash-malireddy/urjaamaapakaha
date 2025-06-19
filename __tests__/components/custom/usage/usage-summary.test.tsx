@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import UsageSummary from "@/components/custom/usage/usage-summary";
 
 describe("UsageSummary", () => {
@@ -32,12 +32,26 @@ describe("UsageSummary", () => {
       expect(screen.getByText("Your Share")).toBeInTheDocument();
     });
 
-    it("displays consumption values correctly", () => {
+    it("displays consumption values correctly across both mobile and desktop views", () => {
       render(<UsageSummary {...defaultProps} />);
 
-      expect(screen.getByText("50.00 kWh")).toBeInTheDocument();
-      expect(screen.getByText("100.00 kWh")).toBeInTheDocument();
-      expect(screen.getAllByText("50.0%")).toHaveLength(2); //both mobile and desktop view
+      const desktopView = screen.getByTestId("desktop-view");
+      const mobileView = screen.getByTestId("mobile-view");
+
+      //check user consumption values in both views
+      expect(desktopView).toHaveTextContent("50.00 kWh");
+      const mobileUserKwh = within(mobileView).getByText("50.00");
+      expect(mobileUserKwh.nextSibling).toHaveTextContent("Your kWh");
+
+      //check total consumption values in both views
+      expect(desktopView).toHaveTextContent("100.00 kWh");
+      const mobileTotalKwh = within(mobileView).getByText("100.00");
+      expect(mobileTotalKwh.nextSibling).toHaveTextContent("Total kWh");
+
+      //check your share values in both views
+      expect(desktopView).toHaveTextContent("50.0%");
+      const mobileYourShare = within(mobileView).getByText("50.0%");
+      expect(mobileYourShare.nextSibling).toHaveTextContent("Your share");
     });
 
     it("shows time period information", () => {

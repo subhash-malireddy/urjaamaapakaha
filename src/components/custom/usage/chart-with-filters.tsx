@@ -3,7 +3,7 @@ import { type DeviceSelectionList } from "@/lib/zod/usage";
 import FiltersForm from "./filters-form";
 import UsageChart from "./usage-chart";
 import UsageSummary from "./usage-summary";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { getUsageDataAction } from "@/lib/actions/usage-actions";
 import { getDateRangeForTimePeriod, type TimePeriod } from "@/lib/usage-utils";
 
@@ -36,7 +36,10 @@ export default function ChartWithFilters({
     setSelectedTimePeriod(period);
   };
 
-  const dateRange = getDateRangeForTimePeriod(selectedTimePeriod);
+  const dateRange = useMemo(
+    () => getDateRangeForTimePeriod(selectedTimePeriod),
+    [selectedTimePeriod],
+  );
 
   const selectedDeviceValue = selectedDeviceId ?? "All";
   const selectedDeviceAlias =
@@ -57,7 +60,7 @@ export default function ChartWithFilters({
       });
     };
     fetchUsageData(selectedDeviceId, selectedTimePeriod);
-  }, [selectedDeviceId, selectedTimePeriod]);
+  }, [selectedDeviceId, selectedTimePeriod, dateRange]);
 
   // Calculate totals for summary
   const totalUserConsumption =

@@ -187,7 +187,7 @@ function MobileView({
                 <div className="bg-muted mx-auto h-7 w-16 animate-pulse rounded"></div>
               ) : (
                 <div className="text-lg font-bold">
-                  {userConsumption.toFixed(1)}
+                  {userConsumption.toFixed(2)}
                 </div>
               )}
               <div className="text-muted-foreground text-xs">Your kWh</div>
@@ -197,7 +197,7 @@ function MobileView({
                 <div className="bg-muted mx-auto h-7 w-16 animate-pulse rounded"></div>
               ) : (
                 <div className="text-lg font-bold">
-                  {totalConsumption.toFixed(1)}
+                  {totalConsumption.toFixed(2)}
                 </div>
               )}
               <div className="text-muted-foreground text-xs">Total kWh</div>
