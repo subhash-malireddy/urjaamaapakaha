@@ -46,6 +46,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - icon.svg (icon file)
+     * - apple-icon.png (Apple icon file)
+     * - opengraph-image.png (Open Graph image file)
      * - public (public files)
      * - api/auth/signin
      * - api/auth/callback
@@ -54,6 +57,6 @@ export const config = {
      * - api/auth/csrf
      * - api/auth/providers
      */
-    "/((?!_next/static|_next/image|favicon.ico|public|api/auth/signin|api/auth/callback|api/auth/signout|api/auth/session|api/auth/csrf|api/auth/providers).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|opengraph-image.png|public|api/auth/signin|api/auth/callback|api/auth/signout|api/auth/session|api/auth/csrf|api/auth/providers).*)",
   ],
 };
