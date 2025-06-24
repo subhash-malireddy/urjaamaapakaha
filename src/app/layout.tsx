@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MainNav } from "@/components/custom/nav/main-nav";
 import { ThemeProvider } from "@/components/theme-provider";
-import { auth } from "../auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,13 +20,11 @@ export const metadata: Metadata = {
     "An app by Subhash Malireddy to track energy consumption in a shared home",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -39,7 +36,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <MainNav session={session} />
+          <MainNav />
           <main className="flex justify-center p-4 sm:p-2">{children}</main>
           {/* Add padding at the bottom for the mobile nav */}
           <div className="h-14 md:h-0"></div>

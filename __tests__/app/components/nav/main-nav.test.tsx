@@ -1,6 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { MainNav } from "@/components/custom/nav/main-nav";
 import { ROLES_OBJ } from "@/lib/roles";
+import { auth } from "@/auth";
+
+// Mock the auth function
+jest.mock("@/auth", () => ({
+  auth: jest.fn(),
+}));
 
 // Mock the child components
 jest.mock("@/components/custom/nav/nav-links", () => ({
@@ -64,8 +70,13 @@ describe("MainNav", () => {
     expires: "2023-01-01",
   };
 
-  it("renders all child components correctly", () => {
-    render(<MainNav session={mockSession} />);
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  const authMock = auth as jest.Mock;
+  it("renders all child components correctly", async () => {
+    authMock.mockResolvedValue(mockSession);
+    render(await MainNav());
 
     // Check if all child components are rendered
     expect(screen.getByTestId("logo-title-mock")).toBeInTheDocument();
@@ -75,8 +86,9 @@ describe("MainNav", () => {
     expect(screen.getByTestId("theme-toggle-mock")).toBeInTheDocument();
   });
 
-  it("passes correct user data to UserProfile component", () => {
-    render(<MainNav session={mockSession} />);
+  it("passes correct user data to UserProfile component", async () => {
+    authMock.mockResolvedValue(mockSession);
+    render(await MainNav());
 
     const userProfileMock = screen.getByTestId("user-profile-mock");
     expect(
@@ -84,8 +96,9 @@ describe("MainNav", () => {
     ).toEqual(mockSession.user);
   });
 
-  it("passes correct isAdmin=false to NavLinks and MobileNav when user is not admin", () => {
-    render(<MainNav session={mockSession} />);
+  it("passes correct isAdmin=false to NavLinks and MobileNav when user is not admin", async () => {
+    authMock.mockResolvedValue(mockSession);
+    render(await MainNav());
 
     const navLinksMock = screen.getByTestId("nav-links-mock");
     const mobileNavMock = screen.getByTestId("mobile-nav-mock");
@@ -94,8 +107,9 @@ describe("MainNav", () => {
     expect(mobileNavMock).toHaveAttribute("data-is-admin", "false");
   });
 
-  it("passes correct isAdmin=true to NavLinks and MobileNav when user is admin", () => {
-    render(<MainNav session={mockAdminSession} />);
+  it("passes correct isAdmin=true to NavLinks and MobileNav when user is admin", async () => {
+    authMock.mockResolvedValue(mockAdminSession);
+    render(await MainNav());
 
     const navLinksMock = screen.getByTestId("nav-links-mock");
     const mobileNavMock = screen.getByTestId("mobile-nav-mock");
@@ -104,8 +118,9 @@ describe("MainNav", () => {
     expect(mobileNavMock).toHaveAttribute("data-is-admin", "true");
   });
 
-  it("handles null session correctly", () => {
-    render(<MainNav session={null} />);
+  it("handles null session correctly", async () => {
+    authMock.mockResolvedValue(null);
+    render(await MainNav());
 
     // User should be undefined in this case
     const userProfileMock = screen.getByTestId("user-profile-mock");
@@ -119,8 +134,9 @@ describe("MainNav", () => {
     expect(mobileNavMock).toHaveAttribute("data-is-admin", "false");
   });
 
-  it("has correct styling for header", () => {
-    const { container } = render(<MainNav session={mockSession} />);
+  it("has correct styling for header", async () => {
+    authMock.mockResolvedValue(mockSession);
+    const { container } = render(await MainNav());
 
     // Check if the header has the right classes
     const header = container.querySelector("header");
@@ -135,8 +151,9 @@ describe("MainNav", () => {
     );
   });
 
-  it("shows NavLinks only in desktop view", () => {
-    render(<MainNav session={mockSession} />);
+  it("shows NavLinks only in desktop view", async () => {
+    authMock.mockResolvedValue(mockSession);
+    render(await MainNav());
 
     // Check the wrapper div has the right classes
     const navLinksWrapper = screen.getByTestId("nav-links-mock").parentElement;
