@@ -1,6 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { MainNav } from "@/components/custom/nav/main-nav";
 import { ROLES_OBJ } from "@/lib/roles";
+import { useSession } from "next-auth/react";
+
+// Mock the useSession hook
+jest.mock("next-auth/react", () => ({
+  useSession: jest.fn(),
+}));
 
 // Mock the child components
 jest.mock("@/components/custom/nav/nav-links", () => ({
@@ -64,8 +70,15 @@ describe("MainNav", () => {
     expires: "2023-01-01",
   };
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  const useSessionMock = useSession as jest.Mock;
+
   it("renders all child components correctly", () => {
-    render(<MainNav session={mockSession} />);
+    useSessionMock.mockReturnValue({ data: mockSession });
+    render(<MainNav />);
 
     // Check if all child components are rendered
     expect(screen.getByTestId("logo-title-mock")).toBeInTheDocument();
@@ -76,7 +89,8 @@ describe("MainNav", () => {
   });
 
   it("passes correct user data to UserProfile component", () => {
-    render(<MainNav session={mockSession} />);
+    useSessionMock.mockReturnValue({ data: mockSession });
+    render(<MainNav />);
 
     const userProfileMock = screen.getByTestId("user-profile-mock");
     expect(
@@ -85,7 +99,8 @@ describe("MainNav", () => {
   });
 
   it("passes correct isAdmin=false to NavLinks and MobileNav when user is not admin", () => {
-    render(<MainNav session={mockSession} />);
+    useSessionMock.mockReturnValue({ data: mockSession });
+    render(<MainNav />);
 
     const navLinksMock = screen.getByTestId("nav-links-mock");
     const mobileNavMock = screen.getByTestId("mobile-nav-mock");
@@ -95,7 +110,8 @@ describe("MainNav", () => {
   });
 
   it("passes correct isAdmin=true to NavLinks and MobileNav when user is admin", () => {
-    render(<MainNav session={mockAdminSession} />);
+    useSessionMock.mockReturnValue({ data: mockAdminSession });
+    render(<MainNav />);
 
     const navLinksMock = screen.getByTestId("nav-links-mock");
     const mobileNavMock = screen.getByTestId("mobile-nav-mock");
@@ -105,9 +121,10 @@ describe("MainNav", () => {
   });
 
   it("handles null session correctly", () => {
-    render(<MainNav session={null} />);
+    useSessionMock.mockReturnValue({ data: null });
+    render(<MainNav />);
 
-    // User should be undefined in this case
+    // data-user would be null because user is undefined
     const userProfileMock = screen.getByTestId("user-profile-mock");
     expect(userProfileMock.getAttribute("data-user")).toBe(null);
 
@@ -119,8 +136,33 @@ describe("MainNav", () => {
     expect(mobileNavMock).toHaveAttribute("data-is-admin", "false");
   });
 
+  it("handles undefined session correctly", () => {
+    useSessionMock.mockReturnValue({ data: undefined });
+    render(<MainNav />);
+
+    // data-user would be null because user is undefined
+    const userProfileMock = screen.getByTestId("user-profile-mock");
+    expect(userProfileMock.getAttribute("data-user")).toBe(null);
+
+    // isAdmin should be false
+    const navLinksMock = screen.getByTestId("nav-links-mock");
+    const mobileNavMock = screen.getByTestId("mobile-nav-mock");
+
+    expect(navLinksMock).toHaveAttribute("data-is-admin", "false");
+    expect(mobileNavMock).toHaveAttribute("data-is-admin", "false");
+  });
+
+  it("passes correct itemClassName to NavLinks", () => {
+    useSessionMock.mockReturnValue({ data: mockSession });
+    render(<MainNav />);
+
+    const navLinksMock = screen.getByTestId("nav-links-mock");
+    expect(navLinksMock).toHaveAttribute("data-item-class-name", "px-3 py-2");
+  });
+
   it("has correct styling for header", () => {
-    const { container } = render(<MainNav session={mockSession} />);
+    useSessionMock.mockReturnValue({ data: mockSession });
+    const { container } = render(<MainNav />);
 
     // Check if the header has the right classes
     const header = container.querySelector("header");
@@ -136,7 +178,9 @@ describe("MainNav", () => {
   });
 
   it("shows NavLinks only in desktop view", () => {
-    render(<MainNav session={mockSession} />);
+    // In mobile view, MobileNav is shown
+    useSessionMock.mockReturnValue({ data: mockSession });
+    render(<MainNav />);
 
     // Check the wrapper div has the right classes
     const navLinksWrapper = screen.getByTestId("nav-links-mock").parentElement;

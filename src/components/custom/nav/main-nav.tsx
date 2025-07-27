@@ -1,13 +1,16 @@
+"use client";
+import { useSession } from "next-auth/react";
 import { NavLinks } from "@/components/custom/nav/nav-links";
 import { LogoAndTitle } from "@/components/custom/nav/logo-title";
 import { UserProfile } from "@/components/custom/nav/user-profile";
 import { MobileNav } from "@/components/custom/nav/mobile-nav-bottom";
 import { ThemeToggle } from "@/components/custom/nav/floating-theme-toggle";
-import { Session } from "next-auth";
 import { ROLES_OBJ } from "@/lib/roles";
 
-export function MainNav({ session }: { session: Session | null }) {
+export function MainNav() {
+  const { data: session } = useSession();
   const user = session?.user;
+
   return (
     <>
       <header className="bg-background sticky top-0 z-50 w-full border-b">
