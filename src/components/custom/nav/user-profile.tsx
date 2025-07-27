@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -11,14 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut } from "lucide-react";
 import { type User } from "next-auth";
-import { signOut } from "@/auth";
+import { signOut } from "next-auth/react";
 
 export function UserProfile({ user }: { user: User | undefined }) {
-  if (!user) return null;
+  if (!user) return <UserProfileLoader />;
 
-  const signOutAction = async () => {
-    "use server";
-    await signOut({ redirectTo: "/signin" });
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/auth/signin" });
   };
 
   const getUserInitials = () => {
@@ -46,22 +47,23 @@ export function UserProfile({ user }: { user: User | undefined }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <form
-            action={signOutAction}
-            className="w-full"
-            style={{ padding: "unset" }}
+          <Button
+            variant="ghost"
+            onClick={handleSignOut}
+            className="hover:text-destructive hover:bg-destructive/10 w-full cursor-pointer justify-start text-inherit transition-colors duration-200"
+            data-testid="sign-out-button"
           >
-            <Button
-              variant="ghost"
-              type="submit"
-              className="hover:text-destructive hover:bg-destructive/10 w-full cursor-pointer justify-start p-0 text-inherit transition-colors duration-200"
-            >
-              <LogOut className="mr-2 h-4 w-4 text-inherit" />
-              <span>Sign out</span>
-            </Button>
-          </form>
+            <LogOut className="mr-2 h-4 w-4 text-inherit" />
+            <span>Sign out</span>
+          </Button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function UserProfileLoader() {
+  return (
+    <div className="bg-muted-foreground relative h-8 w-8 animate-pulse cursor-pointer rounded-full transition-all duration-1000 hover:scale-125"></div>
   );
 }

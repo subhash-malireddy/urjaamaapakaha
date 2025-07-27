@@ -1,13 +1,14 @@
+"use client";
+import { useSession } from "next-auth/react";
 import { NavLinks } from "@/components/custom/nav/nav-links";
 import { LogoAndTitle } from "@/components/custom/nav/logo-title";
 import { UserProfile } from "@/components/custom/nav/user-profile";
 import { MobileNav } from "@/components/custom/nav/mobile-nav-bottom";
 import { ThemeToggle } from "@/components/custom/nav/floating-theme-toggle";
-import { auth } from "@/auth";
 import { ROLES_OBJ } from "@/lib/roles";
 
-export async function MainNav() {
-  const session = await auth();
+export function MainNav() {
+  const { data: session } = useSession();
   const user = session?.user;
 
   return (
