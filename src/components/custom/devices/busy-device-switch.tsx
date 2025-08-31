@@ -3,6 +3,7 @@
 import { Switch } from "@/components/ui/switch";
 import { turnOffDeviceAction } from "@/lib/actions/device-actions";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface BusyDeviceSwitchProps {
   deviceId: string;
@@ -31,7 +32,22 @@ export function BusyDeviceSwitch({
 
       const result = await turnOffDeviceAction(deviceId, deviceIp);
       if (!result.success) {
-        // If the action fails, revert the switch state
+        // Check if it's the month-end calculation error
+        if (result.error?.includes("Month-end calculations in progress")) {
+          // Show friendly toast and keep switch on
+          toast.warning("Month-end calculations in progress", {
+            description: "Please try again in 1 minute.",
+            duration: 5000,
+            style: {
+              color: "orange",
+            },
+          });
+          setIsSwitchOn(true);
+          setIsLoading(false);
+          return; // Don't throw error, just return
+        }
+
+        // For other errors, revert the switch state and throw
         setIsSwitchOn(true);
         setIsLoading(false);
         throw new Error(result.error);
@@ -42,6 +58,14 @@ export function BusyDeviceSwitch({
       // Revert switch state on error
       setIsSwitchOn(true);
       setIsLoading(false);
+
+      // Show generic error toast
+      toast.error("Failed to turn off device", {
+        description: "Please try again later.",
+        style: {
+          color: "hsl(var(--destructive))",
+        },
+      });
     }
   };
 
