@@ -8,6 +8,7 @@ import {
   deviceOnResponseSchema,
 } from "../zod/device";
 import { deviceSelectListResponseSchema } from "../zod/usage";
+import { isMonthTransition } from "@/lib/month-transition-utils";
 
 export async function getAllDevicesOnlyIdAndAlias() {
   const devices = await db.device.findMany({
@@ -271,25 +272,57 @@ export async function turnOffDevice(deviceId: string, deviceIp: string) {
       apiResponse = { status: 0, ...simulatedUsage };
     }
 
+    // Check for month transition
+    const hasMonthTransition = isMonthTransition(
+      activeDevice.usage.start_date,
+      new Date(),
+    );
+
+    // If month transition and tracking in progress, reject the request
+    if (hasMonthTransition && activeDevice.usage.is_tracking_previous_month) {
+      throw new Error(
+        "Month-end calculations in progress. Please try again in 1 minute.",
+      );
+    }
+
     // Calculate final consumption and update records in a transaction
     return await db.$transaction(async (tx) => {
-      // Calculate final consumption (current - initial)
-      const finalConsumption = shouldCallRealApi
-        ? roundUpTwoDecimals(
-            Number(apiResponse.usage.month_energy) -
-              Number(activeDevice.usage.consumption),
-          )
-        : Number(
-            (
-              Math.ceil(
-                Math.abs(
-                  // Math.abs is used to ensure the result is positive
-                  Number(apiResponse.usage.month_energy) -
-                    Number(activeDevice.usage.consumption),
-                ) * 100,
-              ) / 100
-            ).toFixed(2),
-          );
+      // Calculate final consumption based on month transition
+      let finalConsumption: number;
+
+      if (hasMonthTransition) {
+        // Month transition: use accumulated calculation
+        /* istanbul ignore next */
+        finalConsumption = shouldCallRealApi
+          ? roundUpTwoDecimals(
+              Number(activeDevice.usage.previous_month_accumulated) +
+                Number(apiResponse.usage.month_energy),
+            )
+          : Number(
+              (
+                Number(activeDevice.usage.previous_month_accumulated) +
+                Math.abs(Number(apiResponse.usage.month_energy))
+              ).toFixed(2),
+            );
+      } else {
+        // Normal calculation (current - initial)
+        finalConsumption = shouldCallRealApi
+          ? roundUpTwoDecimals(
+              Number(apiResponse.usage.month_energy) -
+                Number(activeDevice.usage.consumption),
+            )
+          : Number(
+              (
+                Math.ceil(
+                  Math.abs(
+                    // Math.abs is used to ensure the result is positive
+                    Number(apiResponse.usage.month_energy) -
+                      Number(activeDevice.usage.consumption),
+                  ) * 100,
+                ) / 100
+              ).toFixed(2),
+            );
+      }
 
       // Update usage record with end time and final consumption
       const updatedUsage = await tx.usage.update({

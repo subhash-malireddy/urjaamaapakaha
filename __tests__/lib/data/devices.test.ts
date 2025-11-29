@@ -469,6 +469,101 @@ describe("Device data functions", () => {
       // Restore console.error
       consoleErrorSpy.mockRestore();
     });
+    describe("when the device is turned off after month transition", () => {
+      beforeEach(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(TEST_DATA.newMonthEnd); // Jan 1, 00:30 Sydney (AEDT +11)
+      });
+
+      afterEach(() => {
+        // Restore real timers after each test
+        jest.useRealTimers();
+      });
+      it("should not turn off the device when the is_tracking_previous_month is true", async () => {
+        setupTransactionMock();
+        mockDB.active_device.findFirst.mockResolvedValueOnce({
+          ...createMockActiveDeviceRecord(),
+          usage: {
+            ...createMockUsageRecord(),
+            start_date: TEST_DATA.previousMonthStart,
+            end_date: TEST_DATA.previousMonthStart, //before turning off both will be same date
+            is_tracking_previous_month: true,
+          },
+        } as any);
+        jest.spyOn(utils, "simulateApiCall");
+        const consoleErrorSpy = setupConsoleErrorSpy();
+
+        // Expect the function to throw an error
+        await expect(
+          turnOffDevice(TEST_DATA.deviceId, TEST_DATA.deviceIp),
+        ).rejects.toThrow(
+          "Month-end calculations in progress. Please try again in 1 minute.",
+        );
+
+        // Verify no database operations were performed
+        expect(db.$transaction).not.toHaveBeenCalled();
+        expect(db.usage.update).not.toHaveBeenCalled();
+        expect(db.active_device.delete).not.toHaveBeenCalled();
+
+        consoleErrorSpy.mockRestore();
+      });
+
+      it("should correctly calculate the final consumption when the device isn't being tracked and previous_month_accumulated is a valid value", async () => {
+        // Setup mocks
+        setupTransactionMock();
+        mockDB.active_device.findFirst.mockResolvedValueOnce({
+          ...createMockActiveDeviceRecord(),
+          usage: {
+            ...createMockUsageRecord(),
+            start_date: TEST_DATA.previousMonthStart,
+            end_date: TEST_DATA.previousMonthStart, //before turning off both will be same date
+            is_tracking_previous_month: false,
+            previous_month_accumulated: TEST_DATA.previousMonthAccumulated,
+          },
+        } as any);
+        mockDB.usage.update.mockResolvedValueOnce({
+          ...createMockUsageRecord(),
+          start_date: TEST_DATA.previousMonthStart,
+          end_date: TEST_DATA.newMonthEnd,
+          is_tracking_previous_month: false,
+          previous_month_accumulated: TEST_DATA.previousMonthAccumulated,
+          consumption:
+            TEST_DATA.previousMonthAccumulated +
+            TEST_DATA.newMonthMockFinalConsumption,
+        } as any);
+        mockDB.active_device.delete.mockResolvedValueOnce({} as any);
+        jest.spyOn(utils, "simulateApiCall").mockResolvedValueOnce({
+          usage: { month_energy: TEST_DATA.newMonthMockFinalConsumption },
+        } as any);
+
+        const result = await turnOffDevice(
+          TEST_DATA.deviceId,
+          TEST_DATA.deviceIp,
+        );
+
+        expect(db.$transaction).toHaveBeenCalledTimes(1);
+        expect(db.usage.update).toHaveBeenCalledWith({
+          where: { id: TEST_DATA.mockUsageId },
+          data: {
+            end_date: TEST_DATA.newMonthEnd,
+            consumption:
+              TEST_DATA.newMonthMockFinalConsumption +
+              TEST_DATA.previousMonthAccumulated,
+          },
+        });
+
+        expect(db.active_device.delete).toHaveBeenCalledWith({
+          where: { device_id: TEST_DATA.deviceId },
+        });
+
+        expect(result.usage.start_date).toEqual(TEST_DATA.previousMonthStart);
+        expect(result.usage.end_date).toEqual(TEST_DATA.newMonthEnd);
+        expect(result.usage.consumption).toBe(
+          TEST_DATA.newMonthMockFinalConsumption +
+            TEST_DATA.previousMonthAccumulated,
+        );
+      });
+    });
   });
 
   describe("getDevicesWithStatus", () => {
@@ -607,6 +702,10 @@ const TEST_DATA = {
   mockFinalConsumption: 100,
   specialIp: "192.168.0.190",
   apiEndpoint: "http://api.example.com",
+  newMonthMockFinalConsumption: 100,
+  previousMonthAccumulated: 100,
+  previousMonthStart: new Date("2024-12-31T12:45:00Z"), // Dec 31, 23:45 Sydney (AEDT +11)
+  newMonthEnd: new Date("2024-12-31T13:30:00Z"), // Jan 1, 00:30 Sydney (AEDT +11)
 };
 
 const mockDevices = [

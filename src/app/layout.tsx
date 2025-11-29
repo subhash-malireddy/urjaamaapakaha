@@ -4,6 +4,7 @@ import "./globals.css";
 import { MainNav } from "@/components/custom/nav/main-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
             <main className="flex justify-center p-4 sm:p-2">{children}</main>
             {/* Add padding at the bottom for the mobile nav */}
             <div className="h-14 md:h-0"></div>
+            <Toaster />
           </ThemeProvider>
         </SessionProvider>
       </body>
