@@ -10,7 +10,7 @@ const PUBLIC_PATHS = ["/auth/signin", "/auth/error"];
  * @param request The incoming request
  * @returns NextResponse if authentication/authorization fails, undefined if allowed
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Get the pathname from the URL
   const { pathname } = request.nextUrl;
 
