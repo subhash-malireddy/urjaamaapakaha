@@ -1,4 +1,4 @@
-import { middleware, config } from "@/middleware";
+import { proxy, config } from "@/proxy";
 import { ROLES_OBJ } from "@/lib/roles";
 import { auth } from "@/auth";
 
@@ -85,14 +85,14 @@ describe("Authentication Middleware", () => {
 
   it("should allow access to public routes without authentication", async () => {
     const mockReq = createMockRequest("/auth/signin");
-    const response = await middleware(mockReq as any);
+    const response = await proxy(mockReq as any);
     expect(response).toBeUndefined();
   });
 
   it("should redirect unauthenticated users to signin for protected routes", async () => {
     mockAuth.mockResolvedValueOnce({ user: null });
     const mockReq = createMockRequest("/dashboard");
-    const response = await middleware(mockReq as any);
+    const response = await proxy(mockReq as any);
 
     expect(response).toBeDefined();
     expect(response?.status).toBe(307);
@@ -105,7 +105,7 @@ describe("Authentication Middleware", () => {
     });
 
     const mockReq = createMockRequest("/dashboard");
-    const response = await middleware(mockReq as any);
+    const response = await proxy(mockReq as any);
     expect(response).toBeUndefined();
   });
 
@@ -115,7 +115,7 @@ describe("Authentication Middleware", () => {
     });
 
     const mockReq = createMockRequest("/admin/settings");
-    const response = await middleware(mockReq as any);
+    const response = await proxy(mockReq as any);
 
     expect(response).toBeDefined();
     expect(response?.status).toBe(403);
@@ -127,13 +127,13 @@ describe("Authentication Middleware", () => {
     });
 
     const mockReq = createMockRequest("/admin/settings");
-    const response = await middleware(mockReq as any);
+    const response = await proxy(mockReq as any);
     expect(response).toBeUndefined();
   });
 
   it("should allow access to error pages", async () => {
     const mockReq = createMockRequest("/auth/error");
-    const response = await middleware(mockReq as any);
+    const response = await proxy(mockReq as any);
     expect(response).toBeUndefined();
   });
 });
