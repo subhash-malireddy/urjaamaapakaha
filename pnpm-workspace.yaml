@@ -5,3 +5,6 @@ allowBuilds:
   '@tailwindcss/oxide': false
   sharp: false
   unrs-resolver: false
+
+# Supply-chain guard: only resolve versions published at least 14 days ago (minutes)
+minimumReleaseAge: 20160
