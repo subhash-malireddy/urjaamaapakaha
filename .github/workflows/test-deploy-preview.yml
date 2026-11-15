@@ -140,55 +140,55 @@ jobs:
 
           # Add environment variables using Vercel CLI without newlines
           printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
-          vercel env add GOOGLE_CLIENT_ID --environment=preview < google_client_id.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add GOOGLE_CLIENT_ID --environment=preview --yes < google_client_id.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm google_client_id.txt
 
           printf "%s" "${{ secrets.GOOGLE_CLIENT_SECRET }}" > google_client_secret.txt
-          vercel env add GOOGLE_CLIENT_SECRET --environment=preview < google_client_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add GOOGLE_CLIENT_SECRET --environment=preview --yes < google_client_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm google_client_secret.txt
 
           printf "%s" "https://preview-subhash-malireddy-urjaamaapakaha.vercel.app" > nextauth_url.txt
-          vercel env add NEXTAUTH_URL --environment=preview < nextauth_url.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add NEXTAUTH_URL --environment=preview --yes < nextauth_url.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm nextauth_url.txt
 
           printf "%s" "${{ secrets.NEXTAUTH_SECRET }}" > nextauth_secret.txt
-          vercel env add NEXTAUTH_SECRET --environment=preview < nextauth_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add NEXTAUTH_SECRET --environment=preview --yes < nextauth_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm nextauth_secret.txt
 
           printf "%s" "${{ secrets.ADMIN_EMAILS }}" > admin_emails.txt
-          vercel env add ADMIN_EMAILS --environment=preview < admin_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add ADMIN_EMAILS --environment=preview --yes < admin_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm admin_emails.txt
 
           printf "%s" "${{ secrets.MEMBER_EMAILS }}" > member_emails.txt
-          vercel env add MEMBER_EMAILS --environment=preview < member_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add MEMBER_EMAILS --environment=preview --yes < member_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm member_emails.txt
 
           printf "%s" "${{ secrets.DATABASE_URL }}" > database_url.txt
-          vercel env add DATABASE_URL --environment=preview < database_url.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add DATABASE_URL --environment=preview --yes < database_url.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm database_url.txt
 
           printf "%s" "${{ secrets.URJ_FSFY_API }}" > urj_fsfy_api.txt
-          vercel env add URJ_FSFY_API --environment=preview < urj_fsfy_api.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add URJ_FSFY_API --environment=preview --yes < urj_fsfy_api.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm urj_fsfy_api.txt
 
           printf "%s" "${{ secrets.URJ_FSFY_API_USER }}" > urj_fsfy_api_user.txt
-          vercel env add URJ_FSFY_API_USER --environment=preview < urj_fsfy_api_user.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add URJ_FSFY_API_USER --environment=preview --yes < urj_fsfy_api_user.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm urj_fsfy_api_user.txt
 
           printf "%s" "${{ secrets.URJ_FSFY_API_PWD }}" > urj_fsfy_api_pwd.txt
-          vercel env add URJ_FSFY_API_PWD --environment=preview < urj_fsfy_api_pwd.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add URJ_FSFY_API_PWD --environment=preview --yes < urj_fsfy_api_pwd.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm urj_fsfy_api_pwd.txt
 
           printf "%s" "${{ secrets.SPECIAL_DEVICE_IPS }}" > special_device_ips.txt
-          vercel env add SPECIAL_DEVICE_IPS --environment=preview < special_device_ips.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add SPECIAL_DEVICE_IPS --environment=preview --yes < special_device_ips.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm special_device_ips.txt
 
           printf "%s" "false" > should_call_real_api.txt
-          vercel env add SHOULD_CALL_REAL_API --environment=preview < should_call_real_api.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add SHOULD_CALL_REAL_API --environment=preview --yes < should_call_real_api.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm should_call_real_api.txt
 
           printf "%s" "${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}" > next_public_billing_start_date.txt
-          vercel env add NEXT_PUBLIC_BILLING_START_DATE --environment=preview < next_public_billing_start_date.txt --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env add NEXT_PUBLIC_BILLING_START_DATE --environment=preview --yes < next_public_billing_start_date.txt --token=${{ secrets.VERCEL_TOKEN }}
           rm next_public_billing_start_date.txt
 
       - name: Pull Latest Vercel Environment Information
