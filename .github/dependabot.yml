@@ -1,4 +1,4 @@
-# Dependabot version updates.
+# Dependabot version updates (Fridays, for weekend review).
 # `cooldown` keeps version-update PRs to releases at least 14 days old, matching
 # `minimumReleaseAge` in pnpm-workspace.yaml (supply-chain guard).
 # Security updates are not delayed by cooldown.
@@ -9,7 +9,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
+      day: "friday"
     cooldown:
       default-days: 14
     open-pull-requests-limit: 10
@@ -27,7 +27,7 @@ updates:
     directory: "/.github/tools"
     schedule:
       interval: "weekly"
-      day: "monday"
+      day: "friday"
     cooldown:
       default-days: 14
     commit-message:
@@ -38,7 +38,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
+      day: "friday"
     cooldown:
       default-days: 14
     groups:
