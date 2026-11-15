@@ -97,7 +97,7 @@ function generateUsage(devices, count, startDate, endDate) {
     const durationHours = faker.number.float({
       min: 0.1,
       max: 12,
-      precision: 0.1,
+      multipleOf: 0.1,
     });
     const endTime = new Date(
       startTime.getTime() + durationHours * 60 * 60 * 1000,
@@ -109,7 +109,7 @@ function generateUsage(devices, count, startDate, endDate) {
     const consumptionRate = faker.number.float({
       min: 0.1,
       max: 2.0,
-      precision: 0.01,
+      multipleOf: 0.01,
     });
     const consumption = parseFloat(
       (durationHours * consumptionRate).toFixed(2),
@@ -117,7 +117,7 @@ function generateUsage(devices, count, startDate, endDate) {
     const chargeRate = faker.number.float({
       min: 0.15,
       max: 0.25,
-      precision: 0.01,
+      multipleOf: 0.01,
     });
     const charge = parseFloat((consumption * chargeRate).toFixed(2));
 

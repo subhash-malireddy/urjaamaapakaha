@@ -77,7 +77,7 @@ export default function UsageChart({
   const [chartType, setChartType] = useState<ChartType>("bar");
 
   // Transform and merge data for chart consumption
-  const chartData = React.useMemo(buildChartData, [data]);
+  const chartData = React.useMemo(() => buildChartData(data), [data]);
 
   const userPercentage =
     totalOverallConsumption > 0
@@ -188,42 +188,42 @@ export default function UsageChart({
       </CardContent>
     </Card>
   );
+}
 
-  function buildChartData(): ChartDataItem[] {
-    if (!data) {
-      return [];
-    }
-    const dateMap = new Map<string, ChartDataItem>();
-
-    // Add user consumption data
-    data.userConsumption.forEach(({ date, consumption }) => {
-      const dateKey = format(date, "yyyy-MM-dd");
-      const existingEntry = dateMap.get(dateKey) || {
-        date: format(date, "MMM dd"),
-        userConsumption: 0,
-        totalConsumption: 0,
-      };
-      existingEntry.userConsumption = consumption;
-      dateMap.set(dateKey, existingEntry);
-    });
-
-    // Add total consumption data
-    data.totalConsumption.forEach(({ date, consumption }) => {
-      const dateKey = format(date, "yyyy-MM-dd");
-      const existingEntry = dateMap.get(dateKey) || {
-        date: format(date, "MMM dd"),
-        userConsumption: 0,
-        totalConsumption: 0,
-      };
-      existingEntry.totalConsumption = consumption;
-      dateMap.set(dateKey, existingEntry);
-    });
-
-    // Convert map to array and sort by date
-    return Array.from(dateMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([, value]) => value);
+function buildChartData(data: UsageData | undefined): ChartDataItem[] {
+  if (!data) {
+    return [];
   }
+  const dateMap = new Map<string, ChartDataItem>();
+
+  // Add user consumption data
+  data.userConsumption.forEach(({ date, consumption }) => {
+    const dateKey = format(date, "yyyy-MM-dd");
+    const existingEntry = dateMap.get(dateKey) || {
+      date: format(date, "MMM dd"),
+      userConsumption: 0,
+      totalConsumption: 0,
+    };
+    existingEntry.userConsumption = consumption;
+    dateMap.set(dateKey, existingEntry);
+  });
+
+  // Add total consumption data
+  data.totalConsumption.forEach(({ date, consumption }) => {
+    const dateKey = format(date, "yyyy-MM-dd");
+    const existingEntry = dateMap.get(dateKey) || {
+      date: format(date, "MMM dd"),
+      userConsumption: 0,
+      totalConsumption: 0,
+    };
+    existingEntry.totalConsumption = consumption;
+    dateMap.set(dateKey, existingEntry);
+  });
+
+  // Convert map to array and sort by date
+  return Array.from(dateMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, value]) => value);
 }
 
 type ChartDataItem = {
