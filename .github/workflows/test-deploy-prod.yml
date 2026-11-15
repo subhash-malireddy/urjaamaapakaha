@@ -10,6 +10,7 @@ on:
 jobs:
   test-and-deploy-prod:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: github.actor == 'subhash-malireddy'
     environment: prod
     env:
@@ -173,19 +174,11 @@ jobs:
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel Production
+        # `vercel deploy` waits until the deployment is ready and never exits if Vercel blocks
+        # or stalls it, so cap it instead of hanging until the 6-hour job limit.
+        timeout-minutes: 10
         run: |
-          # Save stdout and stderr to files
-          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} >deployment-url.txt 2>error.txt
-
-          # Check the exit code
-          code=$?
-          if [ $code -eq 0 ]; then
-              # Get the deployment URL from stdout for the next step
-              deploymentUrl=$(cat deployment-url.txt)
-              echo "Deployed to $deploymentUrl"
-          else
-              # Handle the error
-              errorMessage=$(cat error.txt)
-              echo "There was an error: $errorMessage"
-              exit 1
-          fi
+          # The deployment URL goes to stdout; progress and errors go to stderr, which stays in
+          # the job log. The shell runs with -e, so a failed deploy fails the step right here.
+          deploymentUrl=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "Deployed to $deploymentUrl"
