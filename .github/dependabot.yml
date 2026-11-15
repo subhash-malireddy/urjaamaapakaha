@@ -1,0 +1,48 @@
+# Dependabot version updates.
+# `cooldown` keeps version-update PRs to releases at least 14 days old, matching
+# `minimumReleaseAge` in pnpm-workspace.yaml (supply-chain guard).
+# Security updates are not delayed by cooldown.
+version: 2
+updates:
+  # App dependencies (root package.json / pnpm-lock.yaml)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 14
+    open-pull-requests-limit: 10
+    groups:
+      # One PR for all minor/patch bumps; majors get their own PRs
+      app-minor-and-patch:
+        update-types: ["minor", "patch"]
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Deploy tooling (Vercel CLI), kept separate from the app's dependencies.
+  # Deploy steps only run on push to main, so merge these on their own
+  # and watch the next deploy.
+  - package-ecosystem: "npm"
+    directory: "/.github/tools"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 14
+    commit-message:
+      prefix: "ci(deps)"
+
+  # GitHub Actions used in workflows (actions/checkout, pnpm/action-setup, ...)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 14
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci(deps)"

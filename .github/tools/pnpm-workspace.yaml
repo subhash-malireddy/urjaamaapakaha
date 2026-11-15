@@ -1,0 +1,9 @@
+# Standalone workspace for deploy tooling (see package.json).
+# Having this file here stops pnpm from treating the app's root workspace as this project's root.
+
+allowBuilds:
+  # esbuild ships its binary via optional platform packages; the install script is only a fallback
+  esbuild: false
+
+# Supply-chain guard: only resolve versions published at least 14 days ago (minutes)
+minimumReleaseAge: 20160

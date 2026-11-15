@@ -108,12 +108,14 @@ jobs:
         run: pnpm prisma migrate deploy
 
       # Deploy to Vercel (only on push to main)
-      # Pinned to an exact version (>=14 days old) instead of vercel@latest:
-      # vercel@latest (65.16.0) failed on `env rm/add` with "Could not retrieve Project Settings".
-      # 64.7.0 supports the `--environment` flag used below (positional env is deprecated since 64.6).
-      - name: Install Vercel CLI
+      # Vercel CLI version is pinned in .github/tools/package.json (kept out of the app's deps)
+      # and updated by Dependabot. Its bin dir is added to PATH so later steps can call `vercel`.
+      - name: Install deploy tools (Vercel CLI)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: pnpm install --global vercel@64.7.0
+        run: |
+          pnpm install --frozen-lockfile --dir .github/tools
+          echo "$GITHUB_WORKSPACE/.github/tools/node_modules/.bin" >> "$GITHUB_PATH"
+          .github/tools/node_modules/.bin/vercel --version
 
       - name: Pull and refresh Vercel Environment Information
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
