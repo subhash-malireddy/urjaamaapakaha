@@ -16,6 +16,12 @@ import {
 import { useActionState } from "react";
 import { updateEstimatedTimeAction } from "@/lib/actions/usage-actions";
 
+const initialState = {
+  message: "",
+  error: undefined,
+  updatedTime: undefined,
+};
+
 interface InlineTimeEditProps {
   deviceId: string;
   estimatedUseUntil: Date | null;
@@ -33,13 +39,7 @@ export function InlineTimeEdit({
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const submitButtonRef = useRef<HTMLButtonElement>(null);
-  const initialInputValueRef = useRef<string>("");
-
-  const initialState = {
-    message: "",
-    error: undefined,
-    updatedTime: undefined,
-  };
+  const [initialInputValue, setInitialInputValue] = useState<string>("");
 
   // Use useActionState instead of useFormState + useFormStatus
   const [serverState, formAction, isPending] = useActionState(
@@ -55,12 +55,15 @@ export function InlineTimeEdit({
     return estimatedUseUntil;
   }, [serverState.updatedTime, serverState.error, estimatedUseUntil]);
 
-  // Update editing state when server action completes successfully
-  useEffect(() => {
+  // Exit edit mode when a new server response reports success.
+  // Adjusting state during render (instead of in an effect) avoids an extra render pass.
+  const [prevServerState, setPrevServerState] = useState(serverState);
+  if (serverState !== prevServerState) {
+    setPrevServerState(serverState);
     if (serverState.updatedTime && !serverState.error) {
       setIsEditing(false);
     }
-  }, [serverState]);
+  }
 
   // Focus input when entering edit mode
   useEffect(() => {
@@ -101,7 +104,7 @@ export function InlineTimeEdit({
     e.stopPropagation();
     const initialValue = getDateTimeLocalValue(displayTime);
     setInputDateTimeValue(initialValue);
-    initialInputValueRef.current = initialValue;
+    setInitialInputValue(initialValue);
     // Reset interaction state not to show error from previous interaction
     // Fresh interaction should show fresh error message if needed
     setHasInteracted(false);
@@ -146,7 +149,7 @@ export function InlineTimeEdit({
     }
 
     // Only check for unchanged time if the form is dirty but reverted to initial value
-    if (hasInteracted && inputDateTimeValue === initialInputValueRef.current) {
+    if (hasInteracted && inputDateTimeValue === initialInputValue) {
       return "No change made to the time";
     }
 

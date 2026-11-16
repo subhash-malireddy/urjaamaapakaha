@@ -1,0 +1,8 @@
+{
+  "name": "deploy-tools",
+  "private": true,
+  "description": "CLI tools used only by the GitHub Actions deploy workflows. Kept separate from the app so their dependencies don't affect the app's install or audit. Updated by Dependabot (see .github/dependabot.yml).",
+  "devDependencies": {
+    "vercel": "64.7.0"
+  }
+}

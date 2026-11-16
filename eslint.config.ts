@@ -21,7 +21,15 @@ const eslintConfig = [
     },
   },
   {
+    // Plain Node CommonJS helper script (used by .vscode/launch.json)
+    files: ["jest-path-helper-windows.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
     ignores: [
+      "coverage/**",
       "node_modules/**",
       ".next/**",
       "out/**",

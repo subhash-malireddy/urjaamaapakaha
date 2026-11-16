@@ -10,6 +10,7 @@ on:
 jobs:
   test-and-deploy-prod:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: github.actor == 'subhash-malireddy'
     environment: prod
     env:
@@ -90,97 +91,57 @@ jobs:
         run: pnpm prisma migrate deploy
 
       # Deploy to Vercel Production
-      - name: Install Vercel CLI
-        run: pnpm install --global vercel@latest
-
-      - name: Pull and refresh Vercel Environment Information
+      # Vercel CLI version is pinned in .github/tools/package.json (kept out of the app's deps)
+      # and updated by Dependabot. Its bin dir is added to PATH so later steps can call `vercel`.
+      - name: Install deploy tools (Vercel CLI)
         run: |
-          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          pnpm install --frozen-lockfile --dir .github/tools
+          echo "$GITHUB_WORKSPACE/.github/tools/node_modules/.bin" >> "$GITHUB_PATH"
+          .github/tools/node_modules/.bin/vercel --version
 
-          # Remove existing environment variables first
-          vercel env rm GOOGLE_CLIENT_ID production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm GOOGLE_CLIENT_SECRET production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm NEXTAUTH_URL production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm NEXTAUTH_SECRET production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm ADMIN_EMAILS production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm MEMBER_EMAILS production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm DATABASE_URL production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm URJ_FSFY_API production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm URJ_FSFY_API_USER production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm URJ_FSFY_API_PWD production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm SHOULD_CALL_REAL_API production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm NEXT_PUBLIC_BILLING_START_DATE production --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-
-          # Add environment variables using Vercel CLI without newlines
-          printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
-          vercel env add GOOGLE_CLIENT_ID production < google_client_id.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm google_client_id.txt
-
-          printf "%s" "${{ secrets.GOOGLE_CLIENT_SECRET }}" > google_client_secret.txt
-          vercel env add GOOGLE_CLIENT_SECRET production < google_client_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm google_client_secret.txt
-
-          printf "%s" "https://app-urjaamaapakaha.subbi.fyi" > nextauth_url.txt
-          vercel env add NEXTAUTH_URL production < nextauth_url.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm nextauth_url.txt
-
-          printf "%s" "${{ secrets.NEXTAUTH_SECRET }}" > nextauth_secret.txt
-          vercel env add NEXTAUTH_SECRET production < nextauth_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm nextauth_secret.txt
-
-          printf "%s" "${{ secrets.ADMIN_EMAILS }}" > admin_emails.txt
-          vercel env add ADMIN_EMAILS production < admin_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm admin_emails.txt
-
-          printf "%s" "${{ secrets.MEMBER_EMAILS }}" > member_emails.txt
-          vercel env add MEMBER_EMAILS production < member_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm member_emails.txt
-
-          printf "%s" "${{ secrets.DATABASE_URL }}" > database_url.txt
-          vercel env add DATABASE_URL production < database_url.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm database_url.txt
-
-          printf "%s" "${{ secrets.URJ_FSFY_API }}" > urj_fsfy_api.txt
-          vercel env add URJ_FSFY_API production < urj_fsfy_api.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm urj_fsfy_api.txt
-
-          printf "%s" "${{ secrets.URJ_FSFY_API_USER }}" > urj_fsfy_api_user.txt
-          vercel env add URJ_FSFY_API_USER production < urj_fsfy_api_user.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm urj_fsfy_api_user.txt
-
-          printf "%s" "${{ secrets.URJ_FSFY_API_PWD }}" > urj_fsfy_api_pwd.txt
-          vercel env add URJ_FSFY_API_PWD production < urj_fsfy_api_pwd.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm urj_fsfy_api_pwd.txt
-
-          printf "%s" "${{ secrets.SHOULD_CALL_REAL_API }}" > should_call_real_api.txt
-          vercel env add SHOULD_CALL_REAL_API production < should_call_real_api.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm should_call_real_api.txt
-
-          printf "%s" "${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}" > next_public_billing_start_date.txt
-          vercel env add NEXT_PUBLIC_BILLING_START_DATE production < next_public_billing_start_date.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm next_public_billing_start_date.txt
-
-      - name: Pull Latest Vercel Environment Information
-        run: |
-          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      # Pull project settings (.vercel/project.json) needed by `vercel build`.
+      # App env vars are NOT stored in Vercel: they come from GitHub secrets below, at build time
+      # (step env, which takes precedence over the pulled .env file) and at runtime (`vercel deploy --env`).
+      - name: Pull Vercel project settings
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
+        # Single source of truth for app env vars; reused by the deploy step via *deploy-env
+        env: &deploy-env
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          NEXTAUTH_URL: https://app-urjaamaapakaha.subbi.fyi
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
+          MEMBER_EMAILS: ${{ secrets.MEMBER_EMAILS }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          URJ_FSFY_API: ${{ secrets.URJ_FSFY_API }}
+          URJ_FSFY_API_USER: ${{ secrets.URJ_FSFY_API_USER }}
+          URJ_FSFY_API_PWD: ${{ secrets.URJ_FSFY_API_PWD }}
+          SHOULD_CALL_REAL_API: ${{ secrets.SHOULD_CALL_REAL_API }}
+          NEXT_PUBLIC_BILLING_START_DATE: ${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel Production
+        env: *deploy-env
+        # `vercel deploy` waits until the deployment is ready and never exits if Vercel blocks
+        # or stalls it, so cap it instead of hanging until the 6-hour job limit.
+        timeout-minutes: 10
         run: |
-          # Save stdout and stderr to files
-          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} >deployment-url.txt 2>error.txt
-
-          # Check the exit code
-          code=$?
-          if [ $code -eq 0 ]; then
-              # Get the deployment URL from stdout for the next step
-              deploymentUrl=$(cat deployment-url.txt)
-              echo "Deployed to $deploymentUrl"
-          else
-              # Handle the error
-              errorMessage=$(cat error.txt)
-              echo "There was an error: $errorMessage"
-              exit 1
-          fi
+          # The deployment URL goes to stdout; progress and errors go to stderr, which stays in
+          # the job log. The shell runs with -e, so a failed deploy fails the step right here.
+          # `--env KEY` (no value) reads KEY from this step's env, so secrets never appear in argv.
+          deploymentUrl=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} \
+            --env GOOGLE_CLIENT_ID \
+            --env GOOGLE_CLIENT_SECRET \
+            --env NEXTAUTH_URL \
+            --env NEXTAUTH_SECRET \
+            --env ADMIN_EMAILS \
+            --env MEMBER_EMAILS \
+            --env DATABASE_URL \
+            --env URJ_FSFY_API \
+            --env URJ_FSFY_API_USER \
+            --env URJ_FSFY_API_PWD \
+            --env SHOULD_CALL_REAL_API \
+            --env NEXT_PUBLIC_BILLING_START_DATE)
+          echo "Deployed to $deploymentUrl"
