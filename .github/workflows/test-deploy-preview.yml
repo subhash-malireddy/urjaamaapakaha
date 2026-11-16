@@ -118,97 +118,56 @@ jobs:
           echo "$GITHUB_WORKSPACE/.github/tools/node_modules/.bin" >> "$GITHUB_PATH"
           .github/tools/node_modules/.bin/vercel --version
 
-      - name: Pull and refresh Vercel Environment Information
+      # Pull project settings (.vercel/project.json) needed by `vercel build`.
+      # App env vars are NOT stored in Vercel: they come from GitHub secrets below, at build time
+      # (step env, which takes precedence over the pulled .env file) and at runtime (`vercel deploy --env`).
+      - name: Pull Vercel project settings
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-
-          # Remove existing environment variables first
-          vercel env rm GOOGLE_CLIENT_ID --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm GOOGLE_CLIENT_SECRET --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm NEXTAUTH_URL --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm NEXTAUTH_SECRET --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm ADMIN_EMAILS --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm MEMBER_EMAILS --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm DATABASE_URL --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm URJ_FSFY_API --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm URJ_FSFY_API_USER --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm URJ_FSFY_API_PWD --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm SPECIAL_DEVICE_IPS --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm SHOULD_CALL_REAL_API --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          vercel env rm NEXT_PUBLIC_BILLING_START_DATE --environment=preview --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-
-          # Add environment variables using Vercel CLI without newlines
-          printf "%s" "${{ secrets.GOOGLE_CLIENT_ID }}" > google_client_id.txt
-          vercel env add GOOGLE_CLIENT_ID --environment=preview --yes < google_client_id.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm google_client_id.txt
-
-          printf "%s" "${{ secrets.GOOGLE_CLIENT_SECRET }}" > google_client_secret.txt
-          vercel env add GOOGLE_CLIENT_SECRET --environment=preview --yes < google_client_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm google_client_secret.txt
-
-          printf "%s" "https://preview-subhash-malireddy-urjaamaapakaha.vercel.app" > nextauth_url.txt
-          vercel env add NEXTAUTH_URL --environment=preview --yes < nextauth_url.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm nextauth_url.txt
-
-          printf "%s" "${{ secrets.NEXTAUTH_SECRET }}" > nextauth_secret.txt
-          vercel env add NEXTAUTH_SECRET --environment=preview --yes < nextauth_secret.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm nextauth_secret.txt
-
-          printf "%s" "${{ secrets.ADMIN_EMAILS }}" > admin_emails.txt
-          vercel env add ADMIN_EMAILS --environment=preview --yes < admin_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm admin_emails.txt
-
-          printf "%s" "${{ secrets.MEMBER_EMAILS }}" > member_emails.txt
-          vercel env add MEMBER_EMAILS --environment=preview --yes < member_emails.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm member_emails.txt
-
-          printf "%s" "${{ secrets.DATABASE_URL }}" > database_url.txt
-          vercel env add DATABASE_URL --environment=preview --yes < database_url.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm database_url.txt
-
-          printf "%s" "${{ secrets.URJ_FSFY_API }}" > urj_fsfy_api.txt
-          vercel env add URJ_FSFY_API --environment=preview --yes < urj_fsfy_api.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm urj_fsfy_api.txt
-
-          printf "%s" "${{ secrets.URJ_FSFY_API_USER }}" > urj_fsfy_api_user.txt
-          vercel env add URJ_FSFY_API_USER --environment=preview --yes < urj_fsfy_api_user.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm urj_fsfy_api_user.txt
-
-          printf "%s" "${{ secrets.URJ_FSFY_API_PWD }}" > urj_fsfy_api_pwd.txt
-          vercel env add URJ_FSFY_API_PWD --environment=preview --yes < urj_fsfy_api_pwd.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm urj_fsfy_api_pwd.txt
-
-          printf "%s" "${{ secrets.SPECIAL_DEVICE_IPS }}" > special_device_ips.txt
-          vercel env add SPECIAL_DEVICE_IPS --environment=preview --yes < special_device_ips.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm special_device_ips.txt
-
-          printf "%s" "false" > should_call_real_api.txt
-          vercel env add SHOULD_CALL_REAL_API --environment=preview --yes < should_call_real_api.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm should_call_real_api.txt
-
-          printf "%s" "${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}" > next_public_billing_start_date.txt
-          vercel env add NEXT_PUBLIC_BILLING_START_DATE --environment=preview --yes < next_public_billing_start_date.txt --token=${{ secrets.VERCEL_TOKEN }}
-          rm next_public_billing_start_date.txt
-
-      - name: Pull Latest Vercel Environment Information
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        # Single source of truth for app env vars; reused by the deploy step via *deploy-env
+        env: &deploy-env
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          NEXTAUTH_URL: https://preview-subhash-malireddy-urjaamaapakaha.vercel.app
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
+          MEMBER_EMAILS: ${{ secrets.MEMBER_EMAILS }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          URJ_FSFY_API: ${{ secrets.URJ_FSFY_API }}
+          URJ_FSFY_API_USER: ${{ secrets.URJ_FSFY_API_USER }}
+          URJ_FSFY_API_PWD: ${{ secrets.URJ_FSFY_API_PWD }}
+          SPECIAL_DEVICE_IPS: ${{ secrets.SPECIAL_DEVICE_IPS }}
+          SHOULD_CALL_REAL_API: "false"
+          NEXT_PUBLIC_BILLING_START_DATE: ${{ vars.NEXT_PUBLIC_BILLING_START_DATE }}
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env: *deploy-env
         # `vercel deploy` waits until the deployment is ready and never exits if Vercel blocks
         # or stalls it, so cap it instead of hanging until the 6-hour job limit.
         timeout-minutes: 10
         run: |
           # The deployment URL goes to stdout; progress and errors go to stderr, which stays in
           # the job log. The shell runs with -e, so a failed deploy fails the step right here.
-          deploymentUrl=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          # `--env KEY` (no value) reads KEY from this step's env, so secrets never appear in argv.
+          deploymentUrl=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} \
+            --env GOOGLE_CLIENT_ID \
+            --env GOOGLE_CLIENT_SECRET \
+            --env NEXTAUTH_URL \
+            --env NEXTAUTH_SECRET \
+            --env ADMIN_EMAILS \
+            --env MEMBER_EMAILS \
+            --env DATABASE_URL \
+            --env URJ_FSFY_API \
+            --env URJ_FSFY_API_USER \
+            --env URJ_FSFY_API_PWD \
+            --env SPECIAL_DEVICE_IPS \
+            --env SHOULD_CALL_REAL_API \
+            --env NEXT_PUBLIC_BILLING_START_DATE)
           echo "Deployed to $deploymentUrl"
 
           # Set a consistent alias for the deployment
