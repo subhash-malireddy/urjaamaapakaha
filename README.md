@@ -1,6 +1,6 @@
 # About this project
 
-The goal of this project is to measure the individual’s electricity usage in a shared house through a smart plug, Tapo P100M in our case. Typically smart plugs comes with an app that tracks usage but what they generally lack is tracking per individual. This is the gap that this project aims to fill.
+The goal of this project is to measure the individual’s electricity usage in a shared house through a smart plug, Tapo P100M in our case. Typically smart plugs comes with an app that tracks usage but what they generally lack is tracking per individual. This is the gap that this project aims to fill 🙏.
 
 # Project Docs
 
