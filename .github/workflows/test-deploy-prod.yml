@@ -23,18 +23,18 @@ jobs:
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Install pnpm first without caching
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v6
         with:
           version: 10
           run_install: false
 
       # Then set up Node.js with pnpm caching
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "23"
           cache: "pnpm"
@@ -60,7 +60,7 @@ jobs:
 
       # Restore Jest cache to speed up tests
       - name: Restore Jest cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.jest-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-jest-${{ hashFiles('**/jest.config.js') }}-${{ hashFiles('**/*.{js,jsx,ts,tsx}') }}
@@ -78,7 +78,7 @@ jobs:
 
       # Upload coverage reports as artifacts
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage/
